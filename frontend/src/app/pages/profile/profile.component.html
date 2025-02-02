@@ -1,0 +1,9 @@
+<div class="profile-container">
+    <h2>Tu Perfil</h2>
+    
+    <div class="profile-details">
+        <p><strong>Username:</strong> {{ userData?.username }}</p>
+        <p><strong>Email:</strong> {{ userData?.email }}</p>
+        <p><strong>Miembro desde:</strong> {{ userData?.created_at | date }}</p>
+    </div>
+</div>

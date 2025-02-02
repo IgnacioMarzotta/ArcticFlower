@@ -1,0 +1,22 @@
+<nav>
+    <div class="nav-brand">
+        <a routerLink="/">ArcticFlower</a>
+    </div>
+    
+    <div class="nav-links">
+        <a routerLink="/">Home</a>
+        <a routerLink="/globe">Globo</a>
+        <a *ngIf="authService.isAuthenticated()" routerLink="/profile">Perfil</a>
+        
+        <div class="auth-buttons">
+            <ng-container *ngIf="!authService.isAuthenticated(); else loggedIn">
+                <a routerLink="/auth/login" class="btn-login">Login</a>
+                <a routerLink="/auth/register" class="btn-register">Registro</a>
+            </ng-container>
+            
+            <ng-template #loggedIn>
+                <button (click)="logout()" class="btn-logout">Logout</button>
+            </ng-template>
+        </div>
+    </div>
+</nav>
