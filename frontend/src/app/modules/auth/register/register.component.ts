@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
-  styleUrls: ['./register.component.scss']
+  styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
   registerForm = this.fb.group({
@@ -14,17 +15,22 @@ export class RegisterComponent {
     password: ['', [Validators.required, Validators.minLength(6)]]
   });
 
+  errorMessage: string | null = null;
+
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   onSubmit(): void {
-    if (this.registerForm.valid) {
-      this.authService.register(this.registerForm.value).subscribe({
-        next: () => alert('Registro exitoso!'),
-        error: (err) => alert('Error: ' + err.error.message)
-      });
-    }
+    if (this.registerForm.invalid) return;
+
+    this.authService.register(this.registerForm.value).subscribe({
+      next: () => this.router.navigate(['/auth/login']),
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'Error al registrar usuario';
+      }
+    });
   }
 }

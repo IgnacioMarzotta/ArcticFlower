@@ -34,6 +34,10 @@ export class AuthService {
     return this.currentUserSubject.asObservable();
   }
 
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem('auth_token');
+  }
+
   logout(): void {
     localStorage.removeItem('auth_token');
     this.currentUserSubject.next(null);
