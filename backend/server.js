@@ -3,11 +3,13 @@ const express = require('express');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth.routes');
+const speciesRoutes = require('./routes/speciesRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
+app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -16,7 +18,7 @@ connectDB();
 
 // Rutas
 app.use('/api/auth', authRoutes);
-app.use(morgan('dev'));
+app.use('/api/species', speciesRoutes);
 
 // Manejo de errores global
 app.use((err, req, res, next) => {
