@@ -51,3 +51,5 @@ import 'zone.js';  // Included with Angular CLI.
 /***************************************************************************************************
  * APPLICATION IMPORTS
  */
+import 'core-js/features/array/flat-map';
+(window as any).global = window;

@@ -4,12 +4,14 @@ import { HomeComponent } from './pages/home/home.component';
 import { ProfileComponent } from './pages/profile/profile.component';
 import { GlobePlaceholderComponent } from './pages/globe-placeholder/globe-placeholder.component';
 import { AuthGuard } from './core/guards/auth.guard';
+import { MapComponent } from './pages/map/map.component';
 
 const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
   { path: 'globe', component: GlobePlaceholderComponent },
-  { path: 'auth', loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule) }
+  { path: 'auth', loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule) },
+  { path: 'map', component: MapComponent }
 ];
 
 @NgModule({

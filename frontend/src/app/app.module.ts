@@ -9,9 +9,10 @@ import { NavbarComponent } from './components/navbar/navbar.component';
 import { HomeComponent } from './pages/home/home.component';
 import { ProfileComponent } from './pages/profile/profile.component';
 import { GlobePlaceholderComponent } from './pages/globe-placeholder/globe-placeholder.component';
+import { MapComponent } from './pages/map/map.component';
 
 @NgModule({
-  declarations: [AppComponent, NavbarComponent, HomeComponent, ProfileComponent, GlobePlaceholderComponent],
+  declarations: [AppComponent, NavbarComponent, HomeComponent, ProfileComponent, GlobePlaceholderComponent, MapComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
