@@ -1,0 +1,30 @@
+<form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+  <div>
+    <label>Username:</label>
+    <input type="text" formControlName="username">
+    <div *ngIf="registerForm.get('username')?.errors">
+      <span *ngIf="registerForm.get('username')?.hasError('required')">Campo requerido</span>
+      <span *ngIf="registerForm.get('username')?.hasError('maxlength')">Máximo 32 caracteres</span>
+    </div>
+  </div>
+
+  <div>
+    <label>Email:</label>
+    <input type="email" formControlName="email">
+    <div *ngIf="registerForm.get('email')?.errors">
+      <span *ngIf="registerForm.get('email')?.hasError('required')">Campo requerido</span>
+      <span *ngIf="registerForm.get('email')?.hasError('email')">Email inválido</span>
+    </div>
+  </div>
+
+  <div>
+    <label>Password:</label>
+    <input type="password" formControlName="password">
+    <div *ngIf="registerForm.get('password')?.errors">
+      <span *ngIf="registerForm.get('password')?.hasError('required')">Campo requerido</span>
+      <span *ngIf="registerForm.get('password')?.hasError('minlength')">Mínimo 6 caracteres</span>
+    </div>
+  </div>
+
+  <button type="submit" [disabled]="!registerForm.valid">Registrarse</button>
+</form>
