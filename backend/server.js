@@ -3,7 +3,7 @@ const express = require('express');
 const morgan = require('morgan');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth.routes');
-const speciesRoutes = require('./routes/speciesRoutes');
+const speciesRoutes = require('./routes/species.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;

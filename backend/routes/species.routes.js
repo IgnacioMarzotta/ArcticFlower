@@ -4,7 +4,7 @@ const {
   createSpecies,
   getAllSpecies,
   getSpeciesById
-} = require('../controllers/speciesController');
+} = require('../controllers/species.controller');
 
 router.post('/', createSpecies);
 router.get('/', getAllSpecies);
