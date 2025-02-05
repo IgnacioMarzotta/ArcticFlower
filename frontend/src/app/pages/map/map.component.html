@@ -3,3 +3,16 @@
 </div>
 
 <div #globeContainer class="globe-container"></div>
+
+<!-- Panel informativo que se muestra al seleccionar un marcador -->
+<div *ngIf="selectedSpecies" class="info-panel">
+    <div class="panel-content">
+        <!-- Botón para cerrar el panel -->
+        <button class="close-btn" (click)="closePanel()">X</button>
+        <h2>{{ selectedSpecies.name }}</h2>
+        <p><strong>Categoría:</strong> {{ selectedSpecies.category }}</p>
+        <p><strong>País:</strong> {{ selectedSpecies.country }}</p>
+        <p><strong>Media:</strong> <img src="{{ selectedSpecies.media }}" alt=""></p>
+        <!-- Puedes agregar más información o elementos gráficos según lo requieras -->
+    </div>
+</div>

@@ -1,5 +1,5 @@
 const Species = require('../models/Species');
-const GeoService = require('../services/GeoService');
+const GeoService = require('../services/geo.service');
 
 /**
  * Crea una especie, recibiendo en el request un campo "country" que es una cadena 
