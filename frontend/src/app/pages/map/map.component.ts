@@ -3,6 +3,7 @@ import * as GLOBE from 'globe.gl';
 import * as THREE from 'three';
 import { SpeciesService } from '../../core/services/species.service';
 import { GeoService } from '../../core/services/geo.service';
+import * as turf from '@turf/turf';
 
 interface SpeciesPoint {
   lat: number;
@@ -38,23 +39,23 @@ export class MapComponent implements AfterViewInit {
   
   private initializeGlobe(): void {
     this.globeInstance = GLOBE.default({ animateIn: false })(this.globeContainer.nativeElement)
-      .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
-      .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-      .htmlElementsData([]) // capa de marcadores vacía
-      .htmlElement((d: SpeciesPoint) => {
-        const el = document.createElement('div');
-        el.innerHTML = this.markerSvg;
-        el.style.position = 'absolute';
-        el.style.transform = 'translate(-50%, -50%)';
-        const size = d.size || 30;
-        el.style.width = `${size}px`;
-        el.style.height = `${size}px`;
-        el.style.color = d.color || 'black';
-        el.style.pointerEvents = 'auto';
-        el.style.cursor = 'pointer';
-        el.onclick = () => console.info('Marcador clickeado:', d);
-        return el;
-      });
+    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+    .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+    .htmlElementsData([]) // capa de marcadores vacía
+    .htmlElement((d: SpeciesPoint) => {
+      const el = document.createElement('div');
+      el.innerHTML = this.markerSvg;
+      el.style.position = 'absolute';
+      el.style.transform = 'translate(-50%, -50%)';
+      const size = d.size || 30;
+      el.style.width = `${size}px`;
+      el.style.height = `${size}px`;
+      el.style.color = d.color || 'black';
+      el.style.pointerEvents = 'auto';
+      el.style.cursor = 'pointer';
+      el.onclick = () => console.info('Marcador clickeado:', d);
+      return el;
+    });
   }
   
   // Función para agregar las nubes (clouds) sobre el globo
@@ -83,31 +84,34 @@ export class MapComponent implements AfterViewInit {
   private loadSpeciesData(): void {
     this.speciesService.getAllSpecies(1, 1000).subscribe({
       next: (response) => {
-        // Filtramos las especies con códigos de país válidos
+        // Filtramos las especies con códigos de país válidos.
         const validSpecies = response.species.filter(sp => {
           const countryCode = sp.country?.replace(/\s/g, '').toUpperCase();
           return countryCode && countryCode.length === 2;
         });
         
-        // Agrupamos las especies por país
+        // Agrupamos las especies por país.
         const speciesByCountry = validSpecies.reduce((acc, sp) => {
           const countryCode = sp.country.replace(/\s/g, '').toUpperCase();
-          if (!acc[countryCode]) { acc[countryCode] = []; }
+          if (!acc[countryCode]) {
+            acc[countryCode] = [];
+          }
           acc[countryCode].push(sp);
           return acc;
         }, {} as { [countryCode: string]: any[] });
         
-        // Aquí puedes definir tu lógica de zoom; en este ejemplo usamos una función simple
+        // Definimos si la vista es alejanda o cercana.
         const isZoomedOut = this.checkIfZoomedOut();
         
         let points: SpeciesPoint[] = [];
         
+        // Para cada país, generamos los puntos.
         Object.keys(speciesByCountry).forEach(countryCode => {
           const coords = this.geoService.getCountryCoordinates(countryCode);
           if (!coords) return;
           
           if (isZoomedOut) {
-            // En vista alejanda, mostramos un marcador agrupado por país
+            // Vista alejanda: mostramos un marcador agrupado (cluster) en el centro del país.
             points.push({
               lat: coords.lat,
               lng: coords.lng,
@@ -117,8 +121,17 @@ export class MapComponent implements AfterViewInit {
               color: 'cyan'
             });
           } else {
-            // En vista cercana, dispersamos los marcadores dentro del país
-            const dispersedPoints = this.generateRandomPointsInCountry(coords, speciesByCountry[countryCode].length);
+            // Vista cercana: generamos los puntos dentro de las fronteras del país.
+            // Se intenta obtener el polígono del país.
+            const polygon = this.geoService.getCountryPolygon(countryCode);
+            let dispersedPoints: { lat: number, lng: number }[] = [];
+            if (polygon) {
+              dispersedPoints = this.generateRandomPointsInPolygon(polygon, speciesByCountry[countryCode].length);
+            } else {
+              // Fallback: usamos la dispersión a partir del centro.
+              dispersedPoints = this.generateRandomPointsInCountry(coords, speciesByCountry[countryCode].length);
+            }
+            
             dispersedPoints.forEach((p, index) => {
               const species = speciesByCountry[countryCode][index];
               points.push({
@@ -133,15 +146,81 @@ export class MapComponent implements AfterViewInit {
           }
         });
         
-        console.log('Puntos generados:', points);
+        console.log('Puntos generados antes de clustering:', points);
+        
+        // Si la vista es cercana, aplicamos el clustering para agrupar marcadores muy próximos.
+        if (!isZoomedOut) {
+          points = this.clusterMarkers(points);
+        }
+        
+        console.log('Puntos después de clustering:', points);
         
         if (this.globeInstance) {
-          // Actualizamos la capa de HTML Markers con los puntos generados
+          // Actualizamos la capa de HTML Markers con los puntos (clusterizados o individuales)
           this.globeInstance.htmlElementsData(points);
         }
       },
       error: err => console.error('Error al cargar especies:', err)
     });
+  }
+  
+  /**
+  * Calcula el punto promedio (lat, lng) de un arreglo de marcadores.
+  */
+  private averagePoint(points: SpeciesPoint[]): { lat: number, lng: number } {
+    const sum = points.reduce((acc, p) => ({
+      lat: acc.lat + p.lat,
+      lng: acc.lng + p.lng
+    }), { lat: 0, lng: 0 });
+    return { lat: sum.lat / points.length, lng: sum.lng / points.length };
+  }
+  
+  /**
+  * Agrupa los marcadores que estén a menos de minClusterDistance entre sí.
+  * Si un grupo tiene al menos clusterCountThreshold elementos, se crea un marcador
+  * de cluster que muestra un contador. Si no, se mantienen los marcadores individuales.
+  * @param points Arreglo de SpeciesPoint a clusterizar.
+  * @returns Arreglo de SpeciesPoint con los clusters aplicados.
+  */
+  private clusterMarkers(points: SpeciesPoint[]): SpeciesPoint[] {
+    const clusters: { points: SpeciesPoint[] }[] = [];
+    const minClusterDistance = 0.5; // Distancia mínima en grados para agrupar (ajusta según sea necesario)
+    const clusterCountThreshold = 3;  // Si un cluster tiene 3 o más puntos, se agrupa
+    
+    // Para cada marcador, se busca si ya existe un cluster cercano.
+    points.forEach(pt => {
+      const foundCluster = clusters.find(cluster => {
+        // Se calcula la distancia (aproximada) entre el punto candidato y el centro promedio del cluster
+        const avg = this.averagePoint(cluster.points);
+        const d = Math.sqrt(Math.pow(pt.lat - avg.lat, 2) + Math.pow(pt.lng - avg.lng, 2));
+        return d < minClusterDistance;
+      });
+      if (foundCluster) {
+        foundCluster.points.push(pt);
+      } else {
+        clusters.push({ points: [pt] });
+      }
+    });
+    
+    // Se generan los nuevos marcadores:
+    const result: SpeciesPoint[] = [];
+    clusters.forEach(cluster => {
+      if (cluster.points.length >= clusterCountThreshold) {
+        const avg = this.averagePoint(cluster.points);
+        result.push({
+          lat: avg.lat,
+          lng: avg.lng,
+          name: `${cluster.points.length} especies`,
+          category: 'cluster',
+          size: 40,
+          color: 'cyan'
+        });
+      } else {
+        // Si el cluster tiene pocos puntos, se mantienen individualmente
+        result.push(...cluster.points);
+      }
+    });
+    return result;
   }
   
   private checkIfZoomedOut(): boolean {
@@ -190,7 +269,7 @@ export class MapComponent implements AfterViewInit {
         points.push(candidate);
       }
     }
-
+    
     // Si no se pudieron generar todos los puntos con separación mínima, se retornan los que se consiguieron
     return points;
   }
@@ -205,5 +284,34 @@ export class MapComponent implements AfterViewInit {
       'EX': '#ff0000'
     };
     return colors[category] || '#ffffff';
+  }
+  
+  /**
+  * Genera puntos aleatorios dentro de un polígono (GeoJSON) utilizando la técnica de muestreo por rechazo.
+  * @param polygon Objeto GeoJSON con el polígono del país.
+  * @param count Número de puntos a generar.
+  * @returns Array de objetos con propiedades { lat, lng }.
+  */
+  private generateRandomPointsInPolygon(
+    polygon: any,
+    count: number
+  ): { lat: number, lng: number }[] {
+    // Obtenemos la bounding box del polígono: [minLng, minLat, maxLng, maxLat]
+    const bbox = turf.bbox(polygon);
+    const points: { lat: number, lng: number }[] = [];
+    let attempts = 0;
+    const maxAttempts = count * 100; // Para evitar bucles infinitos
+    
+    while (points.length < count && attempts < maxAttempts) {
+      attempts++;
+      const randLng = bbox[0] + Math.random() * (bbox[2] - bbox[0]);
+      const randLat = bbox[1] + Math.random() * (bbox[3] - bbox[1]);
+      const pt = turf.point([randLng, randLat]);
+      // Verificamos si el punto se encuentra dentro del polígono
+      if (turf.booleanPointInPolygon(pt, polygon)) {
+        points.push({ lat: randLat, lng: randLng });
+      }
+    }
+    return points;
   }
 }
