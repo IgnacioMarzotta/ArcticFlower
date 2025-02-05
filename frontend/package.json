@@ -18,11 +18,13 @@
     "@angular/platform-browser": "~13.2.0",
     "@angular/platform-browser-dynamic": "~13.2.0",
     "@angular/router": "~13.2.0",
+    "@turf/turf": "^7.2.0",
     "@types/three": "^0.173.0",
     "globe.gl": "^2.39.6",
     "rxjs": "~7.5.0",
     "three": "^0.173.0",
     "tslib": "^2.3.0",
+    "turf": "^3.0.14",
     "world-countries": "^5.0.0",
     "zone.js": "~0.11.4"
   },
