@@ -12,6 +12,7 @@ interface SpeciesPoint {
   category: string;
   size?: number;
   color?: string;
+  country?: string; 
 }
 
 @Component({
@@ -39,7 +40,7 @@ export class MapComponent implements AfterViewInit {
   
   private initializeGlobe(): void {
     this.globeInstance = GLOBE.default({ animateIn: false })(this.globeContainer.nativeElement)
-    .globeImageUrl('//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+    .globeImageUrl('../../../assets/img/globe/earth.jpg')
     .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
     .htmlElementsData([]) // capa de marcadores vacía
     .htmlElement((d: SpeciesPoint) => {
@@ -84,79 +85,32 @@ export class MapComponent implements AfterViewInit {
   private loadSpeciesData(): void {
     this.speciesService.getAllSpecies(1, 1000).subscribe({
       next: (response) => {
-        // Filtramos las especies con códigos de país válidos.
-        const validSpecies = response.species.filter(sp => {
-          const countryCode = sp.country?.replace(/\s/g, '').toUpperCase();
-          return countryCode && countryCode.length === 2;
-        });
-        
-        // Agrupamos las especies por país.
-        const speciesByCountry = validSpecies.reduce((acc, sp) => {
-          const countryCode = sp.country.replace(/\s/g, '').toUpperCase();
-          if (!acc[countryCode]) {
-            acc[countryCode] = [];
-          }
-          acc[countryCode].push(sp);
-          return acc;
-        }, {} as { [countryCode: string]: any[] });
-        
-        // Definimos si la vista es alejanda o cercana.
-        const isZoomedOut = this.checkIfZoomedOut();
-        
-        let points: SpeciesPoint[] = [];
-        
-        // Para cada país, generamos los puntos.
-        Object.keys(speciesByCountry).forEach(countryCode => {
-          const coords = this.geoService.getCountryCoordinates(countryCode);
-          if (!coords) return;
-          
-          if (isZoomedOut) {
-            // Vista alejanda: mostramos un marcador agrupado (cluster) en el centro del país.
-            points.push({
-              lat: coords.lat,
-              lng: coords.lng,
-              name: `${speciesByCountry[countryCode].length} especies`,
-              category: 'cluster',
-              size: 40,
-              color: 'cyan'
-            });
-          } else {
-            // Vista cercana: generamos los puntos dentro de las fronteras del país.
-            // Se intenta obtener el polígono del país.
-            const polygon = this.geoService.getCountryPolygon(countryCode);
-            let dispersedPoints: { lat: number, lng: number }[] = [];
-            if (polygon) {
-              dispersedPoints = this.generateRandomPointsInPolygon(polygon, speciesByCountry[countryCode].length);
-            } else {
-              // Fallback: usamos la dispersión a partir del centro.
-              dispersedPoints = this.generateRandomPointsInCountry(coords, speciesByCountry[countryCode].length);
-            }
-            
-            dispersedPoints.forEach((p, index) => {
-              const species = speciesByCountry[countryCode][index];
+        const points: SpeciesPoint[] = [];
+  
+        // Para cada especie, recorremos su arreglo "locations"
+        response.species.forEach((species: any) => {
+          if (species.locations && Array.isArray(species.locations)) {
+            species.locations.forEach((loc: { country: string; lat: number; lng: number; }) => {
               points.push({
-                lat: p.lat,
-                lng: p.lng,
+                lat: loc.lat,
+                lng: loc.lng,
                 name: species.common_name,
                 category: species.category,
-                size: 20 + Math.random() * 20,
-                color: this.getColorByCategory(species.category)
+                size: 30,
+                color: this.getColorByCategory(species.category),
+                country: loc.country
               });
             });
           }
         });
-        
-        console.log('Puntos generados antes de clustering:', points);
-        
-        // Si la vista es cercana, aplicamos el clustering para agrupar marcadores muy próximos.
-        if (!isZoomedOut) {
-          points = this.clusterMarkers(points);
-        }
-        
-        console.log('Puntos después de clustering:', points);
-        
+  
+        console.log('Puntos generados desde locations:', points);
+  
+        // (Opcional) Si deseas aplicar clustering, puedes hacerlo aquí:
+        // const clusteredPoints = this.clusterMarkers(points);
+        // this.globeInstance.htmlElementsData(clusteredPoints);
+  
         if (this.globeInstance) {
-          // Actualizamos la capa de HTML Markers con los puntos (clusterizados o individuales)
           this.globeInstance.htmlElementsData(points);
         }
       },

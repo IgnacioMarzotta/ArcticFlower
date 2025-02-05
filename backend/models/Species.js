@@ -1,26 +1,41 @@
 const mongoose = require('mongoose');
 
+const locationSchema = new mongoose.Schema({
+  country: {
+    type: String,
+    required: true,
+    maxlength: 128
+  },
+  lat: {
+    type: Number,
+    required: true
+  },
+  lng: {
+    type: Number,
+    required: true
+  }
+});
+
 const speciesSchema = new mongoose.Schema({
   taxon_id: {
-    type: String,
-    required: true,
-    unique: true,
-    maxlength: 32
-  },
+     type: String,
+      required: true,
+      unique: true,
+      maxlength: 32 
+    },
   common_name: {
-    type: String,
-    required: true,
-    maxlength: 128
-  },
+     type: String,
+      required: true,
+      maxlength: 128
+    },
   scientific_name: {
-    type: String,
-    required: true,
-    maxlength: 128
-  },
+     type: String,
+      required: true,
+      maxlength: 128 
+    },
   category: {
     type: String,
     required: true,
-    enum: ['DD', 'LC', 'NT', 'VU', 'EN', 'CR', 'EW', 'EX', 'LR/lc', 'LR/nt', 'LR/cd'],
     uppercase: true
   },
   kingdom: {
@@ -29,22 +44,18 @@ const speciesSchema = new mongoose.Schema({
     enum: ['Animalia', 'Plantae', 'Fungi', 'Protista', 'Archaea', 'Bacteria'],
     maxlength: 32
   },
-  country: {
-    type: String,
+  // Ahora usamos un arreglo de ubicaciones en lugar de un string country
+  locations: {
+    type: [locationSchema],
     required: true,
-    maxlength: 512
+    default: []
   },
-  threats: {
-    type: String,
-    maxlength: 512
-  },
+  threats: { type: String, maxlength: 512 },
   media: {
     type: String,
     maxlength: 512,
     match: /^(http|https):\/\/[^ "]+$/
   }
-}, {
-  timestamps: true
-});
+}, { timestamps: true });
 
 module.exports = mongoose.model('Species', speciesSchema);
