@@ -1,6 +1,12 @@
-<div *ngIf="isLoading" class="spinner-container">
-    <div class="spinner"></div>
-</div>
+<ngx-spinner
+  bdColor="rgba(0, 0, 0, 0.8)"
+  size="small"
+  type="ball-spin-fade"
+  color="#ffffff"
+>
+  <img src="../../assets/img/logos/arcticflower.png" alt="Cargando..." class="spinner-image">
+</ngx-spinner>
+
 
 <div #globeContainer class="globe-container"></div>
 
@@ -12,7 +18,6 @@
         <h2>{{ selectedSpecies.name }}</h2>
         <p><strong>Categoría:</strong> {{ selectedSpecies.category }}</p>
         <p><strong>País:</strong> {{ selectedSpecies.country }}</p>
-        <p><strong>Media:</strong> <img src="{{ selectedSpecies.media }}" alt=""></p>
-        <!-- Puedes agregar más información o elementos gráficos según lo requieras -->
+        <p><strong>Media:</strong> <img *ngIf="selectedSpecies.media" [src]="selectedSpecies.media" alt=""></p>
     </div>
 </div>

@@ -6,7 +6,7 @@ import { GlobePlaceholderComponent } from './pages/globe-placeholder/globe-place
 import { AuthGuard } from './core/guards/auth.guard';
 import { MapComponent } from './pages/map/map.component';
 
-const routes: Routes = [
+export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
   { path: 'globe', component: GlobePlaceholderComponent },

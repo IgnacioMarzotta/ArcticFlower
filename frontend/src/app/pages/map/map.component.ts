@@ -1,8 +1,9 @@
-import { Component, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, AfterViewInit, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import * as GLOBE from 'globe.gl';
 import * as THREE from 'three';
 import { SpeciesService } from '../../core/services/species.service';
-import * as turf from '@turf/turf';
+import { CommonModule } from '@angular/common';
+import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 
 interface SpeciesPoint {
   lat: number;
@@ -17,9 +18,12 @@ interface SpeciesPoint {
 
 @Component({
   selector: 'app-map',
+  standalone: true,
   templateUrl: './map.component.html',
-  styleUrls: ['./map.component.css']
+  styleUrls: ['./map.component.css'],
+  imports: [CommonModule, NgxSpinnerModule]
 })
+
 export class MapComponent implements AfterViewInit {
   @ViewChild('globeContainer') globeContainer!: ElementRef;
   private globeInstance: any;
@@ -30,14 +34,21 @@ export class MapComponent implements AfterViewInit {
 
   constructor(
     private speciesService: SpeciesService,
+    private cdr: ChangeDetectorRef,
+    private spinner: NgxSpinnerService 
   ) {}
   
   ngAfterViewInit(): void {
     this.isMobile = window.innerWidth < 768;
+    this.spinner.show();
     this.initializeGlobe();
     this.loadSpeciesData();
     this.addClouds();
-    this.isLoading = false;
+  
+    setTimeout(() => {
+      this.isLoading = false;
+      this.spinner.hide(); // ✅ Ocultar el spinner
+    }, 1500);
   }
   
   private initializeGlobe(): void {
