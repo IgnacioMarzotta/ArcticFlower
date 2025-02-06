@@ -41,7 +41,7 @@ function generateSpeciesData() {
 }
 
 async function seedSpecies() {
-  const numSpecies = 500; // Número de especies de prueba a generar
+  const numSpecies = 10000; // Número de especies de prueba a generar
   for (let i = 0; i < numSpecies; i++) {
     const speciesData = generateSpeciesData();
     try {

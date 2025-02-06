@@ -4,8 +4,10 @@ import * as THREE from 'three';
 import { SpeciesService } from '../../core/services/species.service';
 import { CommonModule } from '@angular/common';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { FormsModule } from '@angular/forms';
 
-interface SpeciesPoint {
+export interface SpeciesPoint {
+  id: string;
   lat: number;
   lng: number;
   name: string;
@@ -13,7 +15,6 @@ interface SpeciesPoint {
   size?: number;
   color?: string;
   country?: string;
-  media?: string;
 }
 
 @Component({
@@ -21,7 +22,7 @@ interface SpeciesPoint {
   standalone: true,
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.css'],
-  imports: [CommonModule, NgxSpinnerModule]
+  imports: [CommonModule, NgxSpinnerModule, FormsModule]
 })
 
 export class MapComponent implements AfterViewInit {
@@ -29,8 +30,14 @@ export class MapComponent implements AfterViewInit {
   private globeInstance: any;
   private markerSvg = `<svg viewBox="-4 0 36 36"><path fill="currentColor" d="M14,0 C21.732,0 28,5.641 28,12.6 C28,23.963 14,36 14,36 C14,36 0,24.064 0,12.6 C0,5.641 6.268,0 14,0 Z"></path><circle fill="black" cx="14" cy="14" r="7"></circle></svg>`;
   public isLoading: boolean = true;
-  public selectedSpecies: SpeciesPoint | null = null;
   public isMobile: boolean = false;
+  public selectedSpecies: SpeciesPoint | null = null;
+
+  //Sistema de busqueda
+  public searchTerm: string = "";
+  public allSpecies: SpeciesPoint[] = [];
+  public filteredSpecies: SpeciesPoint[] = [];
+  
 
   constructor(
     private speciesService: SpeciesService,
@@ -79,9 +86,16 @@ export class MapComponent implements AfterViewInit {
     controls.maxDistance = globeRadius * 3;
   }
 
-  // Método para seleccionar una especie y mostrar el panel
   public selectSpecies(species: SpeciesPoint): void {
-    this.selectedSpecies = species;
+    this.flyToSpecies(species);
+    this.isLoading = true;
+    this.speciesService.getSpeciesDetail(species.id).subscribe({
+      next: (detail) => {
+        this.selectedSpecies = detail;
+        this.isLoading = false;
+      },
+      error: (err) => console.error('Error al obtener el detalle de la especie:', err)
+    });
   }
 
   // Método para cerrar el panel
@@ -116,44 +130,30 @@ export class MapComponent implements AfterViewInit {
     this.speciesService.getAllSpecies(1, 1000).subscribe({
       next: (response) => {
         const points: SpeciesPoint[] = [];
-  
-        // Para cada especie, recorremos su arreglo "locations"
         response.species.forEach((species: any) => {
           if (species.locations && Array.isArray(species.locations)) {
             species.locations.forEach((loc: { country: string; lat: number; lng: number; }) => {
               points.push({
+                id: species._id,
                 lat: loc.lat,
                 lng: loc.lng,
                 name: species.common_name,
                 category: species.category,
                 size: 30,
                 color: this.getColorByCategory(species.category),
-                country: loc.country,
-                media: species.media
+                country: loc.country
               });
             });
           }
         });
-  
-        console.log('Puntos generados desde locations:', points);
-  
+        console.log('Puntos generados:', points);
+        this.allSpecies = points;
         if (this.globeInstance) {
           this.globeInstance.htmlElementsData(points);
         }
       },
       error: err => console.error('Error al cargar especies:', err)
     });
-  }
-  
-  /**
-  * Calcula el punto promedio (lat, lng) de un arreglo de marcadores.
-  */
-  private averagePoint(points: SpeciesPoint[]): { lat: number, lng: number } {
-    const sum = points.reduce((acc, p) => ({
-      lat: acc.lat + p.lat,
-      lng: acc.lng + p.lng
-    }), { lat: 0, lng: 0 });
-    return { lat: sum.lat / points.length, lng: sum.lng / points.length };
   }
   
   private getColorByCategory(category: string): string {
@@ -167,4 +167,23 @@ export class MapComponent implements AfterViewInit {
     return colors[category] || '#ffffff';
   }
 
+  get filteredSpeciesList(): SpeciesPoint[] {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) {
+      return this.allSpecies;
+    }
+    return this.allSpecies.filter(species =>
+      species.name.toLowerCase().includes(term) ||
+      (species.category && species.category.toLowerCase().includes(term)) ||
+      (species.country && species.country.toLowerCase().includes(term))
+    );
+  }
+
+  private flyToSpecies(species: SpeciesPoint): void {
+    if (this.globeInstance && species) {
+      this.globeInstance.pointOfView(
+        { lat: species.lat, lng: species.lng, altitude: 1 }, 2000
+      );
+    }
+  }
 }

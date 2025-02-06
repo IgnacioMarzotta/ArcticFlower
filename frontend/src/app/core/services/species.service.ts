@@ -27,6 +27,10 @@ export class SpeciesService {
     );
   }
 
+  getSpeciesDetail(id: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${id}`);
+  }
+
   getSpeciesById(id: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/${id}`);
   }

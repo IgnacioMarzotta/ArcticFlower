@@ -57,6 +57,7 @@ exports.getAllSpecies = async (req, res) => {
     const skip = (page - 1) * limit;
 
     const species = await Species.find()
+      .select('_id common_name category locations')
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });

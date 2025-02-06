@@ -1,3 +1,19 @@
+<div class="search-container">
+  <input 
+    type="text" 
+    placeholder="Buscar especie..."
+    [(ngModel)]="searchTerm"
+  />
+  <!-- Opcional: si deseas que la lista siempre se muestre, elimina el *ngIf -->
+  <div class="search-results" *ngIf="searchTerm.trim().length > 0">
+    <ul>
+      <li *ngFor="let species of filteredSpeciesList" (click)="selectSpecies(species)">
+        {{ species.name }} <span class="small">({{ species.category }})</span>
+      </li>
+    </ul>
+  </div>
+</div>
+
 <ngx-spinner
   bdColor="rgba(0, 0, 0, 0.8)"
   size="small"
@@ -18,7 +34,6 @@
         <h2>{{ selectedSpecies.name }}</h2>
         <p><strong>Categoría:</strong> {{ selectedSpecies.category }}</p>
         <p><strong>País:</strong> {{ selectedSpecies.country }}</p>
-        <!-- <p><strong>Media:</strong> <img *ngIf="selectedSpecies.media" [src]="selectedSpecies.media" alt=""></p> -->
         <!-- <p><strong>Media:</strong> <img *ngIf="selectedSpecies.media" [src]="selectedSpecies.media" alt=""></p> -->
     </div>
 </div>

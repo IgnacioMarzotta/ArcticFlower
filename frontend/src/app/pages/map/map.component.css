@@ -8,15 +8,52 @@
   z-index: 1;
 }
 
-/* Estilos para la información emergente, si los necesitas */
-.globe-tooltip {
-  background: white;
-  padding: 8px;
-  border-radius: 4px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+.search-container {
+  position: fixed;
+  top: 100px;
+  left: 10px;
+  z-index: 10;
+  width: 300px;
+  background: rgba(255,255,255,0.9);
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 
-/* Estilos para el panel informativo */
+.search-container input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.search-results {
+  margin-top: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.search-results ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.search-results li {
+  padding: 5px;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
+
+.search-results li:hover {
+  background-color: #f0f0f0;
+}
+
+.small {
+  font-size: 0.8em;
+  color: #555;
+}
+
 .info-panel {
   position: fixed;
   background-color: #fff;
@@ -26,7 +63,6 @@
   transition: transform 0.3s ease-in-out;
 }
 
-/* Desktop: panel lateral a la derecha */
 @media (min-width: 768px) {
   .info-panel {
     bottom: 10px;
@@ -38,7 +74,6 @@
   }
 }
 
-/* Móvil: panel en la parte inferior */
 @media (max-width: 767px) {
   .info-panel {
     bottom: 0;
@@ -51,14 +86,22 @@
   }
 }
 
-/* Estilos para el contenido interno del panel */
 .panel-content {
   padding: 1rem;
   position: relative;
 }
 
-/* Imagen dentro del spinner */
+.close-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: transparent;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+}
+
 .spinner-image {
-  width: 100px; /* Ajusta el tamaño de la imagen */
+  width: 100px;
   height: 100px;
 }
