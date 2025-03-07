@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'app-globe-placeholder',
-  templateUrl: './globe-placeholder.component.html',
-  styleUrls: ['./globe-placeholder.component.css']
+    selector: 'app-globe-placeholder',
+    templateUrl: './globe-placeholder.component.html',
+    styleUrls: ['./globe-placeholder.component.css'],
+    standalone: false
 })
 export class GlobePlaceholderComponent implements OnInit {
 

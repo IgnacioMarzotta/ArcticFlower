@@ -31,11 +31,10 @@ export interface ClusterPoint {
 }
 
 @Component({
-  selector: 'app-map',
-  standalone: true,
-  templateUrl: './map.component.html',
-  styleUrls: ['./map.component.css'],
-  imports: [CommonModule, NgxSpinnerModule, FormsModule]
+    selector: 'app-map',
+    templateUrl: './map.component.html',
+    styleUrls: ['./map.component.css'],
+    imports: [CommonModule, NgxSpinnerModule, FormsModule]
 })
 
 export class MapComponent implements AfterViewInit {
