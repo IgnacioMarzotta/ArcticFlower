@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth.routes');
 const speciesRoutes = require('./routes/species.routes');
+const clusterRoutes = require('./routes/cluster.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,9 +17,10 @@ app.use(express.urlencoded({ extended: true }));
 // Conexión a MongoDB
 connectDB();
 
-// Rutas
+// Rutas principales
 app.use('/api/auth', authRoutes);
 app.use('/api/species', speciesRoutes);
+app.use('/api/clusters', clusterRoutes);
 
 // Manejo de errores global
 app.use((err, req, res, next) => {

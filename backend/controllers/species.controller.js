@@ -1,5 +1,6 @@
 const Species = require('../models/Species');
 const GeoService = require('../services/geo.service');
+const clusterController = require('./cluster.controller');
 
 /**
  * Crea una especie, recibiendo en el request un campo "country" que es una cadena 
@@ -17,7 +18,6 @@ exports.createSpecies = async (req, res) => {
     const countryCodes = country.split(',').map(c => c.trim().toUpperCase());
     console.log("[createSpecies] countryCodes: ", countryCodes);
     
-    // Usamos la instancia importada (no se instancia con new)
     const geoService = GeoService;
     
     const locations = countryCodes.map(code => {
@@ -41,6 +41,11 @@ exports.createSpecies = async (req, res) => {
     const newSpecies = new Species({ ...speciesData, locations });
     console.warn("[createSpecies] newSpecies: ", newSpecies);
     await newSpecies.save();
+
+    // Llamamos a la función exportada para actualizar clusters
+    await clusterController.updateClusterForSpecies(newSpecies);
+    console.log("Clusters actualizados correctamente");
+
     res.status(201).json(newSpecies);
   } catch (error) {
     res.status(400).json({

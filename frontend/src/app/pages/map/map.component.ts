@@ -2,6 +2,7 @@ import { Component, AfterViewInit, ElementRef, ViewChild, ChangeDetectorRef } fr
 import * as GLOBE from 'globe.gl';
 import * as THREE from 'three';
 import { SpeciesService } from '../../core/services/species.service';
+import { ClusterService } from '../../core/services/cluster.service';
 import { CommonModule } from '@angular/common';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { FormsModule } from '@angular/forms';
@@ -15,6 +16,18 @@ export interface SpeciesPoint {
   size?: number;
   color?: string;
   country?: string;
+}
+
+export interface ClusterPoint {
+  id: string;
+  lat: number;
+  lng: number;
+  name: string;         // Por ejemplo, el nombre del país
+  category: string;     // La categoría de peor estado (worstCategory)
+  size: number;
+  color: string;
+  country: string;
+  count: number;        // Cantidad de especies en ese país
 }
 
 @Component({
@@ -42,19 +55,20 @@ export class MapComponent implements AfterViewInit {
   constructor(
     private speciesService: SpeciesService,
     private cdr: ChangeDetectorRef,
-    private spinner: NgxSpinnerService 
+    private spinner: NgxSpinnerService,
+    private clusterService: ClusterService,
   ) {}
   
   ngAfterViewInit(): void {
     this.isMobile = window.innerWidth < 768;
     this.spinner.show();
     this.initializeGlobe();
-    this.loadSpeciesData();
+    this.loadClusters();
     this.addClouds();
-  
+    
     setTimeout(() => {
       this.isLoading = false;
-      this.spinner.hide(); // ✅ Ocultar el spinner
+      this.spinner.hide();
     }, 1500);
   }
   
@@ -84,6 +98,31 @@ export class MapComponent implements AfterViewInit {
     const globeRadius = this.globeInstance.getGlobeRadius();
     controls.minDistance = globeRadius * 1.5;
     controls.maxDistance = globeRadius * 3;
+  }
+
+  private loadClusters(): void {
+    this.clusterService.getClusters().subscribe({
+      next: (clusters: any[]) => {
+        // Mapear cada objeto del backend (Cluster) a ClusterPoint
+        const clusterPoints: ClusterPoint[] = clusters.map(cluster => ({
+          id: cluster._id, // Se asume que _id es el identificador del cluster (código del país)
+          lat: cluster.lat,
+          lng: cluster.lng,
+          name: cluster.countryName || cluster.country,
+          category: cluster.worstCategory,
+          size: 50, // Un tamaño mayor para los clusters
+          color: this.getColorByCategory(cluster.worstCategory),
+          country: cluster.country,
+          count: cluster.count
+        }));
+        console.log('Clusters generados:', clusterPoints);
+        this.allSpecies = clusterPoints; // Usamos la misma propiedad para renderizar
+        if (this.globeInstance) {
+          this.globeInstance.htmlElementsData(clusterPoints);
+        }
+      },
+      error: err => console.error('Error al cargar clusters:', err)
+    });
   }
 
   public selectSpecies(species: SpeciesPoint): void {
