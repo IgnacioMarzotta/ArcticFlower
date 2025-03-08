@@ -8,7 +8,8 @@ import { CommonModule } from '@angular/common';
     selector: 'app-register',
     templateUrl: './register.component.html',
     styleUrls: ['./register.component.css'],
-    imports: [ReactiveFormsModule, CommonModule]
+    imports: [ReactiveFormsModule, CommonModule],
+    standalone: true,
 })
 export class RegisterComponent {
   registerForm = this.fb.group({

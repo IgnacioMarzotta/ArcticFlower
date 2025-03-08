@@ -4,7 +4,7 @@
     placeholder="Buscar especie..."
     [(ngModel)]="searchTerm"
   />
-  <!-- Opcional: si deseas que la lista siempre se muestre, elimina el *ngIf -->
+
   <div class="search-results" *ngIf="searchTerm.trim().length > 0">
     <ul>
       <li *ngFor="let species of filteredSpeciesList" (click)="selectSpecies(species)">
@@ -29,7 +29,7 @@
 <!-- Panel informativo que se muestra al seleccionar un marcador -->
 <div *ngIf="selectedSpecies" class="info-panel">
     <div class="panel-content">
-        <!-- Botón para cerrar el panel -->
+        <!-- Boton para cerrar el panel -->
         <button class="close-btn" (click)="closePanel()">X</button>
         <h2>{{ selectedSpecies.name }}</h2>
         <p><strong>Categoría:</strong> {{ selectedSpecies.category }}</p>

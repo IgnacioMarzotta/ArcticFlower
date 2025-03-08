@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { SpeciesService } from '../../core/services/species.service';
 import { ClusterService } from '../../core/services/cluster.service';
 import { CommonModule } from '@angular/common';
-import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
+import { NgxSpinnerComponent, NgxSpinnerService } from 'ngx-spinner';
 import { FormsModule } from '@angular/forms';
 
 export interface SpeciesPoint {
@@ -22,19 +22,20 @@ export interface ClusterPoint {
   id: string;
   lat: number;
   lng: number;
-  name: string;         // Por ejemplo, el nombre del país
-  category: string;     // La categoría de peor estado (worstCategory)
+  name: string;
+  category: string;
   size: number;
   color: string;
   country: string;
-  count: number;        // Cantidad de especies en ese país
+  count: number;
 }
 
 @Component({
-    selector: 'app-map',
-    templateUrl: './map.component.html',
-    styleUrls: ['./map.component.css'],
-    imports: [CommonModule, NgxSpinnerModule, FormsModule]
+  selector: 'app-map',
+  templateUrl: './map.component.html',
+  styleUrls: ['./map.component.css'],
+  imports: [CommonModule, FormsModule, NgxSpinnerComponent],
+  standalone: true,
 })
 
 export class MapComponent implements AfterViewInit {
