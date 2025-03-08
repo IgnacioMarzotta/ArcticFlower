@@ -105,3 +105,27 @@
   width: 100px;
   height: 100px;
 }
+
+.side-panel {
+  position: fixed;
+  top: 100px;
+  right: 0;
+  width: 300px;
+  background: rgba(255,255,255,0.95);
+  border-left: 1px solid #ccc;
+  padding: 10px;
+  z-index: 1000;
+}
+
+.country-info {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+
+.country-info span {
+  font-size: 40px;
+  margin-right: 10px;
+}

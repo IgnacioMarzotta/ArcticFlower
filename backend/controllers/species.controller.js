@@ -3,11 +3,9 @@ const GeoService = require('../services/geo.service');
 const clusterController = require('./cluster.controller');
 
 /**
- * Crea una especie, recibiendo en el request un campo "country" que es una cadena 
- * con códigos de país separados por comas (por ejemplo: "CA,AU,BR").
- * Para cada país se genera una ubicación (latitud y longitud) utilizando el polígono 
- * del país (si está disponible) o la coordenada central como fallback.
- */
+ * Crea una especie, recibiendo en el request un campo "country" que es una cadena con codigos de pais separados por comas (por ejemplo: "CA,AU,BR").
+ * Para cada pais se genera una ubicacion (latitud y longitud) utilizando el poligono del pais (si está disponible) o la coordenada central como fallback.
+**/
 exports.createSpecies = async (req, res) => {
   try {
     const { country, ...speciesData } = req.body;
@@ -42,7 +40,7 @@ exports.createSpecies = async (req, res) => {
     console.warn("[createSpecies] newSpecies: ", newSpecies);
     await newSpecies.save();
 
-    // Llamamos a la función exportada para actualizar clusters
+    //Actualizar clusters asociados
     await clusterController.updateClusterForSpecies(newSpecies);
     console.log("Clusters actualizados correctamente");
 
@@ -94,7 +92,7 @@ exports.getSpeciesById = async (req, res) => {
 
 exports.getSpeciesByCountry = async (req, res) => {
   try {
-    const country = req.params.country.toUpperCase(); // Convertir a mayúsculas para coherencia
+    const country = req.params.country.toUpperCase();
     const species = await Species.find({ "locations.country": country });
 
     if (!species || species.length === 0) {

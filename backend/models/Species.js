@@ -44,7 +44,6 @@ const speciesSchema = new mongoose.Schema({
     enum: ['Animalia', 'Plantae', 'Fungi', 'Protista', 'Archaea', 'Bacteria'],
     maxlength: 32
   },
-  // Ahora usamos un arreglo de ubicaciones en lugar de un string country
   locations: {
     type: [locationSchema],
     required: true,

@@ -7,6 +7,7 @@ import { CommonModule } from '@angular/common';
 import { NgxSpinnerComponent, NgxSpinnerService } from 'ngx-spinner';
 import { FormsModule } from '@angular/forms';
 import 'flag-icons/css/flag-icons.min.css';
+
 export interface SpeciesPoint {
   id: string;
   lat: number;
@@ -16,6 +17,16 @@ export interface SpeciesPoint {
   size?: number;
   color?: string;
   country?: string;
+  common_name?: string;
+  scientific_name?: string;
+  kingdom?: string;
+  locations?: any[];
+  media?: string;
+  taxon_id?: string;
+  threats?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
 }
 
 export interface ClusterPoint {
@@ -45,7 +56,12 @@ export class MapComponent implements AfterViewInit {
   private markerSvg = `<svg viewBox="-4 0 36 36"><path fill="currentColor" d="M14,0 C21.732,0 28,5.641 28,12.6 C28,23.963 14,36 14,36 C14,36 0,24.064 0,12.6 C0,5.641 6.268,0 14,0 Z"></path><circle fill="black" cx="14" cy="14" r="7"></circle></svg>`;
   public isLoading: boolean = true;
   public isMobile: boolean = false;
+
   public selectedSpecies: SpeciesPoint | null = null;
+  public selectedCluster: ClusterPoint | null = null;
+  private clusterPoints: ClusterPoint[] = [];
+  private expandedClusterId: string | null = null;
+  private expandedSpeciesMarkers: SpeciesPoint[] = [];
 
   //Sistema de busqueda
   public searchTerm: string = "";
@@ -77,7 +93,7 @@ export class MapComponent implements AfterViewInit {
     this.globeInstance = GLOBE.default({ animateIn: false })(this.globeContainer.nativeElement)
       .globeImageUrl('../../../assets/img/globe/earth.jpg')
       .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-      // Inicialmente vacía; se actualizará con clusters o especies según la interacción.
+      // Inicialmente vacia; se actualiza con clusters o especies segun la interaccion.
       .htmlElementsData([])
       .htmlElement((d: SpeciesPoint | ClusterPoint) => {
         // Si es un Cluster (tiene 'count'), muestra la bandera y un badge con el conteo.
@@ -99,7 +115,7 @@ export class MapComponent implements AfterViewInit {
 
           // Crea el elemento de la bandera usando flag-icons.
           const flagElement = document.createElement('span');
-          // Se asume que d.country contiene el código ISO en mayúsculas o minúsculas.
+          // Se asume que d.country contiene el codigo ISO en mayusculas o minusculas.
           flagElement.className = `fi fi-${d.country.toLowerCase()}`;
           flagElement.style.fontSize = '50px';
           flagElement.style.width = '100%';
@@ -124,7 +140,7 @@ export class MapComponent implements AfterViewInit {
           markerDiv.appendChild(flagElement);
           markerDiv.appendChild(countBadge);
   
-          // Al hacer click en un cluster, se ejecuta la función para cargar las especies asociadas.
+          // Al hacer click en un cluster, se ejecuta la funcion para cargar las especies asociadas.
           markerDiv.onclick = () => this.onClusterClick(d as ClusterPoint);
           return markerDiv;
         } else {
@@ -142,9 +158,9 @@ export class MapComponent implements AfterViewInit {
           el.onclick = () => this.selectSpecies(d);
           return el;
         }
-      });
-  
-    // Configurar el zoom mínimo y máximo:
+      });  
+
+    //Zoom minimo y maximo:
     const controls = this.globeInstance.controls();
     const globeRadius = this.globeInstance.getGlobeRadius();
     controls.minDistance = globeRadius * 1.5;
@@ -152,17 +168,21 @@ export class MapComponent implements AfterViewInit {
   }
 
   private onClusterClick(cluster: ClusterPoint): void {
-    console.log("Cluster seleccionado:", cluster);
-    // Realiza zoom al centro del cluster
-    this.flyToSpecies(cluster);
-    // Muestra spinner mientras se cargan las especies
+    if (this.expandedClusterId === cluster.id) {
+      this.expandedClusterId = null;
+      this.expandedSpeciesMarkers = [];
+      this.selectedCluster = null;
+      this.updateGlobeMarkers();
+      return;
+    }
+    this.selectedSpecies = null;
+    this.flyToMarker(cluster);
+    this.expandedClusterId = cluster.id;
+    this.selectedCluster = cluster;
     this.spinner.show();
-    // Supongamos que speciesService tiene un método getSpeciesByCountry(country: string)
     this.speciesService.getSpeciesByCountry(cluster.country).subscribe({
       next: (speciesArray: any[]) => {
-        // Mapea la respuesta a un arreglo de SpeciesPoint.
-        const speciesMarkers: SpeciesPoint[] = speciesArray.map(species => {
-          // Asumimos que cada especie tiene al menos una ubicación; usamos la primera.
+        this.expandedSpeciesMarkers = speciesArray.map(species => {
           if (species.locations && species.locations.length > 0) {
             const loc = species.locations[0];
             return {
@@ -174,13 +194,11 @@ export class MapComponent implements AfterViewInit {
               size: 30,
               color: this.getColorByCategory(species.category),
               country: loc.country
-            };
+            } as SpeciesPoint;
           }
           return null;
         }).filter(Boolean) as SpeciesPoint[];
-        console.log("Especies cargadas:", speciesMarkers);
-        // Actualiza la capa de HTML Markers para mostrar las especies en ese país.
-        this.globeInstance.htmlElementsData(speciesMarkers);
+        this.updateGlobeMarkers();
         this.spinner.hide();
       },
       error: err => {
@@ -190,63 +208,76 @@ export class MapComponent implements AfterViewInit {
     });
   }
 
+  private updateGlobeMarkers(): void {
+    const markers: (SpeciesPoint | ClusterPoint)[] = [];
+    this.clusterPoints.forEach(cluster => {
+      if (this.expandedClusterId === cluster.id && this.expandedSpeciesMarkers.length > 0) {
+        markers.push(...this.expandedSpeciesMarkers);
+      } else {
+        markers.push(cluster);
+      }
+    });
+    if (this.globeInstance) {
+      this.globeInstance.htmlElementsData(markers);
+    }
+  }
+
   private loadClusters(): void {
     this.clusterService.getClusters().subscribe({
       next: (clusters: any[]) => {
-        // Mapear cada objeto del backend (Cluster) a ClusterPoint
-        const clusterPoints: ClusterPoint[] = clusters.map(cluster => ({
-          id: cluster._id, // Se asume que _id es el identificador del cluster (código del país)
+        this.clusterPoints = clusters.map(cluster => ({
+          id: cluster._id,
           lat: cluster.lat,
           lng: cluster.lng,
           name: cluster.countryName || cluster.country,
           category: cluster.worstCategory,
-          size: 50, // Un tamaño mayor para los clusters
+          size: 50,
           color: this.getColorByCategory(cluster.worstCategory),
           country: cluster.country,
           count: cluster.count
         }));
-        console.log('Clusters generados:', clusterPoints);
-        this.allSpecies = clusterPoints; // Usamos la misma propiedad para renderizar
-        if (this.globeInstance) {
-          this.globeInstance.htmlElementsData(clusterPoints);
-        }
+        // Reiniciar estado de cluster expandido
+        this.expandedClusterId = null;
+        this.expandedSpeciesMarkers = [];
+        this.updateGlobeMarkers();
       },
       error: err => console.error('Error al cargar clusters:', err)
     });
   }
 
   public selectSpecies(species: SpeciesPoint): void {
-    this.flyToSpecies(species);
+    this.flyToMarker(species);
     this.isLoading = true;
     this.speciesService.getSpeciesDetail(species.id).subscribe({
       next: (detail) => {
         this.selectedSpecies = detail;
         this.isLoading = false;
+        console.warn('Detalle de la especie:', detail);
       },
       error: (err) => console.error('Error al obtener el detalle de la especie:', err)
     });
   }
 
-  // Método para cerrar el panel
+  // Método para cerrar el panel lateral
   public closePanel(): void {
     this.selectedSpecies = null;
   }
 
-  // Función para agregar las nubes (clouds) sobre el globo
+  // Funcion para agregar las nubes (clouds) sobre el globo
   private addClouds(): void {
-    const CLOUDS_IMG_URL = "../../../assets/img/globe/clouds.png"; // Asegúrate de tener la imagen en tus assets
+    const CLOUDS_IMG_URL = "../../../assets/img/globe/clouds.png";
     const CLOUDS_ALT = 0.004;
-    const CLOUDS_ROTATION_SPEED = -0.003; // velocidad en grados por frame
+    const CLOUDS_ROTATION_SPEED = -0.003;
     new THREE.TextureLoader().load(CLOUDS_IMG_URL, (cloudsTexture: THREE.Texture) => {
-      // Obtenemos el radio actual del globo
+      // Obtener el radio actual del globo
       const globeRadius = this.globeInstance.getGlobeRadius();
       const clouds = new THREE.Mesh(
         new THREE.SphereGeometry(globeRadius * (1 + CLOUDS_ALT), 75, 75),
         new THREE.MeshPhongMaterial({ map: cloudsTexture, transparent: true })
       );
-      // Añadimos la malla de nubes a la escena
+      // Agregar la mesh de nubes
       this.globeInstance.scene().add(clouds);
-      // Función recursiva para animar la rotación de las nubes
+      // Funcion recursiva para animar la rotacion de las nubes
       const rotateClouds = () => {
         clouds.rotation.y += CLOUDS_ROTATION_SPEED * Math.PI / 180;
         requestAnimationFrame(rotateClouds);
@@ -255,7 +286,7 @@ export class MapComponent implements AfterViewInit {
     });
   }
   
-  //Sin uso actual, sirve para traer TODAS las especies
+  //Sin uso actual, funcion encargada de traer TODAS las especies
   private loadSpeciesData(): void {
     this.speciesService.getAllSpecies(1, 1000).subscribe({
       next: (response) => {
@@ -286,6 +317,7 @@ export class MapComponent implements AfterViewInit {
     });
   }
   
+  //Definicion de colores por categoria
   private getColorByCategory(category: string): string {
     const colors: { [key: string]: string } = {
       'CR': '#ff0000',
@@ -309,10 +341,12 @@ export class MapComponent implements AfterViewInit {
     );
   }
 
-  private flyToSpecies(species: SpeciesPoint): void {
-    if (this.globeInstance && species) {
+  //Funcion para navegar y hacer zoom en un marcado, especie o cluster.
+  private flyToMarker(marker: SpeciesPoint | ClusterPoint): void {
+    if (this.globeInstance && marker) {
+      const altitude = ('count' in marker) ? 1.5 : 1;
       this.globeInstance.pointOfView(
-        { lat: species.lat, lng: species.lng, altitude: 1 }, 2000
+        { lat: marker.lat, lng: marker.lng, altitude: altitude }, 2000
       );
     }
   }

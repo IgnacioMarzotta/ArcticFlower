@@ -26,14 +26,26 @@
 
 <div #globeContainer class="globe-container"></div>
 
-<!-- Panel informativo que se muestra al seleccionar un marcador -->
-<div *ngIf="selectedSpecies" class="info-panel">
-    <div class="panel-content">
-        <!-- Boton para cerrar el panel -->
-        <button class="close-btn" (click)="closePanel()">X</button>
-        <h2>{{ selectedSpecies.name }}</h2>
-        <p><strong>Categoría:</strong> {{ selectedSpecies.category }}</p>
-        <p><strong>País:</strong> {{ selectedSpecies.country }}</p>
-        <!-- <p><strong>Media:</strong> <img *ngIf="selectedSpecies.media" [src]="selectedSpecies.media" alt=""></p> -->
-    </div>
+<div class="side-panel" *ngIf="selectedCluster">
+
+  <div class="country-info">
+    <span class="fi fi-{{selectedCluster.country | lowercase}}"></span>
+    <h2>{{ selectedCluster.name }} {{ selectedCluster.country }} {{ selectedCluster.country }}</h2>
+  </div>
+
+  <div class="species-details" *ngIf="selectedSpecies">
+
+    <h3>{{ selectedSpecies.common_name }}</h3>
+    <p><strong>Scientific name:</strong> {{ selectedSpecies.scientific_name }}</p>
+    <p><strong>Media:</strong> {{ selectedSpecies.media }}</p>
+    <p><strong>Categoría:</strong> {{ selectedSpecies.category }}</p>
+    <p><strong>País:</strong> {{ selectedSpecies.country }}</p>
+    <p><strong>Kingdom:</strong> {{ selectedSpecies.kingdom }}</p>
+    <p><strong>Threats:</strong> {{ selectedSpecies.threats }}</p>
+    <p><strong>Taxon_id:</strong> {{ selectedSpecies.taxon_id }}</p>
+    <p><strong>Updated at:</strong> {{ selectedSpecies.updatedAt }}</p>
+  
+    <button (click)="closePanel()">Cerrar detalles</button>
+
+  </div>
 </div>

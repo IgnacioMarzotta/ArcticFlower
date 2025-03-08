@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-// Define la interfaz del Cluster (según lo que devuelve el backend)
+// Define la interfaz del Cluster (segun lo que devuelve el backend)
 export interface Cluster {
   _id: string;
   country: string;
@@ -17,12 +17,12 @@ export interface ClusterPoint {
   id: string;
   lat: number;
   lng: number;
-  name: string;         // Por ejemplo, el nombre del país
-  category: string;     // La categoría de peor estado (worstCategory)
+  name: string;
+  category: string;
   size: number;
   color: string;
   country: string;
-  count: number;        // Cantidad de especies en ese país
+  count: number;
 }
 
 @Injectable({
@@ -34,18 +34,14 @@ export class ClusterService {
 
   constructor(private http: HttpClient) { }
 
-  /**
-   * Obtiene todos los clusters.
-   */
   getClusters(): Observable<Cluster[]> {
     return this.http.get<Cluster[]>(this.apiUrl);
   }
 
   /**
    * Actualiza (o crea) el cluster a partir de los datos de una especie.
-   * Se espera que el backend procese la información para actualizar el cluster correspondiente.
-   * 
-   * @param speciesData - Los datos de la especie (incluyendo las ubicaciones y categoría).
+   * Se espera que el backend procese la informacion para actualizar el cluster correspondiente.
+   * @param speciesData - Los datos de la especie (incluyendo las ubicaciones y categoria).
    */
   updateCluster(speciesData: any): Observable<any> {
     return this.http.post(this.apiUrl, speciesData);

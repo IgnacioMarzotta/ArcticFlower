@@ -7,14 +7,14 @@ class GeoService {
     }
     
     /**
-    * Retorna las coordenadas centrales del país a partir del código.
-    * @param {string|undefined} rawCountryCode Código del país (por ejemplo, "US", "IN")
+    * Devuelve las coordenadas del pais a partir del codigo ISO
+    * @param {string|undefined} rawCountryCode Codigo del pais (por ejemplo, "US", "IN")
     * @returns {{lat: number, lng: number}} o null si no se encuentra
-    */
+    **/
     getCountryCoordinates(rawCountryCode) {
         if (!rawCountryCode) return null;
         
-        // Limpiar y normalizar el código (solo letras)
+        // Limpiar y normalizar el codigo (solo letras)
         const countryCode = rawCountryCode.replace(/[^A-Za-z]/g, '').toUpperCase();
         
         const country = this.countries.find(c => 
@@ -24,7 +24,7 @@ class GeoService {
         );
         
         if (!country) {
-            console.error(`Código no encontrado: ${countryCode}`);
+            console.error(`Codigo no encontrado: ${countryCode}`);
             return null;
         }
         
@@ -34,12 +34,12 @@ class GeoService {
     }
     
     /**
-    * Retorna el polígono (en formato GeoJSON) de las fronteras del país.
-    * Si el país dispone de la propiedad "geojson", se la retorna.
-    * De lo contrario, se genera un polígono aproximado (círculo) usando el centro y el área.
-    * @param {string|undefined} rawCountryCode Código del país (por ejemplo, "US", "IN", etc.)
+    * Retorna el poligono (en formato GeoJSON) de las fronteras del pais.
+    * Si el pais dispone de la propiedad "geojson", se la retorna.
+    * De lo contrario, se genera un poligono aproximado (circulo) usando el centro y el area.
+    * @param {string|undefined} rawCountryCode Codigo del pais (por ejemplo, "US", "IN", etc.)
     * @returns {Object|null} Objeto GeoJSON de tipo Polygon o null si no es posible.
-    */
+    **/
     getCountryPolygon(rawCountryCode) {
         if (!rawCountryCode) return null;
         
@@ -52,22 +52,23 @@ class GeoService {
         );
         
         if (!country) {
-            console.error(`Código no encontrado: ${countryCode}`);
+            console.error(`Codigo no encontrado: ${countryCode}`);
             return null;
         }
         
-        // Si el país ya dispone de la propiedad "geojson", se retorna esa información.
+        // Si el pais ya dispone de la propiedad "geojson", se devuelve esa informacion.
         if (country.geojson) {
             return country.geojson;
         }
         
-        // Si se dispone de las coordenadas del centro y del área, se genera un polígono circular aproximado.
+        // De lo contrario, si se dispone de las coordenadas del centro y del area, se genera un poligono circular aproximado.
         if (country.latlng && country.area) {
             // Calcula el radio (en km) a partir del área (suponiendo área = π * r²)
             const radiusKm = Math.sqrt(country.area / Math.PI);
             // Convierte el radio de km a grados (aproximadamente, 1 grado ~ 111 km en latitud)
             const radiusDeg = radiusKm / 111;
-            const numSides = 32; // Número de lados para aproximar el círculo
+            // Numero de lados para aproximar el circulo
+            const numSides = 32;
             const coords = [];
             // El centro: country.latlng[0] es lat y [1] es lng
             const centerLat = country.latlng[0];
@@ -79,7 +80,7 @@ class GeoService {
                 const latOffset = radiusDeg * Math.sin(angle);
                 coords.push([centerLng + lngOffset, centerLat + latOffset]);
             }
-            // Cerramos el polígono repitiendo el primer punto
+            // Cerramos el poligono repitiendo el primer punto
             coords.push(coords[0]);
             
             return {
@@ -92,13 +93,12 @@ class GeoService {
     }
     
     /**
-     * Función auxiliar que genera un punto aleatorio dentro de un polígono
-     * usando muestreo por rechazo.
+     * Funcion auxiliar que genera un punto aleatorio dentro de un poligono usando muestreo por rechazo.
      * @param {Object} polygon Objeto GeoJSON de tipo Polygon o MultiPolygon
      * @returns {Object} { lat, lng }
-    */
+    **/
     generateRandomPointInPolygon(polygon) {
-        // Obtiene el bbox del polígono: [minLng, minLat, maxLng, maxLat]
+        // Obtiene el bbox del poligono: [minLng, minLat, maxLng, maxLat]
         const bbox = turf.bbox(polygon);
         let attempts = 0;
         const maxAttempts = 1000;
@@ -111,7 +111,7 @@ class GeoService {
                 return { lat: randLat, lng: randLng };
             }
         }
-        // Fallback: retornar el centro del polígono
+        // Fallback: retornar el centro del poligono
         const centroid = turf.centroid(polygon);
         return { lat: centroid.geometry.coordinates[1], lng: centroid.geometry.coordinates[0] };
     }

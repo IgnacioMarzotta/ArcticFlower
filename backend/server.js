@@ -14,7 +14,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Conexión a MongoDB
+// Conexion a MongoDB
 connectDB();
 
 // Rutas principales
