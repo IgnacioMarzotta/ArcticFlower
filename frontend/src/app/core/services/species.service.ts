@@ -34,4 +34,8 @@ export class SpeciesService {
   getSpeciesById(id: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/${id}`);
   }
+
+  getSpeciesByCountry(country: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/country/${country}`);
+  }
 }

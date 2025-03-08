@@ -20,6 +20,7 @@
     "@angular/router": "^19.2.1",
     "@turf/turf": "^7.2.0",
     "@types/three": "^0.173.0",
+    "flag-icons": "^7.3.2",
     "globe.gl": "^2.39.6",
     "ngx-spinner": "^17.0.0",
     "rxjs": "~7.5.0",

@@ -3,11 +3,13 @@ const router = express.Router();
 const {
   createSpecies,
   getAllSpecies,
-  getSpeciesById
+  getSpeciesById,
+  getSpeciesByCountry
 } = require('../controllers/species.controller');
 
-router.post('/', createSpecies);
 router.get('/', getAllSpecies);
 router.get('/:id', getSpeciesById);
+router.post('/', createSpecies);
+router.get('/country/:country', getSpeciesByCountry);
 
 module.exports = router;

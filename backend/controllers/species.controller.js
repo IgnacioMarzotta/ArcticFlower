@@ -91,3 +91,18 @@ exports.getSpeciesById = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener especie' });
   }
 };
+
+exports.getSpeciesByCountry = async (req, res) => {
+  try {
+    const country = req.params.country.toUpperCase(); // Convertir a mayúsculas para coherencia
+    const species = await Species.find({ "locations.country": country });
+
+    if (!species || species.length === 0) {
+      return res.status(404).json({ error: 'No se encontraron especies para este país' });
+    }
+
+    res.json(species);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener especies por país' });
+  }
+};

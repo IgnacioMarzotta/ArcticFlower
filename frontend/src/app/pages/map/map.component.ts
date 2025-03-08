@@ -6,7 +6,7 @@ import { ClusterService } from '../../core/services/cluster.service';
 import { CommonModule } from '@angular/common';
 import { NgxSpinnerComponent, NgxSpinnerService } from 'ngx-spinner';
 import { FormsModule } from '@angular/forms';
-
+import 'flag-icons/css/flag-icons.min.css';
 export interface SpeciesPoint {
   id: string;
   lat: number;
@@ -36,6 +36,7 @@ export interface ClusterPoint {
   styleUrls: ['./map.component.css'],
   imports: [CommonModule, FormsModule, NgxSpinnerComponent],
   standalone: true,
+  
 })
 
 export class MapComponent implements AfterViewInit {
@@ -76,28 +77,117 @@ export class MapComponent implements AfterViewInit {
     this.globeInstance = GLOBE.default({ animateIn: false })(this.globeContainer.nativeElement)
       .globeImageUrl('../../../assets/img/globe/earth.jpg')
       .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-      .htmlElementsData([]) // capa de marcadores vacía
-      .htmlElement((d: SpeciesPoint) => {
-        const el = document.createElement('div');
-        el.innerHTML = this.markerSvg;
-        el.style.position = 'absolute';
-        el.style.transform = 'translate(-50%, -50%)';
-        const size = d.size || 20;
-        el.style.width = `${size}px`;
-        el.style.height = `${size}px`;
-        el.style.color = d.color || 'black';
-        el.style.pointerEvents = 'auto';
-        el.style.cursor = 'pointer';
-        // Al hacer clic, se selecciona la especie para mostrarla en el panel:
-        el.onclick = () => this.selectSpecies(d);
-        return el;
-      });
+      // Inicialmente vacía; se actualizará con clusters o especies según la interacción.
+      .htmlElementsData([])
+      .htmlElement((d: SpeciesPoint | ClusterPoint) => {
+        // Si es un Cluster (tiene 'count'), muestra la bandera y un badge con el conteo.
+        if ('count' in d) {
+          const markerDiv = document.createElement('div');
+          markerDiv.style.position = 'absolute';
+          markerDiv.style.transform = 'translate(-50%, -50%)';
+          markerDiv.style.width = '50px';
+          markerDiv.style.height = '50px';
+          markerDiv.style.border = '2px solid #fff';
+          markerDiv.style.borderRadius = '50%';
+          markerDiv.style.backgroundColor = d.color;
+          markerDiv.style.display = 'flex';
+          markerDiv.style.alignItems = 'center';
+          markerDiv.style.justifyContent = 'center';
+          markerDiv.style.cursor = 'pointer';
+          markerDiv.style.pointerEvents = 'auto'; 
+          markerDiv.style.zIndex = '9999';
 
+          // Crea el elemento de la bandera usando flag-icons.
+          const flagElement = document.createElement('span');
+          // Se asume que d.country contiene el código ISO en mayúsculas o minúsculas.
+          flagElement.className = `fi fi-${d.country.toLowerCase()}`;
+          flagElement.style.fontSize = '50px';
+          flagElement.style.width = '100%';
+          flagElement.style.borderRadius = '50%';
+  
+          // Crea el badge de conteo
+          const countBadge = document.createElement('div');
+          countBadge.innerText = d.count.toString();
+          countBadge.style.position = 'absolute';
+          countBadge.style.bottom = '0';
+          countBadge.style.right = '0';
+          countBadge.style.backgroundColor = 'rgba(0,0,0,0.7)';
+          countBadge.style.color = 'white';
+          countBadge.style.borderRadius = '50%';
+          countBadge.style.width = '20px';
+          countBadge.style.height = '20px';
+          countBadge.style.display = 'flex';
+          countBadge.style.alignItems = 'center';
+          countBadge.style.justifyContent = 'center';
+          countBadge.style.fontSize = '12px';
+  
+          markerDiv.appendChild(flagElement);
+          markerDiv.appendChild(countBadge);
+  
+          // Al hacer click en un cluster, se ejecuta la función para cargar las especies asociadas.
+          markerDiv.onclick = () => this.onClusterClick(d as ClusterPoint);
+          return markerDiv;
+        } else {
+          // Si es una especie individual, se muestra el marcador SVG.
+          const el = document.createElement('div');
+          el.innerHTML = this.markerSvg;
+          el.style.position = 'absolute';
+          el.style.transform = 'translate(-50%, -50%)';
+          const size = d.size || 20;
+          el.style.width = `${size}px`;
+          el.style.height = `${size}px`;
+          el.style.color = d.color || 'black';
+          el.style.pointerEvents = 'auto';
+          el.style.cursor = 'pointer';
+          el.onclick = () => this.selectSpecies(d);
+          return el;
+        }
+      });
+  
     // Configurar el zoom mínimo y máximo:
     const controls = this.globeInstance.controls();
     const globeRadius = this.globeInstance.getGlobeRadius();
     controls.minDistance = globeRadius * 1.5;
     controls.maxDistance = globeRadius * 3;
+  }
+
+  private onClusterClick(cluster: ClusterPoint): void {
+    console.log("Cluster seleccionado:", cluster);
+    // Realiza zoom al centro del cluster
+    this.flyToSpecies(cluster);
+    // Muestra spinner mientras se cargan las especies
+    this.spinner.show();
+    // Supongamos que speciesService tiene un método getSpeciesByCountry(country: string)
+    this.speciesService.getSpeciesByCountry(cluster.country).subscribe({
+      next: (speciesArray: any[]) => {
+        // Mapea la respuesta a un arreglo de SpeciesPoint.
+        const speciesMarkers: SpeciesPoint[] = speciesArray.map(species => {
+          // Asumimos que cada especie tiene al menos una ubicación; usamos la primera.
+          if (species.locations && species.locations.length > 0) {
+            const loc = species.locations[0];
+            return {
+              id: species._id,
+              lat: loc.lat,
+              lng: loc.lng,
+              name: species.common_name,
+              category: species.category,
+              size: 30,
+              color: this.getColorByCategory(species.category),
+              country: loc.country
+            };
+          }
+          return null;
+        }).filter(Boolean) as SpeciesPoint[];
+        console.log("Especies cargadas:", speciesMarkers);
+        // Actualiza la capa de HTML Markers para mostrar las especies en ese país.
+        this.globeInstance.htmlElementsData(speciesMarkers);
+        this.spinner.hide();
+      },
+      error: err => {
+        console.error('Error al cargar especies para el país:', err);
+        this.spinner.hide();
+      }
+    });
   }
 
   private loadClusters(): void {
@@ -165,6 +255,7 @@ export class MapComponent implements AfterViewInit {
     });
   }
   
+  //Sin uso actual, sirve para traer TODAS las especies
   private loadSpeciesData(): void {
     this.speciesService.getAllSpecies(1, 1000).subscribe({
       next: (response) => {
