@@ -104,3 +104,60 @@ exports.getSpeciesByCountry = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener especies por país' });
   }
 };
+
+exports.searchSpecies = async (req, res) => {
+  try {
+    const { q: searchTerm, limit = 50 } = req.query;
+    
+    // Validación robusta
+    if (!searchTerm || searchTerm.trim().length < 3) {
+      return res.status(400).json({ 
+        error: 'El término de búsqueda debe tener al menos 3 caracteres' 
+      });
+    }
+
+    // Consulta optimizada con proyección
+    const results = await Species.find(
+      {
+        $or: [
+          { common_name: { $regex: searchTerm, $options: 'i' } },
+          { scientific_name: { $regex: searchTerm, $options: 'i' } },
+          { 'locations.country': { $regex: searchTerm, $options: 'i' } }
+        ]
+      },
+      {
+        _id: 1,
+        common_name: 1,
+        scientific_name: 1,
+        category: 1,
+        locations: 1,
+        threats: 1,
+        media: 1
+      }
+    )
+    .limit(parseInt(limit))
+    .lean();
+
+    // Formateo seguro de resultados
+    const formattedResults = results.flatMap(species => 
+      (species.locations || []).map(loc => ({
+        id: species._id.toString(),
+        lat: loc?.lat || 0,
+        lng: loc?.lng || 0,
+        common_name: species.common_name || 'Nombre no disponible',
+        scientific_name: species.scientific_name || '',
+        category: species.category || 'NT',
+        country: loc?.country || ''
+      }))
+    );
+
+    res.json(formattedResults);
+    
+  } catch (error) {
+    console.error('Error en búsqueda:', error);
+    res.status(500).json({ 
+      error: 'Error interno en la búsqueda',
+      details: error.message 
+    });
+  }
+};

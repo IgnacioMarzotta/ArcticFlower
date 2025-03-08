@@ -7,39 +7,9 @@ import { CommonModule } from '@angular/common';
 import { NgxSpinnerComponent, NgxSpinnerService } from 'ngx-spinner';
 import { FormsModule } from '@angular/forms';
 import 'flag-icons/css/flag-icons.min.css';
-
-export interface SpeciesPoint {
-  id: string;
-  lat: number;
-  lng: number;
-  name: string;
-  category: string;
-  size?: number;
-  color?: string;
-  country?: string;
-  common_name?: string;
-  scientific_name?: string;
-  kingdom?: string;
-  locations?: any[];
-  media?: string;
-  taxon_id?: string;
-  threats?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  __v?: number;
-}
-
-export interface ClusterPoint {
-  id: string;
-  lat: number;
-  lng: number;
-  name: string;
-  category: string;
-  size: number;
-  color: string;
-  country: string;
-  count: number;
-}
+import { Subject, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap, finalize, catchError, filter } from 'rxjs/operators';
+import { SpeciesPoint, ClusterPoint } from '../../core/models/map.models';
 
 @Component({
   selector: 'app-map',
@@ -65,9 +35,11 @@ export class MapComponent implements AfterViewInit {
 
   //Sistema de busqueda
   public searchTerm: string = "";
-  public allSpecies: SpeciesPoint[] = [];
+  public filteredClusters: ClusterPoint[] = [];
   public filteredSpecies: SpeciesPoint[] = [];
-  
+  private searchSubject = new Subject<string>();
+  public searchLoading = false;
+  private minSearchLength = 3;
 
   constructor(
     private speciesService: SpeciesService,
@@ -75,6 +47,10 @@ export class MapComponent implements AfterViewInit {
     private spinner: NgxSpinnerService,
     private clusterService: ClusterService,
   ) {}
+
+  ngOnInit(): void {
+    this.setupSearch();
+  }
   
   ngAfterViewInit(): void {
     this.isMobile = window.innerWidth < 768;
@@ -167,7 +143,7 @@ export class MapComponent implements AfterViewInit {
     controls.maxDistance = globeRadius * 3;
   }
 
-  private onClusterClick(cluster: ClusterPoint): void {
+  onClusterClick(cluster: ClusterPoint): void {
     if (this.expandedClusterId === cluster.id) {
       this.expandedClusterId = null;
       this.expandedSpeciesMarkers = [];
@@ -288,6 +264,7 @@ export class MapComponent implements AfterViewInit {
   
   //Sin uso actual, funcion encargada de traer TODAS las especies
   private loadSpeciesData(): void {
+    let allSpecies: SpeciesPoint[] = [];
     this.speciesService.getAllSpecies(1, 1000).subscribe({
       next: (response) => {
         const points: SpeciesPoint[] = [];
@@ -308,7 +285,7 @@ export class MapComponent implements AfterViewInit {
           }
         });
         console.log('Puntos generados:', points);
-        this.allSpecies = points;
+        allSpecies = points;
         if (this.globeInstance) {
           this.globeInstance.htmlElementsData(points);
         }
@@ -329,18 +306,6 @@ export class MapComponent implements AfterViewInit {
     return colors[category] || '#ffffff';
   }
 
-  get filteredSpeciesList(): SpeciesPoint[] {
-    const term = this.searchTerm.trim().toLowerCase();
-    if (!term) {
-      return this.allSpecies;
-    }
-    return this.allSpecies.filter(species =>
-      species.name.toLowerCase().includes(term) ||
-      (species.category && species.category.toLowerCase().includes(term)) ||
-      (species.country && species.country.toLowerCase().includes(term))
-    );
-  }
-
   //Funcion para navegar y hacer zoom en un marcado, especie o cluster.
   private flyToMarker(marker: SpeciesPoint | ClusterPoint): void {
     if (this.globeInstance && marker) {
@@ -349,5 +314,46 @@ export class MapComponent implements AfterViewInit {
         { lat: marker.lat, lng: marker.lng, altitude: altitude }, 2000
       );
     }
+  }
+
+  private setupSearch(): void {
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      filter(term => term.length >= this.minSearchLength), // Filtramos términos cortos
+      switchMap(term => {
+        this.searchLoading = true;
+        return this.speciesService.searchSpecies(term).pipe(
+          finalize(() => this.searchLoading = false),
+          catchError(() => of([])) // Manejo de errores
+        );
+      })
+    ).subscribe(species => this.filteredSpecies = species);
+  }
+
+  onSearchInput(term: string): void {
+    // Filtrado de clusters
+    this.filteredClusters = term.length >= this.minSearchLength 
+      ? this.clusterPoints.filter(cluster => 
+          cluster.name.toLowerCase().includes(term.toLowerCase()) ||
+          cluster.country.toLowerCase().includes(term.toLowerCase())
+        )
+      : [];
+    
+    // Disparamos búsqueda solo si cumple longitud mínima
+    if (term.length >= this.minSearchLength) {
+      this.searchSubject.next(term);
+    } else {
+      this.filteredSpecies = [];
+    }
+  }
+
+  // Type guards
+  isCluster(result: ClusterPoint | SpeciesPoint): result is ClusterPoint {
+    return 'count' in result;
+  }
+
+  isSpecies(result: ClusterPoint | SpeciesPoint): result is SpeciesPoint {
+    return 'common_name' in result;
   }
 }

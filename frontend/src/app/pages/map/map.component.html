@@ -1,16 +1,43 @@
 <div class="search-container">
   <input 
     type="text" 
-    placeholder="Buscar especie..."
+    placeholder="Buscar país o especie..."
     [(ngModel)]="searchTerm"
+    (input)="onSearchInput(searchTerm)"
   />
 
   <div class="search-results" *ngIf="searchTerm.trim().length > 0">
-    <ul>
-      <li *ngFor="let species of filteredSpeciesList" (click)="selectSpecies(species)">
-        {{ species.name }} <span class="small">({{ species.category }})</span>
-      </li>
-    </ul>
+    <!-- Resultados de países -->
+    <div class="result-section" *ngIf="filteredClusters.length > 0">
+      <h4>Países:</h4>
+      <ul>
+        <li *ngFor="let cluster of filteredClusters" 
+            (click)="onClusterClick(cluster)">
+          <span class="fi fi-{{cluster.country | lowercase}}"></span>
+          {{ cluster.name }} ({{ cluster.count }} especies)
+        </li>
+      </ul>
+    </div>
+
+    <!-- Resultados de especies -->
+    <div class="result-section" *ngIf="filteredSpecies.length > 0">
+      <h4>Especies:</h4>
+      <ul>
+        <li *ngFor="let species of filteredSpecies" 
+            (click)="selectSpecies(species)">
+          <span *ngIf="species.country" class="fi fi-{{species.country | lowercase}}"></span>
+          {{ species.common_name }}
+          <em *ngIf="species.scientific_name">({{ species.scientific_name }})</em>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Estados de carga -->
+    <div *ngIf="searchLoading" class="loading">Buscando especies...</div>
+    <div *ngIf="!searchLoading && filteredClusters.length === 0 && filteredSpecies.length === 0"
+         class="no-results">
+      No se encontraron resultados para "{{ searchTerm }}"
+    </div>
   </div>
 </div>
 
