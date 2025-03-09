@@ -68,7 +68,7 @@ class GeoService {
             // Convierte el radio de km a grados (aproximadamente, 1 grado ~ 111 km en latitud)
             const radiusDeg = radiusKm / 111;
             // Numero de lados para aproximar el circulo
-            const numSides = 32;
+            const numSides = 512;
             const coords = [];
             // El centro: country.latlng[0] es lat y [1] es lng
             const centerLat = country.latlng[0];

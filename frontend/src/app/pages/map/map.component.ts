@@ -151,6 +151,7 @@ export class MapComponent implements AfterViewInit {
       this.updateGlobeMarkers();
       return;
     }
+    console.log("Cluster seleccionado:", cluster);
     this.selectedSpecies = null;
     this.flyToMarker(cluster);
     this.expandedClusterId = cluster.id;
@@ -174,6 +175,7 @@ export class MapComponent implements AfterViewInit {
           }
           return null;
         }).filter(Boolean) as SpeciesPoint[];
+        console.log("Especies cargadas:", this.expandedSpeciesMarkers);
         this.updateGlobeMarkers();
         this.spinner.hide();
       },
@@ -228,7 +230,7 @@ export class MapComponent implements AfterViewInit {
       next: (detail) => {
         this.selectedSpecies = detail;
         this.isLoading = false;
-        console.warn('Detalle de la especie:', detail);
+        console.info('Detalle de la especie:', detail);
       },
       error: (err) => console.error('Error al obtener el detalle de la especie:', err)
     });
@@ -320,12 +322,12 @@ export class MapComponent implements AfterViewInit {
     this.searchSubject.pipe(
       debounceTime(300),
       distinctUntilChanged(),
-      filter(term => term.length >= this.minSearchLength), // Filtramos términos cortos
+      filter(term => term.length >= this.minSearchLength),
       switchMap(term => {
         this.searchLoading = true;
         return this.speciesService.searchSpecies(term).pipe(
           finalize(() => this.searchLoading = false),
-          catchError(() => of([])) // Manejo de errores
+          catchError(() => of([]))
         );
       })
     ).subscribe(species => this.filteredSpecies = species);
@@ -340,7 +342,6 @@ export class MapComponent implements AfterViewInit {
         )
       : [];
     
-    // Disparamos búsqueda solo si cumple longitud mínima
     if (term.length >= this.minSearchLength) {
       this.searchSubject.next(term);
     } else {
@@ -348,7 +349,6 @@ export class MapComponent implements AfterViewInit {
     }
   }
 
-  // Type guards
   isCluster(result: ClusterPoint | SpeciesPoint): result is ClusterPoint {
     return 'count' in result;
   }

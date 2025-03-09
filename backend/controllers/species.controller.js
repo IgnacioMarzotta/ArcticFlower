@@ -106,58 +106,66 @@ exports.getSpeciesByCountry = async (req, res) => {
 };
 
 exports.searchSpecies = async (req, res) => {
+  console.log('[SEARCH] Query parameters:', req.query);
+  
   try {
     const { q: searchTerm, limit = 50 } = req.query;
-    
-    // Validación robusta
+    console.log(`[SEARCH] Término: "${searchTerm}", Límite: ${limit}`);
+
+    // Validación mejorada
     if (!searchTerm || searchTerm.trim().length < 3) {
+      console.log('[SEARCH] Error: Término muy corto');
       return res.status(400).json({ 
-        error: 'El término de búsqueda debe tener al menos 3 caracteres' 
+        error: 'El término debe tener al menos 3 caracteres',
+        code: 'SHORT_QUERY'
       });
     }
 
-    // Consulta optimizada con proyección
-    const results = await Species.find(
-      {
-        $or: [
-          { common_name: { $regex: searchTerm, $options: 'i' } },
-          { scientific_name: { $regex: searchTerm, $options: 'i' } },
-          { 'locations.country': { $regex: searchTerm, $options: 'i' } }
-        ]
-      },
-      {
-        _id: 1,
-        common_name: 1,
-        scientific_name: 1,
-        category: 1,
-        locations: 1,
-        threats: 1,
-        media: 1
-      }
-    )
-    .limit(parseInt(limit))
-    .lean();
+    // Consulta optimizada
+    const query = {
+      $or: [
+        { common_name: new RegExp(searchTerm, 'i') },
+        { scientific_name: new RegExp(searchTerm, 'i') },
+        { 'locations.country': new RegExp(searchTerm, 'i') }
+      ]
+    };
 
-    // Formateo seguro de resultados
+    console.log('[SEARCH] Consulta MongoDB:', JSON.stringify(query));
+    
+    const results = await Species.find(query)
+      .select('_id common_name scientific_name category locations')
+      .limit(Number(limit))
+      .lean()
+      .maxTimeMS(5000);
+
+    console.log(`[SEARCH] Encontrados ${results.length} documentos`);
+
+    // Formateo seguro
     const formattedResults = results.flatMap(species => 
       (species.locations || []).map(loc => ({
         id: species._id.toString(),
         lat: loc?.lat || 0,
         lng: loc?.lng || 0,
-        common_name: species.common_name || 'Nombre no disponible',
-        scientific_name: species.scientific_name || '',
-        category: species.category || 'NT',
-        country: loc?.country || ''
+        common_name: species.common_name || 'Sin nombre',
+        scientific_name: species.scientific_name || 'Sin nombre científico',
+        category: species.category || 'ND',
+        country: loc?.country || 'XX'
       }))
     );
 
+    console.log('[SEARCH] Resultados formateados:', formattedResults.length);
     res.json(formattedResults);
-    
+
   } catch (error) {
-    console.error('Error en búsqueda:', error);
+    console.error('[SEARCH ERROR]', {
+      message: error.message,
+      stack: error.stack,
+      query: req.query
+    });
     res.status(500).json({ 
-      error: 'Error interno en la búsqueda',
-      details: error.message 
+      error: 'Error interno',
+      code: 'SERVER_ERROR',
+      details: process.env.NODE_ENV === 'development' ? error.message : null
     });
   }
 };

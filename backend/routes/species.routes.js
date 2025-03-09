@@ -4,12 +4,16 @@ const {
   createSpecies,
   getAllSpecies,
   getSpeciesById,
-  getSpeciesByCountry
+  getSpeciesByCountry,
+  searchSpecies
 } = require('../controllers/species.controller');
 
-router.get('/', getAllSpecies);
-router.get('/:id', getSpeciesById);
-router.post('/', createSpecies);
 router.get('/country/:country', getSpeciesByCountry);
+router.get('/search', searchSpecies);
+
+router.get('/:id', getSpeciesById);
+
+router.get('/', getAllSpecies);
+router.post('/', createSpecies);
 
 module.exports = router;
