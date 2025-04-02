@@ -4,7 +4,8 @@ const { getGbifIdsForSpecies,
   getUniqueLocations,
   getUniqueReferences,
   getMediaForSpecies,
-  getCommonNameForSpecies 
+  getCommonNameForSpecies,
+  getDescriptionForSpecies
 } = require('../services/gbif.service');
 
 exports.populateSpecies = async (req, res) => {
@@ -41,11 +42,12 @@ exports.populateSpecies = async (req, res) => {
     const taxonId = req.body.taxon_id.toString().trim();
     const gbifIds = await getGbifIdsForSpecies(taxonId);
     
-    const [locations, references, media, common_name] = await Promise.all([
+    const [locations, references, media, common_name, description] = await Promise.all([
       getUniqueLocations(gbifIds),
       getUniqueReferences(gbifIds),
       getMediaForSpecies(gbifIds),
       getCommonNameForSpecies(gbifIds),
+      getDescriptionForSpecies(req.body.scientific_name),
     ]);
     
     // Crear especie con valores por defecto
@@ -62,10 +64,10 @@ exports.populateSpecies = async (req, res) => {
       locations,
       references,
       media,
-      common_name: common_name || 'No disponible'
+      common_name,
+      description,
     });
     
-    // Validar ubicaciones
     const isValidLocation = locations.every(loc => 
       /^[A-Z]{2}$/.test(loc.country) && 
       ['Africa', 'Asia', 'Europe', 'North America', 'South America', 'Oceania', 'Antarctica'].includes(loc.continent)

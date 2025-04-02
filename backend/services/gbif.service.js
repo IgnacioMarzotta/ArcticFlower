@@ -13,6 +13,9 @@ const media_db = new sqlite3.Database(MEDIA_DB_PATH, sqlite3.OPEN_READONLY);
 const VERBATIM_DB_PATH = path.resolve(__dirname, '../data/gbif_verbatim.db');
 const verbatim_db = new sqlite3.Database(VERBATIM_DB_PATH, sqlite3.OPEN_READONLY);
 
+const IUCN_DB_PATH = path.resolve(__dirname, '../data/iucn_assessments.db');
+const iucn_db = new sqlite3.Database(IUCN_DB_PATH, sqlite3.OPEN_READONLY);
+
 const TYPE_MAP = {
   jpg: 'StillImage',
   jpeg: 'StillImage',
@@ -157,19 +160,16 @@ exports.getMediaForSpecies = async (gbifIds) => {
       
       const validMedia = rows
       .map(row => {
-        // 1. Validar campo esencial
         if (!row.identifier?.trim()) return null;
-        
-        // 2. Limpiar URL
+
         const cleanIdentifier = row.identifier.split(/[?#]/)[0];
-        
-        // 3. Inferir tipo y formato
+
         const extension = getFileType(cleanIdentifier);
         return {
           type: row.type || TYPE_MAP[extension] || 'unknown',
           format: row.format || FORMAT_MAP[extension] || 'unknown',
           identifier: cleanIdentifier,
-          title: row.title?.slice(0, 500), // Limitar longitud
+          title: row.title?.slice(0, 500),
           description: row.description?.slice(0, 1000),
           creator: row.creator,
           contributor: row.contributor,
@@ -189,7 +189,55 @@ exports.getMediaForSpecies = async (gbifIds) => {
 };
 
 exports.getCommonNameForSpecies = async (gbifIds) => {
-}
+  if (!gbifIds.length) return "Unknown";
+
+  for (const id of gbifIds) {
+    const row = await new Promise((resolve, reject) => {
+      const query = `
+        SELECT vernacularName 
+        FROM verbatim 
+        WHERE gbifID = ? 
+          AND TRIM(vernacularName) != '' 
+        LIMIT 1
+      `;
+      verbatim_db.get(query, [id], (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
+      });
+    });
+    if (row && row.vernacularName) {
+      return row.vernacularName;
+    }
+  }
+
+  return "Unknown";
+};
+
+exports.getDescriptionForSpecies = async (scientific_name) => {
+  return new Promise((resolve, reject) => {
+    const query = `
+      SELECT rationale, habitat, threats, population, populationTrend, range, useTrade, conservationActions
+      FROM iucn_assessments
+      WHERE scientificName = ?
+      LIMIT 1
+    `;
+    iucn_db.get(query, [scientific_name], (err, row) => {
+      if (err) {
+        return reject(err);
+      }
+      resolve(row || {
+        rationale: null,
+        habitat: null,
+        threats: null,
+        population: null,
+        populationTrend: null,
+        range: null,
+        useTrade: null,
+        conservationActions: null
+      });
+    });
+  });
+};
 
 const getFileType = (url) => {
   try {

@@ -36,6 +36,17 @@ const locationSchema = new mongoose.Schema({
   }
 });
 
+const descriptionSchema = new mongoose.Schema({
+  rationale: String ,
+  habitat: String ,
+  threats: String ,
+  population: String ,
+  populationTrend: String ,
+  range: String ,
+  useTrade: String ,
+  conservationActions: String,
+}, { _id: false });
+
 const mediaSchema = new mongoose.Schema({
   type: {
     type: String,
@@ -86,7 +97,9 @@ const speciesSchema = new mongoose.Schema({
     uppercase: true
   },
   description: {
-    type: String,
+    type: [descriptionSchema],
+    required: true,
+    default: []
   },
   kingdom: {
     type: String,
