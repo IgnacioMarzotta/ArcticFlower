@@ -1,34 +1,47 @@
 export interface SpeciesPoint {
-    id: string;
-    lat: number;
-    lng: number;
-    name: string;
-    category: string;
-    size?: number;
-    color?: string;
-    country?: string;
-    common_name?: string;
-    scientific_name?: string;
-    kingdom?: string;
-    locations?: any[];
-    media?: string;
-    taxon_id?: string;
-    threats?: string;
-    createdAt?: string;
-    updatedAt?: string;
-    __v?: number;
+  id: string;
+  lat: number;
+  lng: number;
+  name: string;
+  category: string;
+  size?: number;
+  color?: string;
+  country?: string;
+  common_name?: string;
+  scientific_name?: string;
+  kingdom?: string;
+  locations?: any[];
+  media?: SpeciesMedia[];
+  taxon_id?: string;
+  threats?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
+}
+
+export interface SpeciesMedia {
+  type: string;
+  format: string;
+  identifier: string;
+  title?: string;
+  description?: string;
+  creator?: string;
+  contributor?: string;
+  publisher?: string;
+  rightsHolder?: string;
+  license?: string;
 }
 
 export interface ClusterPoint {
-    id: string;
-    lat: number;
-    lng: number;
-    name: string;
-    category: string;
-    size: number;
-    color: string;
-    country: string;
-    count: number;
+  id: string;
+  lat: number;
+  lng: number;
+  name: string;
+  category: string;
+  size: number;
+  color: string;
+  country: string;
+  count: number;
 }
 
 export interface AllSpeciesResponse {

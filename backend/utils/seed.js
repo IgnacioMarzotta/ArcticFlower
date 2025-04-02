@@ -13,9 +13,9 @@ function generateRandomCountryCodes(num) {
 }
 
 /**
- * Genera datos de una especie de prueba.
- * La propiedad "country" se genera como una cadena de codigos separados por comas.
- */
+* Genera datos de una especie de prueba.
+* La propiedad "country" se genera como una cadena de codigos separados por comas.
+*/
 function generateSpeciesData() {
   // Genera un numero entero aleatorio entre 1 y 5 para la cantidad de paises a los que pertenece la especie
   const numCountries = faker.number.int({ min: 1, max: 5 });
@@ -23,7 +23,7 @@ function generateSpeciesData() {
   const selectedCountries = generateRandomCountryCodes(numCountries);
   // Une los codigos con comas, como espera el controlador
   const countryField = selectedCountries.join(',');
-
+  
   return {
     taxon_id: faker.string.uuid().slice(0, 8).toUpperCase(),
     common_name: faker.animal.cat(),
@@ -37,7 +37,7 @@ function generateSpeciesData() {
 }
 
 async function seedSpecies() {
-  const numSpecies = 500; // Numero de especies de prueba a generar
+  const numSpecies = 1500; // Numero de especies de prueba a generar
   for (let i = 0; i < numSpecies; i++) {
     const speciesData = generateSpeciesData();
     try {

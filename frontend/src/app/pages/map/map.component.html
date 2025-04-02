@@ -64,7 +64,36 @@
 
     <h3>{{ selectedSpecies.common_name }}</h3>
     <p><strong>Scientific name:</strong> {{ selectedSpecies.scientific_name }}</p>
-    <p><strong>Media:</strong> <img src="{{ selectedSpecies }}" alt=""></p>
+    <strong>Media:</strong>
+    <div *ngIf="selectedSpecies?.media?.length" class="simple-gallery">
+      <div class="image-container">
+        <button class="nav-button prev" 
+                (click)="prevImage()" 
+                [disabled]="currentImageIndex === 0"
+                aria-label="Imagen anterior">
+          ‹
+        </button>
+        
+        <div class="image-wrapper">
+          <img [src]="currentImage?.identifier" 
+               [alt]="currentImage?.description || 'Imagen de la especie'"
+               class="main-image">
+          <div class="image-counter">
+            {{ currentImageIndex + 1 }} / {{ selectedSpecies.media?.length }}
+          </div>
+        </div>
+    
+        <button class="nav-button next" 
+                (click)="nextImage()" 
+                [disabled]="currentImageIndex === selectedSpecies.media?.length"
+                aria-label="Siguiente imagen">
+          ›
+        </button>
+      </div>
+    </div>
+    <img src="../../../assets/img/species_status/CRITICALLY_ENDANGERED.png" *ngIf="selectedSpecies.category=='CR'" alt="" style="width: 300px;">
+    <img src="../../../assets/img/species_status/EXTINCT_IN_THE_WILD.png" *ngIf="selectedSpecies.category=='EW'" alt="" style="width: 300px;">
+    <img src="../../../assets/img/species_status/EXTINCT.png" *ngIf="selectedSpecies.category=='EX'" alt="" style="width: 300px;">
     <p><strong>Categoría:</strong> {{ selectedSpecies.category }}</p>
     <p><strong>País:</strong> {{ selectedSpecies.country }}</p>
     <p><strong>Kingdom:</strong> {{ selectedSpecies.kingdom }}</p>

@@ -9,7 +9,8 @@ import { FormsModule } from '@angular/forms';
 import 'flag-icons/css/flag-icons.min.css';
 import { Subject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, finalize, catchError, filter } from 'rxjs/operators';
-import { SpeciesPoint, ClusterPoint } from '../../core/models/map.models';
+import { SpeciesPoint, ClusterPoint, SpeciesMedia } from '../../core/models/map.models';
+import countries from 'world-countries';
 
 @Component({
   selector: 'app-map',
@@ -26,13 +27,13 @@ export class MapComponent implements AfterViewInit {
   private markerSvg = `<svg viewBox="-4 0 36 36"><path fill="currentColor" d="M14,0 C21.732,0 28,5.641 28,12.6 C28,23.963 14,36 14,36 C14,36 0,24.064 0,12.6 C0,5.641 6.268,0 14,0 Z"></path><circle fill="black" cx="14" cy="14" r="7"></circle></svg>`;
   public isLoading: boolean = true;
   public isMobile: boolean = false;
-
+  
   public selectedSpecies: SpeciesPoint | null = null;
   public selectedCluster: ClusterPoint | null = null;
   private clusterPoints: ClusterPoint[] = [];
   private expandedClusterId: string | null = null;
   private expandedSpeciesMarkers: SpeciesPoint[] = [];
-
+  
   //Sistema de busqueda
   public searchTerm: string = "";
   public filteredClusters: ClusterPoint[] = [];
@@ -40,14 +41,16 @@ export class MapComponent implements AfterViewInit {
   private searchSubject = new Subject<string>();
   public searchLoading = false;
   private minSearchLength = 3;
-
+  
+  currentImageIndex = 0;
+  
   constructor(
     private speciesService: SpeciesService,
     private cdr: ChangeDetectorRef,
     private spinner: NgxSpinnerService,
     private clusterService: ClusterService,
   ) {}
-
+  
   ngOnInit(): void {
     this.setupSearch();
   }
@@ -67,82 +70,86 @@ export class MapComponent implements AfterViewInit {
   
   private initializeGlobe(): void {
     this.globeInstance = GLOBE.default({ animateIn: false })(this.globeContainer.nativeElement)
-      .globeImageUrl('../../../assets/img/globe/earth.jpg')
-      .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-      // Inicialmente vacia; se actualiza con clusters o especies segun la interaccion.
-      .htmlElementsData([])
-      .htmlElement((d: SpeciesPoint | ClusterPoint) => {
-        // Si es un Cluster (tiene 'count'), muestra la bandera y un badge con el conteo.
-        if ('count' in d) {
-          const markerDiv = document.createElement('div');
-          markerDiv.style.position = 'absolute';
-          markerDiv.style.transform = 'translate(-50%, -50%)';
-          markerDiv.style.width = '50px';
-          markerDiv.style.height = '50px';
-          markerDiv.style.border = '2px solid #fff';
-          markerDiv.style.borderRadius = '50%';
-          markerDiv.style.backgroundColor = d.color;
-          markerDiv.style.display = 'flex';
-          markerDiv.style.alignItems = 'center';
-          markerDiv.style.justifyContent = 'center';
-          markerDiv.style.cursor = 'pointer';
-          markerDiv.style.pointerEvents = 'auto'; 
-          markerDiv.style.zIndex = '9999';
-
-          // Crea el elemento de la bandera usando flag-icons.
-          const flagElement = document.createElement('span');
-          // Se asume que d.country contiene el codigo ISO en mayusculas o minusculas.
-          flagElement.className = `fi fi-${d.country.toLowerCase()}`;
-          flagElement.style.fontSize = '50px';
-          flagElement.style.width = '100%';
-          flagElement.style.borderRadius = '50%';
-  
-          // Crea el badge de conteo
-          const countBadge = document.createElement('div');
-          countBadge.innerText = d.count.toString();
-          countBadge.style.position = 'absolute';
-          countBadge.style.bottom = '0';
-          countBadge.style.right = '0';
-          countBadge.style.backgroundColor = 'rgba(0,0,0,0.7)';
-          countBadge.style.color = 'white';
-          countBadge.style.borderRadius = '50%';
-          countBadge.style.width = '20px';
-          countBadge.style.height = '20px';
-          countBadge.style.display = 'flex';
-          countBadge.style.alignItems = 'center';
-          countBadge.style.justifyContent = 'center';
-          countBadge.style.fontSize = '12px';
-  
-          markerDiv.appendChild(flagElement);
-          markerDiv.appendChild(countBadge);
-  
-          // Al hacer click en un cluster, se ejecuta la funcion para cargar las especies asociadas.
-          markerDiv.onclick = () => this.onClusterClick(d as ClusterPoint);
-          return markerDiv;
-        } else {
-          // Si es una especie individual, se muestra el marcador SVG.
-          const el = document.createElement('div');
-          el.innerHTML = this.markerSvg;
-          el.style.position = 'absolute';
-          el.style.transform = 'translate(-50%, -50%)';
-          const size = d.size || 20;
-          el.style.width = `${size}px`;
-          el.style.height = `${size}px`;
-          el.style.color = d.color || 'black';
-          el.style.pointerEvents = 'auto';
-          el.style.cursor = 'pointer';
-          el.onclick = () => this.selectSpecies(d);
-          return el;
-        }
-      });  
-
+    .globeImageUrl('../../../assets/img/globe/earth.jpg')
+    .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+    .polygonsData(countries)
+    .polygonAltitude(0.1)
+    .polygonCapColor(() => 'rgba(200,200,200,0.3)')
+    .polygonSideColor(() => 'rgba(50,50,50,0.15)')
+    .polygonStrokeColor(() => '#111')
+    .polygonLabel(({ properties }: { properties: any }) => `<b>${properties.name.common}</b>`)
+    .htmlElementsData([])
+    .htmlElement((d: SpeciesPoint | ClusterPoint) => {
+      if ('count' in d) {
+        const markerDiv = document.createElement('div');
+        markerDiv.style.position = 'absolute';
+        markerDiv.style.transform = 'translate(-50%, -50%)';
+        markerDiv.style.width = '50px';
+        markerDiv.style.height = '50px';
+        markerDiv.style.border = '2px solid #fff';
+        markerDiv.style.borderRadius = '50%';
+        markerDiv.style.backgroundColor = d.color;
+        markerDiv.style.display = 'flex';
+        markerDiv.style.alignItems = 'center';
+        markerDiv.style.justifyContent = 'center';
+        markerDiv.style.cursor = 'pointer';
+        markerDiv.style.pointerEvents = 'auto'; 
+        markerDiv.style.zIndex = '9999';
+        
+        // Crea el elemento de la bandera usando flag-icons.
+        const flagElement = document.createElement('span');
+        // Se asume que d.country contiene el codigo ISO en mayusculas o minusculas.
+        flagElement.className = `fi fi-${d.country.toLowerCase()}`;
+        flagElement.style.fontSize = '50px';
+        flagElement.style.width = '100%';
+        flagElement.style.borderRadius = '50%';
+        
+        // Crea el badge de conteo
+        const countBadge = document.createElement('div');
+        countBadge.innerText = d.count.toString();
+        countBadge.style.position = 'absolute';
+        countBadge.style.bottom = '0';
+        countBadge.style.right = '0';
+        countBadge.style.backgroundColor = 'rgba(0,0,0,0.7)';
+        countBadge.style.color = 'white';
+        countBadge.style.borderRadius = '50%';
+        countBadge.style.width = '20px';
+        countBadge.style.height = '20px';
+        countBadge.style.display = 'flex';
+        countBadge.style.alignItems = 'center';
+        countBadge.style.justifyContent = 'center';
+        countBadge.style.fontSize = '12px';
+        
+        markerDiv.appendChild(flagElement);
+        markerDiv.appendChild(countBadge);
+        
+        // Al hacer click en un cluster, se ejecuta la funcion para cargar las especies asociadas.
+        markerDiv.onclick = () => this.onClusterClick(d as ClusterPoint);
+        return markerDiv;
+      } else {
+        // Si es una especie individual, se muestra el marcador SVG.
+        const el = document.createElement('div');
+        el.innerHTML = this.markerSvg;
+        el.style.position = 'absolute';
+        el.style.transform = 'translate(-50%, -50%)';
+        const size = d.size || 20;
+        el.style.width = `${size}px`;
+        el.style.height = `${size}px`;
+        el.style.color = d.color || 'black';
+        el.style.pointerEvents = 'auto';
+        el.style.cursor = 'pointer';
+        el.onclick = () => this.selectSpecies(d);
+        return el;
+      }
+    });  
+    
     //Zoom minimo y maximo:
     const controls = this.globeInstance.controls();
     const globeRadius = this.globeInstance.getGlobeRadius();
-    controls.minDistance = globeRadius * 1.5;
+    controls.minDistance = globeRadius * 0.8;
     controls.maxDistance = globeRadius * 3;
   }
-
+  
   onClusterClick(cluster: ClusterPoint): void {
     if (this.expandedClusterId === cluster.id) {
       this.expandedClusterId = null;
@@ -153,30 +160,32 @@ export class MapComponent implements AfterViewInit {
     }
     console.log("Cluster seleccionado:", cluster);
     this.selectedSpecies = null;
-    this.flyToMarker(cluster);
     this.expandedClusterId = cluster.id;
     this.selectedCluster = cluster;
     this.spinner.show();
     this.speciesService.getSpeciesByCountry(cluster.country).subscribe({
       next: (speciesArray: any[]) => {
         this.expandedSpeciesMarkers = speciesArray.map(species => {
-          if (species.locations && species.locations.length > 0) {
-            const loc = species.locations[0];
-            return {
-              id: species._id,
-              lat: loc.lat,
-              lng: loc.lng,
-              name: species.common_name,
-              category: species.category,
-              size: 30,
-              color: this.getColorByCategory(species.category),
-              country: loc.country
-            } as SpeciesPoint;
+          if (species.locations && Array.isArray(species.locations)) {
+            // Filtrar la ubicación que corresponde al pais del cluster, quiere decir que si una especie esta presente en varios paises, solo voy a generar un marcador dentro del cluster en cuestion.
+            const loc = species.locations.find((loc: any) => loc.country.toUpperCase() === cluster.country);
+            if (loc) {
+              return {
+                id: species._id,
+                lat: loc.lat,
+                lng: loc.lng,
+                name: species.common_name,
+                category: species.category,
+                size: 30,
+                color: this.getColorByCategory(species.category),
+                country: loc.country
+              } as SpeciesPoint;
+            }
           }
           return null;
         }).filter(Boolean) as SpeciesPoint[];
-        console.log("Especies cargadas:", this.expandedSpeciesMarkers);
         this.updateGlobeMarkers();
+        this.flyToMarker(cluster);
         this.spinner.hide();
       },
       error: err => {
@@ -185,7 +194,7 @@ export class MapComponent implements AfterViewInit {
       }
     });
   }
-
+  
   private updateGlobeMarkers(): void {
     const markers: (SpeciesPoint | ClusterPoint)[] = [];
     this.clusterPoints.forEach(cluster => {
@@ -199,7 +208,7 @@ export class MapComponent implements AfterViewInit {
       this.globeInstance.htmlElementsData(markers);
     }
   }
-
+  
   private loadClusters(): void {
     this.clusterService.getClusters().subscribe({
       next: (clusters: any[]) => {
@@ -222,25 +231,25 @@ export class MapComponent implements AfterViewInit {
       error: err => console.error('Error al cargar clusters:', err)
     });
   }
-
+  
   public selectSpecies(species: SpeciesPoint): void {
-    this.flyToMarker(species);
     this.isLoading = true;
     this.speciesService.getSpeciesDetail(species.id).subscribe({
       next: (detail) => {
         this.selectedSpecies = detail;
         this.isLoading = false;
+        this.flyToMarker(species);
         console.info('Detalle de la especie:', detail);
       },
       error: (err) => console.error('Error al obtener el detalle de la especie:', err)
     });
   }
-
-  // Método para cerrar el panel lateral
+  
+  // Metodo para cerrar el panel lateral
   public closePanel(): void {
     this.selectedSpecies = null;
   }
-
+  
   // Funcion para agregar las nubes (clouds) sobre el globo
   private addClouds(): void {
     const CLOUDS_IMG_URL = "../../../assets/img/globe/clouds.png";
@@ -307,17 +316,17 @@ export class MapComponent implements AfterViewInit {
     };
     return colors[category] || '#ffffff';
   }
-
+  
   //Funcion para navegar y hacer zoom en un marcado, especie o cluster.
   private flyToMarker(marker: SpeciesPoint | ClusterPoint): void {
     if (this.globeInstance && marker) {
-      const altitude = ('count' in marker) ? 1.5 : 1;
+      const altitude = ('count' in marker) ? 0.3 : 0.8;
       this.globeInstance.pointOfView(
         { lat: marker.lat, lng: marker.lng, altitude: altitude }, 2000
       );
     }
   }
-
+  
   private setupSearch(): void {
     this.searchSubject.pipe(
       debounceTime(300),
@@ -332,15 +341,15 @@ export class MapComponent implements AfterViewInit {
       })
     ).subscribe(species => this.filteredSpecies = species);
   }
-
+  
   onSearchInput(term: string): void {
     // Filtrado de clusters
     this.filteredClusters = term.length >= this.minSearchLength 
-      ? this.clusterPoints.filter(cluster => 
-          cluster.name.toLowerCase().includes(term.toLowerCase()) ||
-          cluster.country.toLowerCase().includes(term.toLowerCase())
-        )
-      : [];
+    ? this.clusterPoints.filter(cluster => 
+      cluster.name.toLowerCase().includes(term.toLowerCase()) ||
+      cluster.country.toLowerCase().includes(term.toLowerCase())
+    )
+    : [];
     
     if (term.length >= this.minSearchLength) {
       this.searchSubject.next(term);
@@ -348,12 +357,29 @@ export class MapComponent implements AfterViewInit {
       this.filteredSpecies = [];
     }
   }
-
+  
   isCluster(result: ClusterPoint | SpeciesPoint): result is ClusterPoint {
     return 'count' in result;
   }
-
+  
   isSpecies(result: ClusterPoint | SpeciesPoint): result is SpeciesPoint {
     return 'common_name' in result;
   }
+  
+  nextImage(): void {
+    if (this.selectedSpecies?.media && this.currentImageIndex < this.selectedSpecies.media.length - 1) {
+      this.currentImageIndex++;
+    }
+  }
+  
+  prevImage(): void {
+    if (this.currentImageIndex > 0) {
+      this.currentImageIndex--;
+    }
+  }
+  
+  get currentImage(): any {
+    return this.selectedSpecies?.media?.[this.currentImageIndex];
+  }
+  
 }

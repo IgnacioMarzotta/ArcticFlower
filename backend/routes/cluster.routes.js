@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { updateClusterForSpeciesEndpoint, getSpeciesClusters } = require('../controllers/cluster.controller');
+const { updateClusterForSpecies, getSpeciesClusters } = require('../controllers/cluster.controller');
 
-router.post('/', updateClusterForSpeciesEndpoint);
+router.post('/', updateClusterForSpecies);
 router.get('/', getSpeciesClusters);
 
 module.exports = router;
