@@ -97,9 +97,9 @@ const speciesSchema = new mongoose.Schema({
     uppercase: true
   },
   description: {
-    type: [descriptionSchema],
+    type: descriptionSchema,
     required: true,
-    default: []
+    default: {},
   },
   kingdom: {
     type: String,
@@ -135,9 +135,6 @@ const speciesSchema = new mongoose.Schema({
     type: [locationSchema],
     required: true,
     default: []
-  },
-  threats: {
-    type: String
   },
   media: {
     type: [mediaSchema],

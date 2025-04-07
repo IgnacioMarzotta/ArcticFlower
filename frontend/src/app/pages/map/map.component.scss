@@ -1,0 +1,228 @@
+$primary-background: #21170B;
+$secondary-background: #412B14;
+$primary-color: #8FCD3C;
+$secondary-color: #1B3518;
+$button-color: #E9B838;
+
+.globe-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  z-index: 1;
+}
+
+.search-container {
+  position: fixed;
+  top: 100px;
+  left: 20px;
+  z-index: 10;
+  width: 300px;
+  background: $primary-background;
+  padding: 10px;
+  border-radius: 5px;
+  border: 2px solid $secondary-background;
+
+  input {
+    width: 90%;
+    padding: 8px;
+    background-color: transparent;
+    color: white;
+    border: 2px solid white;
+    font-weight: bold;
+    border-radius: 100px;
+
+    &:hover {
+      border: 2px solid $primary-color;
+      transition: 0.2s;
+    }
+
+    &:focus {
+      border: 2px solid $primary-color;
+      transition: 0.2s;
+    }
+  }
+
+  .search-results {
+    margin-top: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    color: white;
+    font-family: "Roboto";
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    li {
+      padding: 5px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+
+      &:hover {
+        background-color: #f0f0f0;
+      }
+    }
+  }
+}
+
+.spinner-image {
+  width: 100px;
+  height: 100px;
+}
+
+.side-panel {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  width: 400px;
+  max-height: calc(85vh);
+  overflow-y: auto;
+  background: $primary-background;
+  color: white;
+  z-index: 1000;
+  border-radius: 10px;
+  border: 2px solid $secondary-background;
+  
+  .species-header{
+    display: flex;
+    
+    .close-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0.2;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    
+      img {
+        filter: invert(1);
+        width: 18px;
+        height: 18px;
+      }
+    }
+    
+    .country-info {
+      display: flex;
+      flex: 0.8;
+      align-items: center;
+      
+      span {
+        font-size: 30px;
+        margin-right: 10px;
+      }
+    }
+  }
+
+  
+  .species-details{
+    
+    .simple-gallery {
+      max-width: 800px;
+      height: 300px;
+      position: relative;
+      
+      .image-container {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        
+        .image-wrapper {
+          position: relative;
+          width: 100%;
+          
+          .main-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+          }
+          
+          .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.4);
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 2;
+            font-size: 24px;
+            user-select: none;
+            
+            &.left {
+              left: 10px;
+            }
+            
+            &.right {
+              right: 10px;
+            }
+          }
+          
+          .image-info-popper {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            padding: 10px;
+            font-size: 14px;
+            z-index: 3;
+            cursor: pointer;
+          }
+          
+          .image-counter {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            z-index: 3;
+          }
+        }
+      }
+    }
+
+    .species-data{
+      padding: 10px;
+    }
+  }
+}
+
+@media (min-width: 768px) {
+  .info-panel {
+    bottom: 10px;
+    right: 10px;
+    width: 400px;
+    height: 90%;
+    transform: translateX(0);
+    border-radius: 10px;
+  }
+}
+
+@media (max-width: 767px) {
+  .info-panel {
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50vh;
+    transform: translateY(0);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+  }
+}

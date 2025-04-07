@@ -1,0 +1,155 @@
+$primary-background: #21170B;
+$secondary-background: #412B14;
+$primary-color: #8FCD3C;
+$secondary-color: #1B3518;
+$button-color: #E9B838;
+
+:host {
+  display: block;
+  animation: fadeIn 1s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.main {
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  color: #fff;
+  overflow-x: hidden;
+}
+
+.video-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 1;
+  
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: blur(5px);
+    transform: scale(1.04);
+  }
+}
+
+.content {
+  position: relative;
+  z-index: 2;
+  padding: 2rem 0;
+  margin-top: 35vh;
+  font-family: "LemonMilk";
+  
+  .title-container {
+    text-align: center;
+    background-color: #000000a6;
+    width: 50vw;
+    padding: 10px 5px;
+    margin: auto;
+    font-size: 2vh;
+    margin-bottom: 15vh;
+  }
+  
+  .button-panel {
+    position: absolute;
+    top: 250px;
+    left: 35%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    button {
+      width: 200px;
+      height: 200px;
+      background-color: $secondary-color;
+      color: #fff;
+      border: 3px solid $secondary-background;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      
+      &:hover {
+        background-color: #71a330;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      margin: 0;
+      left: 0;      
+      .content{
+        margin: 0;
+        padding: 0;
+      }
+    }
+  }
+  
+  .main-container {
+    background-color: $primary-background;
+    border-top: 3px solid $secondary-background;
+    border-bottom: 3px solid $secondary-background;
+  }
+  
+  .conclusion {
+    margin-top: 30vh;
+    margin-bottom: 30vh;
+  }
+  
+  @media (max-width: 768px) {
+    
+    .title-container{
+      width: 100%;
+    }
+    
+    .content{
+      margin: 0;
+      padding: 0;
+    }
+  }
+}
+
+.chart-container {
+  padding: 2rem;
+  border-radius: 16px;
+  margin: 2rem auto;
+  transition: all 0.3s ease;
+  
+  @media (max-width: 768px) {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
+}
+
+.custom-tooltip.danger {
+  background: #fff5f5;
+  border-left: 4px solid #ff6b6b;
+  
+  h4 { color: #c92a2a; }
+  p { color: #ff6b6b; }
+}
+
+.ngx-charts {
+  .pie-label {
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    fill: #2c3e50 !important;
+  }
+  
+  .pie-chart-arcs {
+    path {
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      
+      &:hover {
+        transform: scale(1.05);
+        opacity: 0.9;
+      }
+    }
+  }
+}

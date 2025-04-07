@@ -27,6 +27,11 @@ const clusterSchema = new mongoose.Schema({
         type: String,
         required: true,
         default: 'LC'
+    },
+    markerSize: {
+        type: Number,
+        required: true,
+        default: 20
     }
 }, { timestamps: true });
 

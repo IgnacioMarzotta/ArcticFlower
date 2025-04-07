@@ -1,9 +1,18 @@
-<div class="profile-container">
-    <h2>Tu Perfil</h2>
+<div class="main">
+    <div class="video-banner">
+        <video preload="auto" autoplay loop muted>
+            <source src="assets/video/banner_video.mp4" type="video/mp4">
+            Sorry, your browser does not support HTML5 video.
+        </video>
+    </div>
     
-    <div class="profile-details">
-        <p><strong>Username:</strong> {{ userData?.username }}</p>
-        <p><strong>Email:</strong> {{ userData?.email }}</p>
-        <p><strong>Miembro desde:</strong> {{ userData?.created_at | date }}</p>
+    <div class="content">
+        <h2>Tu Perfil</h2>
+        
+        <div class="profile-details">
+            <p><strong>Username:</strong> {{ userData?.username }}</p>
+            <p><strong>Email:</strong> {{ userData?.email }}</p>
+            <p><strong>Miembro desde:</strong> {{ userData?.created_at | date }}</p>
+        </div>       
     </div>
 </div>

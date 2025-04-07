@@ -50,58 +50,108 @@
   <img src="../../assets/img/logos/arcticflower.png" alt="Cargando..." class="spinner-image">
 </ngx-spinner>
 
-
 <div #globeContainer class="globe-container"></div>
 
 <div class="side-panel" *ngIf="selectedCluster">
-
-  <div class="country-info">
-    <span class="fi fi-{{selectedCluster.country | lowercase}}"></span>
-    <h2>{{ selectedCluster.name }} {{ selectedCluster.country }} {{ selectedCluster.country }}</h2>
+  
+  <div class="species-header">
+    <div class="close-button" (click)="clearCurrentSelection()"><img src="../../../assets/img/icons/chevron-left.svg" alt=""></div>
+  
+    <div class="country-info">
+      <span class="fi fi-{{selectedCluster.country | lowercase}}"></span>
+      <h2>{{ selectedCluster.name }}</h2>
+    </div>
   </div>
 
   <div class="species-details" *ngIf="selectedSpecies">
 
-    <h3>{{ selectedSpecies.common_name }}</h3>
-    <p><strong>Scientific name:</strong> {{ selectedSpecies.scientific_name }}</p>
-    <strong>Media:</strong>
-    <div *ngIf="selectedSpecies?.media?.length" class="simple-gallery">
+    <div class="simple-gallery">
       <div class="image-container">
-        <button class="nav-button prev" 
-                (click)="prevImage()" 
-                [disabled]="currentImageIndex === 0"
-                aria-label="Imagen anterior">
-          ‹
-        </button>
-        
-        <div class="image-wrapper">
-          <img [src]="currentImage?.identifier" 
-               [alt]="currentImage?.description || 'Imagen de la especie'"
-               class="main-image">
+        <div class="image-wrapper" *ngIf="selectedSpecies?.media?.length">
+          <img 
+            [src]="currentImage?.identifier" 
+            [alt]="'Imagen de la especie'"
+            class="main-image"
+            (click)="toggleImageInfo()"
+          />
+          <div class="nav-arrow left" (click)="prevImage(); $event.stopPropagation()">
+            ‹
+          </div>
+          <div class="nav-arrow right" (click)="nextImage(); $event.stopPropagation()">
+            ›
+          </div>
+          <div class="image-info-popper" *ngIf="showImageInfo" (click)="toggleImageInfo()">
+            <p *ngIf="currentImage?.title"><strong>Title:</strong> {{ currentImage?.title }}</p>
+            <p *ngIf="currentImage?.description"><strong>Description:</strong> {{ currentImage?.description }}</p>
+            <p *ngIf="currentImage?.creator"><strong>Creator:</strong> {{ currentImage?.creator }}</p>
+            <p *ngIf="currentImage?.contributor"><strong>Contributor:</strong> {{ currentImage?.contributor }}</p>
+            <p *ngIf="currentImage?.publisher"><strong>Publisher:</strong> {{ currentImage?.publisher }}</p>
+            <p *ngIf="currentImage?.rightsHolder"><strong>Rights Holder:</strong> {{ currentImage?.rightsHolder }}</p>
+            <p *ngIf="currentImage?.license"><strong>License:</strong> {{ currentImage?.license }}</p>
+          </div>
           <div class="image-counter">
             {{ currentImageIndex + 1 }} / {{ selectedSpecies.media?.length }}
           </div>
         </div>
-    
-        <button class="nav-button next" 
-                (click)="nextImage()" 
-                [disabled]="currentImageIndex === selectedSpecies.media?.length"
-                aria-label="Siguiente imagen">
-          ›
-        </button>
+        <div class="image-wrapper" *ngIf="!selectedSpecies?.media?.length">
+          <img src="../../../assets/img/icons/no-media.png" class="main-image"/>
+        </div>
       </div>
     </div>
-    <img src="../../../assets/img/species_status/CRITICALLY_ENDANGERED.png" *ngIf="selectedSpecies.category=='CR'" alt="" style="width: 300px;">
-    <img src="../../../assets/img/species_status/EXTINCT_IN_THE_WILD.png" *ngIf="selectedSpecies.category=='EW'" alt="" style="width: 300px;">
-    <img src="../../../assets/img/species_status/EXTINCT.png" *ngIf="selectedSpecies.category=='EX'" alt="" style="width: 300px;">
-    <p><strong>Categoría:</strong> {{ selectedSpecies.category }}</p>
-    <p><strong>País:</strong> {{ selectedSpecies.country }}</p>
-    <p><strong>Kingdom:</strong> {{ selectedSpecies.kingdom }}</p>
-    <p><strong>Threats:</strong> {{ selectedSpecies.threats }}</p>
-    <p><strong>Taxon_id:</strong> {{ selectedSpecies.taxon_id }}</p>
-    <p><strong>Updated at:</strong> {{ selectedSpecies.updatedAt }}</p>
+
+    <div class="species-data">
+
+      <div *ngIf="selectedSpecies.common_name != 'Unknown'">
+        <h3>{{ selectedSpecies.common_name }}</h3><i>{{ selectedSpecies.scientific_name }}</i>
+      </div>
+
+      <div *ngIf="selectedSpecies.common_name == 'Unknown'">
+        <h3>{{ selectedSpecies.scientific_name }}</h3>
+      </div>
   
-    <button (click)="closePanel()">Cerrar detalles</button>
+      <img src="../../../assets/img/species_status/CRITICALLY_ENDANGERED.png" *ngIf="selectedSpecies.category=='CR'" alt="" style="width: 300px;">
+      <img src="../../../assets/img/species_status/EXTINCT_IN_THE_WILD.png" *ngIf="selectedSpecies.category=='EW'" alt="" style="width: 300px;">
+      <img src="../../../assets/img/species_status/EXTINCT.png" *ngIf="selectedSpecies.category=='EX'" alt="" style="width: 300px;">
+  
+      <p><strong>Categoría:</strong> {{ selectedSpecies.category }}</p>
+      
+      <p><strong>Kingdom:</strong> {{ selectedSpecies.kingdom }}</p>
+      <p><strong>Phylum:</strong> {{ selectedSpecies.phylum }}</p>
+      <p><strong>Class:</strong> {{ selectedSpecies.class }}</p>
+      <p><strong>Order:</strong> {{ selectedSpecies.order }}</p>
+      <p><strong>Family:</strong> {{ selectedSpecies.family }}</p>
+      <p><strong>Genus:</strong> {{ selectedSpecies.genus }}</p>
+      <div *ngIf="selectedSpecies.description">
+        <h4>Descripción</h4>
+        <p *ngIf="selectedSpecies.description.rationale">
+          <strong>Rationale:</strong> {{ selectedSpecies.description.rationale }}
+        </p>
+        <p *ngIf="selectedSpecies.description.habitat">
+          <strong>Habitat:</strong> {{ selectedSpecies.description.habitat }}
+        </p>
+        <p *ngIf="selectedSpecies.description.threats">
+          <strong>Threats:</strong> {{ selectedSpecies.description.threats }}
+        </p>
+        <p *ngIf="selectedSpecies.description.population">
+          <strong>Population:</strong> {{ selectedSpecies.description.population }}
+        </p>
+        <p *ngIf="selectedSpecies.description.populationTrend">
+          <strong>Population Trend:</strong> {{ selectedSpecies.description.populationTrend }}
+        </p>
+        <p *ngIf="selectedSpecies.description.range">
+          <strong>Range:</strong> {{ selectedSpecies.description.range }}
+        </p>
+        <p *ngIf="selectedSpecies.description.useTrade">
+          <strong>Use & Trade:</strong> {{ selectedSpecies.description.useTrade }}
+        </p>
+        <p *ngIf="selectedSpecies.description.conservationActions">
+          <strong>Conservation Actions:</strong> {{ selectedSpecies.description.conservationActions }}
+        </p>
+      </div>
+      <p><strong>Taxon_id:</strong> {{ selectedSpecies.taxon_id }}</p>
+      <p><strong>Updated at:</strong> {{ selectedSpecies.updatedAt }}</p>
+
+    </div>
 
   </div>
 </div>

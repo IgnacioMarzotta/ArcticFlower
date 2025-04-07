@@ -15,7 +15,7 @@ import countries from 'world-countries';
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
-  styleUrls: ['./map.component.css'],
+  styleUrls: ['./map.component.scss'],
   imports: [CommonModule, FormsModule, NgxSpinnerComponent],
   standalone: true,
   
@@ -42,6 +42,7 @@ export class MapComponent implements AfterViewInit {
   public searchLoading = false;
   private minSearchLength = 3;
   
+  public showImageInfo: boolean = false;
   currentImageIndex = 0;
   
   constructor(
@@ -59,15 +60,15 @@ export class MapComponent implements AfterViewInit {
     this.isMobile = window.innerWidth < 768;
     this.spinner.show();
     this.initializeGlobe();
-    this.loadClusters();
     this.addClouds();
+    this.loadClusters();
     
     setTimeout(() => {
       this.isLoading = false;
       this.spinner.hide();
     }, 1500);
   }
-  
+
   private initializeGlobe(): void {
     this.globeInstance = GLOBE.default({ animateIn: false })(this.globeContainer.nativeElement)
     .globeImageUrl('../../../assets/img/globe/earth.jpg')
@@ -84,8 +85,9 @@ export class MapComponent implements AfterViewInit {
         const markerDiv = document.createElement('div');
         markerDiv.style.position = 'absolute';
         markerDiv.style.transform = 'translate(-50%, -50%)';
-        markerDiv.style.width = '50px';
-        markerDiv.style.height = '50px';
+        // Utilizamos la propiedad 'size' para establecer el ancho y alto
+        markerDiv.style.width = `${d.size}px`;
+        markerDiv.style.height = `${d.size}px`;
         markerDiv.style.border = '2px solid #fff';
         markerDiv.style.borderRadius = '50%';
         markerDiv.style.backgroundColor = d.color;
@@ -98,18 +100,17 @@ export class MapComponent implements AfterViewInit {
         
         // Crea el elemento de la bandera usando flag-icons.
         const flagElement = document.createElement('span');
-        // Se asume que d.country contiene el codigo ISO en mayusculas o minusculas.
         flagElement.className = `fi fi-${d.country.toLowerCase()}`;
-        flagElement.style.fontSize = '50px';
+        flagElement.style.fontSize = `${d.size}px`; // También ajustamos el tamaño de la bandera
         flagElement.style.width = '100%';
         flagElement.style.borderRadius = '50%';
         
-        // Crea el badge de conteo
+        // Badge de conteo
         const countBadge = document.createElement('div');
         countBadge.innerText = d.count.toString();
         countBadge.style.position = 'absolute';
-        countBadge.style.bottom = '0';
-        countBadge.style.right = '0';
+        countBadge.style.bottom = '-10px';
+        countBadge.style.right = '40%';
         countBadge.style.backgroundColor = 'rgba(0,0,0,0.7)';
         countBadge.style.color = 'white';
         countBadge.style.borderRadius = '50%';
@@ -123,7 +124,6 @@ export class MapComponent implements AfterViewInit {
         markerDiv.appendChild(flagElement);
         markerDiv.appendChild(countBadge);
         
-        // Al hacer click en un cluster, se ejecuta la funcion para cargar las especies asociadas.
         markerDiv.onclick = () => this.onClusterClick(d as ClusterPoint);
         return markerDiv;
       } else {
@@ -146,18 +146,16 @@ export class MapComponent implements AfterViewInit {
     //Zoom minimo y maximo:
     const controls = this.globeInstance.controls();
     const globeRadius = this.globeInstance.getGlobeRadius();
-    controls.minDistance = globeRadius * 0.8;
-    controls.maxDistance = globeRadius * 3;
+    controls.minDistance = globeRadius * 1.01;
+    controls.maxDistance = globeRadius * 2.3;
   }
   
   onClusterClick(cluster: ClusterPoint): void {
     if (this.expandedClusterId === cluster.id) {
-      this.expandedClusterId = null;
-      this.expandedSpeciesMarkers = [];
-      this.selectedCluster = null;
-      this.updateGlobeMarkers();
+      this.clearCurrentSelection();
       return;
     }
+    this.clearCurrentSelection();
     console.log("Cluster seleccionado:", cluster);
     this.selectedSpecies = null;
     this.expandedClusterId = cluster.id;
@@ -185,7 +183,6 @@ export class MapComponent implements AfterViewInit {
           return null;
         }).filter(Boolean) as SpeciesPoint[];
         this.updateGlobeMarkers();
-        this.flyToMarker(cluster);
         this.spinner.hide();
       },
       error: err => {
@@ -193,6 +190,7 @@ export class MapComponent implements AfterViewInit {
         this.spinner.hide();
       }
     });
+    this.flyToMarker(cluster);
   }
   
   private updateGlobeMarkers(): void {
@@ -218,12 +216,12 @@ export class MapComponent implements AfterViewInit {
           lng: cluster.lng,
           name: cluster.countryName || cluster.country,
           category: cluster.worstCategory,
-          size: 50,
+          size: cluster.markerSize,
           color: this.getColorByCategory(cluster.worstCategory),
           country: cluster.country,
           count: cluster.count
         }));
-        // Reiniciar estado de cluster expandido
+        
         this.expandedClusterId = null;
         this.expandedSpeciesMarkers = [];
         this.updateGlobeMarkers();
@@ -238,16 +236,16 @@ export class MapComponent implements AfterViewInit {
       next: (detail) => {
         this.selectedSpecies = detail;
         this.isLoading = false;
-        this.flyToMarker(species);
         console.info('Detalle de la especie:', detail);
       },
       error: (err) => console.error('Error al obtener el detalle de la especie:', err)
     });
+    this.flyToMarker(species);
   }
   
   // Metodo para cerrar el panel lateral
   public closePanel(): void {
-    this.selectedSpecies = null;
+    this.clearCurrentSelection();
   }
   
   // Funcion para agregar las nubes (clouds) sobre el globo
@@ -308,11 +306,9 @@ export class MapComponent implements AfterViewInit {
   //Definicion de colores por categoria
   private getColorByCategory(category: string): string {
     const colors: { [key: string]: string } = {
-      'CR': '#ff0000',
-      'EN': '#ffa500',
-      'VU': '#ffff00',
-      'NT': '#adff2f',
-      'EX': '#ff0000'
+      'CR': '#ffffff',
+      'EW': '#ff0000',
+      'EX': '#000000'
     };
     return colors[category] || '#ffffff';
   }
@@ -320,13 +316,24 @@ export class MapComponent implements AfterViewInit {
   //Funcion para navegar y hacer zoom en un marcado, especie o cluster.
   private flyToMarker(marker: SpeciesPoint | ClusterPoint): void {
     if (this.globeInstance && marker) {
-      const altitude = ('count' in marker) ? 0.3 : 0.8;
+      let altitude: number;
+      if ('count' in marker) {
+        const minSize = 30;
+        const maxSize = 150;
+        const minAltitude = 0.2;
+        const maxAltitude = 1.5;
+        const markerSize = marker.size || minSize;
+        altitude = minAltitude + (maxAltitude - minAltitude) * ((markerSize - minSize) / (maxSize - minSize)); //Altitud basada en tamaño del pais
+      } else {
+        altitude = 0.8;
+      }
       this.globeInstance.pointOfView(
-        { lat: marker.lat, lng: marker.lng, altitude: altitude }, 2000
+        { lat: marker.lat, lng: marker.lng, altitude: altitude },
+        2000
       );
     }
   }
-  
+
   private setupSearch(): void {
     this.searchSubject.pipe(
       debounceTime(300),
@@ -340,6 +347,15 @@ export class MapComponent implements AfterViewInit {
         );
       })
     ).subscribe(species => this.filteredSpecies = species);
+  }
+
+  clearCurrentSelection(): void {
+    this.selectedSpecies = null;
+    this.currentImageIndex = 0;
+    this.expandedClusterId = null;
+    this.expandedSpeciesMarkers = [];
+    this.selectedCluster = null;
+    this.updateGlobeMarkers();
   }
   
   onSearchInput(term: string): void {
@@ -382,4 +398,7 @@ export class MapComponent implements AfterViewInit {
     return this.selectedSpecies?.media?.[this.currentImageIndex];
   }
   
+  toggleImageInfo(): void {
+    this.showImageInfo = !this.showImageInfo;
+  }
 }

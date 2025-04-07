@@ -10,13 +10,29 @@ export interface SpeciesPoint {
   common_name?: string;
   scientific_name?: string;
   kingdom?: string;
+  phylum?: string;
+  class?: string;
+  order?: string;
+  family?: string;
+  genus?: string;
   locations?: any[];
   media?: SpeciesMedia[];
   taxon_id?: string;
-  threats?: string;
   createdAt?: string;
   updatedAt?: string;
   __v?: number;
+  description?: SpeciesDescription;
+}
+
+export interface SpeciesDescription {
+  rationale?: string;
+  habitat?: string;
+  threats?: string;
+  population?: string;
+  populationTrend?: string;
+  range?: string;
+  useTrade?: string;
+  conservationActions?: string;
 }
 
 export interface SpeciesMedia {

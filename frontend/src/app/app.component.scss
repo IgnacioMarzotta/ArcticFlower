@@ -1,0 +1,38 @@
+@font-face {
+    font-family: 'BebasNeue';
+    src: url('/assets/fonts/BebasNeue-Regular.woff2') format('woff2'),
+    url('/assets/fonts/BebasNeue-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'LemonMilk';
+    src: url('/assets/fonts/LEMONMILK-Regular.otf') format('opentype'),;
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Mixone';
+    src: url('/assets/fonts/Mixone.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Roboto';
+    src: url('/assets/fonts/Roboto-Light.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+body{
+    background-color: #000;
+    margin: 0 !important;
+}
+
+html{
+    padding: 0;
+}
+

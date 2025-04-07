@@ -1,6 +1,7 @@
 const Cluster = require('../models/Cluster');
 const { getCountryCoordinates } = require('../services/geo.service');
 const countries = require("i18n-iso-countries");
+const worldCountries = require('world-countries');
 countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
 
 //Ranking de categorias IUCN, determina la peor categoria de las especies del cluster y el color del cluster en el front-end.
@@ -8,6 +9,19 @@ const categoryRanking = {
   'CR': 1,
   'EW': 2,
   'EX': 3
+};
+
+// Funcion para calcular el tamaño del marcador segun el area del pais usando escala logaritmica (mas pequeño para paises isleños, por ejemplo, mas grande para paises grandes, China o Rusia, por ejemplo)
+exports.computeMarkerSize = async (countryCode) => {
+  const countryData = worldCountries.find(c => c.cca2 === countryCode);
+  if (!countryData || !countryData.area) {
+    return 50;
+  }
+  const minSize = 10;
+  const maxSize = 150;
+  let size = Math.log10(countryData.area) * 10;
+  size = Math.max(minSize, Math.min(maxSize, size));
+  return size;
 };
 
 // Funcion para actualizar el cluster de una especie
@@ -25,6 +39,8 @@ exports.updateClusterForSpecies = async (input, res = null) => {
       
       console.log(`Actualizando cluster para ${countryCode}, ${countries.getName(countryCode, "en")}`);
       
+      const markerSize = await exports.computeMarkerSize(countryCode);
+
       if (!cluster) {
         const center = getCountryCoordinates(countryCode);
         const centerLat = center ? center.lat : loc.lat;
@@ -36,7 +52,8 @@ exports.updateClusterForSpecies = async (input, res = null) => {
           count: 1,
           lat: centerLat,
           lng: centerLng,
-          worstCategory: species.category.toUpperCase()
+          worstCategory: species.category.toUpperCase(),
+          markerSize
         });
       } else {
         cluster.count += 1;
