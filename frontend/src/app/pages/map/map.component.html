@@ -14,7 +14,7 @@
         <li *ngFor="let cluster of filteredClusters" 
             (click)="onClusterClick(cluster)">
           <span class="fi fi-{{cluster.country | lowercase}}"></span>
-          {{ cluster.name }} ({{ cluster.count }} especies)
+          {{ cluster.name }} <span class="species-count">({{ cluster.count }} especies)</span>
         </li>
       </ul>
     </div>
@@ -23,11 +23,14 @@
     <div class="result-section" *ngIf="filteredSpecies.length > 0">
       <h4>Especies:</h4>
       <ul>
-        <li *ngFor="let species of filteredSpecies" 
-            (click)="selectSpecies(species)">
+        <li *ngFor="let species of filteredSpecies" (click)="selectSpeciesFromSearch(species)">
           <span *ngIf="species.country" class="fi fi-{{species.country | lowercase}}"></span>
-          {{ species.common_name }}
-          <em *ngIf="species.scientific_name">({{ species.scientific_name }})</em>
+          <span *ngIf="species.common_name != 'Unknown'">
+            {{ species.common_name }} <em *ngIf="species.scientific_name"> ({{ species.scientific_name }})</em>
+          </span>
+          <span *ngIf="species.common_name == 'Unknown'">
+            {{ species.scientific_name }}
+          </span>
         </li>
       </ul>
     </div>
@@ -59,7 +62,7 @@
   
     <div class="country-info">
       <span class="fi fi-{{selectedCluster.country | lowercase}}"></span>
-      <h2>{{ selectedCluster.name }}</h2>
+      <h2>{{ selectedCluster.name }} ( {{ selectedCluster.count }} )</h2>
     </div>
   </div>
 
@@ -150,6 +153,11 @@
       </div>
       <p><strong>Taxon_id:</strong> {{ selectedSpecies.taxon_id }}</p>
       <p><strong>Updated at:</strong> {{ selectedSpecies.updatedAt }}</p>
+
+      <h4>Presente en:</h4>
+      <div *ngFor="let location of selectedSpecies.locations">
+        <span class="fi fi-{{location.country | lowercase}}"></span>
+      </div>
 
     </div>
 

@@ -373,6 +373,16 @@ export class MapComponent implements AfterViewInit {
       this.filteredSpecies = [];
     }
   }
+
+  public selectSpeciesFromSearch(species: SpeciesPoint): void {
+    const cluster = this.clusterPoints.find(c => c.country.toUpperCase() === species.country?.toUpperCase());
+    if (cluster) {
+      this.onClusterClick(cluster);
+      this.selectSpecies(species);
+    } else {
+      this.selectSpecies(species);
+    }
+  }
   
   isCluster(result: ClusterPoint | SpeciesPoint): result is ClusterPoint {
     return 'count' in result;
