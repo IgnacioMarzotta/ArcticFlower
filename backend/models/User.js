@@ -28,10 +28,9 @@ const userSchema = new mongoose.Schema({
   },
   google_id: String
 }, {
-  timestamps: true // Crea created_at y updated_at automáticamente
+  timestamps: true
 });
 
-// Encriptar contraseña antes de guardar
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 10);

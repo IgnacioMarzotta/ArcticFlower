@@ -4,11 +4,11 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 @Component({
-  selector: 'app-login',
-  standalone: true,
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css'],
-  imports: [ ReactiveFormsModule, CommonModule ]
+    selector: 'app-login',
+    templateUrl: './login.component.html',
+    styleUrls: ['./login.component.css'],
+    imports: [ReactiveFormsModule, CommonModule],
+    standalone: true,
 })
 export class LoginComponent {
   loginForm = this.fb.group({

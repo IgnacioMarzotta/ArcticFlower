@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth.routes');
 const speciesRoutes = require('./routes/species.routes');
+const clusterRoutes = require('./routes/cluster.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -13,12 +14,13 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Conexión a MongoDB
+// Conexion a MongoDB
 connectDB();
 
-// Rutas
+// Rutas principales
 app.use('/api/auth', authRoutes);
 app.use('/api/species', speciesRoutes);
+app.use('/api/clusters', clusterRoutes);
 
 // Manejo de errores global
 app.use((err, req, res, next) => {
@@ -27,5 +29,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Servidor backend corriendo en http://localhost:${PORT}`);
+  console.log(`## Server running on http://localhost:${PORT}`);
 });

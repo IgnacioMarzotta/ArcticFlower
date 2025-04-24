@@ -5,11 +5,11 @@ import { AuthService } from '../../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-register',
-  standalone: true,
-  templateUrl: './register.component.html',
-  styleUrls: ['./register.component.css'],
-  imports: [ReactiveFormsModule, CommonModule]
+    selector: 'app-register',
+    templateUrl: './register.component.html',
+    styleUrls: ['./register.component.css'],
+    imports: [ReactiveFormsModule, CommonModule],
+    standalone: true,
 })
 export class RegisterComponent {
   registerForm = this.fb.group({

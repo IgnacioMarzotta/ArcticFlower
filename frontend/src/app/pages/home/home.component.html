@@ -1,8 +1,123 @@
-<div class="home-container">
-    <h1>Bienvenido a Animal Species App</h1>
-    <p>Explora especies animales alrededor del mundo en nuestro globo interactivo.</p>
-    <div class="cta-buttons">
-        <a routerLink="/auth/register" class="btn-register">Regístrate</a>
-        <a routerLink="/auth/login" class="btn-login">Inicia Sesión</a>
+<div class="main">
+  <!-- Video de fondo -->
+  <div class="video-banner">
+    <video preload="auto" autoplay loop muted>
+      <source src="assets/video/banner_video.mp4" type="video/mp4">
+      Sorry, your browser does not support HTML5 video.
+    </video>
+  </div>
+
+    
+  <!-- Contenedor de contenido -->
+  <div class="content">
+    
+    <div class="title-container">
+      <h1>
+        <ngx-typed-js [strings]="[
+          'The climate is getting warmer',
+          'The climate is getting colder',
+          'The climate is losing itʹs balance',
+          'The climate is becoming more extreme',
+          'The climate is suffocating',
+          'The climate is destabilizing',
+          'The climate is collapsing',
+          'The climate is changing.']"
+          [typeSpeed]="90">
+          <span class="typing"></span>
+        </ngx-typed-js>
+      </h1>
+      <h3> And nature is paying the price.</h3>
     </div>
+
+    <section class="button-panel">
+      <button>Dona a IUCN</button>
+      <button>Aprende sobre nuestro planeta</button>
+      <button>Dona a GBIF</button>
+    </section>
+
+    <div class="main-container">
+      <div class="chart-container">
+        <h2>Extinctions since 1500.</h2>
+        <p>Cumulative % of species based on background rate of 0.1-2 extinctions per million species per year.</p>
+        <ngx-charts-line-chart
+          [view]="view"
+          [results]="graph1Data"
+          [gradient]="true"
+          [legend]="true"
+          [xAxis]="true"
+          [yAxis]="true"
+          [showGridLines]="true"
+          [xAxisLabel]="'Year'"
+          [yAxisLabel]="'Cumulative % of species driven extinct'"
+          [showXAxisLabel]="true"
+          [showYAxisLabel]="true"
+          [scheme]="graph1Scheme">
+        </ngx-charts-line-chart>
+      </div>
+      <div class="chart-container">
+        <h2>Extinctions since 1500.</h2>
+        <p>Cumulative % of species based on background rate of 0.1-2 extinctions per million species per year.</p>
+        <ngx-charts-bar-horizontal
+          [view]="view"
+          [results]="graph2Data"
+          [gradient]="true"
+          [legend]="true"
+          [showGridLines]="true"
+          [xAxisLabel]="'Year'"
+          [yAxisLabel]="'Cumulative % of species driven extinct'"
+          [showDataLabel]="true"
+          [scheme]="graph2Scheme">
+        </ngx-charts-bar-horizontal>
+      </div>
+    </div>
+
+    <div class="title-container conclusion">
+      <h1>
+        It's not just our blue marble, it's also the place 
+        <a href="https://ourworldindata.org/how-many-species-are-there" style="text-decoration: none; color: white;"> more than 2.150.000 </a> 
+        species call home.</h1>
+
+        <h1>It's our duty to protect it for those who don't have a voice to do so.</h1>
+    </div>
+
+    <div class="main-container">
+      <div class="chart-container">
+        <h2>Almost 18.000 species are endangered</h2>
+        <p>Preliminary number of animal species on the IUCN Red List in 2024, by class.</p>
+        <ngx-charts-bar-vertical
+          [view]="view"
+          [results]="graph3Data"
+          [gradient]="true"
+          [legend]="true"
+          [showGridLines]="true"
+          [xAxisLabel]="'Year'"
+          [yAxisLabel]="'Cumulative % of species driven extinct'"
+          [showDataLabel]="true"
+          [scheme]="graph3Scheme">
+        </ngx-charts-bar-vertical>
+      </div>
+      <div class="chart-container">
+        <h2>Crisis de Biodiversidad: Especies en Peligro</h2>
+        <ngx-charts-pie-chart
+          [view]="view"
+          [results]="graph1Data"
+          [labels]="true"
+          [animations]="true"
+          [doughnut]="true"
+          [arcWidth]="0.4"
+          [gradient]="true">
+          
+          <ng-template #tooltipTemplate let-model="model">
+            <div class="custom-tooltip danger">
+              <h4>⚠️ {{ model.name }}</h4>
+              <p>{{ model.value | number }} individuos</p>
+              <small>Categoría IUCN: En peligro crítico</small>
+            </div>
+          </ng-template>
+          
+        </ngx-charts-pie-chart>
+      </div>
+    </div>
+
+  </div>
 </div>

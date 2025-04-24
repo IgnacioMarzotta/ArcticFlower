@@ -1,22 +1,22 @@
 nav {
-  position: fixed;   /* Fija el navbar en la parte superior */
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 10;       /* Valor mayor que el del globo para que se superponga */
+  z-index: 10;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  background-color: #f8f9fa;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background-color: #21170B;
+  border-bottom: 2px solid #412B14;
 }
 
-/* El resto de los estilos permanecen igual */
 .nav-brand a {
   font-size: 1.5rem;
   font-weight: bold;
-  color: #333;
+  font-family: "BebasNeue";
+  color: white;
   text-decoration: none;
 }
 
@@ -24,10 +24,11 @@ nav {
   display: flex;
   gap: 1.5rem;
   align-items: center;
+  color: white;
 }
 
 .nav-links a {
-  color: #333;
+  color: white;
   text-decoration: none;
   padding: 0.5rem 1rem;
   border-radius: 4px;

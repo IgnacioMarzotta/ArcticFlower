@@ -4,16 +4,16 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-profile',
-  standalone: true,
   templateUrl: './profile.component.html',
-  styleUrls: ['./profile.component.css'],
-  imports: [ CommonModule ]
+  styleUrls: ['./profile.component.scss'],
+  imports: [CommonModule],
+  standalone: true,
 })
 export class ProfileComponent implements OnInit {
   userData: any;
-
+  
   constructor(private authService: AuthService) {}
-
+  
   ngOnInit(): void {
     // Obtener datos del usuario (mock temporal)
     this.userData = {
