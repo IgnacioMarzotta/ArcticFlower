@@ -15,6 +15,11 @@ const clusterSchema = new mongoose.Schema({
         required: true,
         default: 0
     },
+    occurrences: {
+        type: Number,
+        required: true,
+        default: 0
+    },
     lat: {
         type: Number,
         required: true

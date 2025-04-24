@@ -17,9 +17,9 @@ export interface SpeciesPoint {
   genus?: string;
   locations?: any[];
   media?: SpeciesMedia[];
-  taxon_id?: string;
+  taxon_id: string;
   createdAt?: string;
-  updatedAt?: string;
+  updatedAt: string;
   __v?: number;
   description?: SpeciesDescription;
 }
@@ -58,6 +58,7 @@ export interface ClusterPoint {
   color: string;
   country: string;
   count: number;
+  updatedAt: string;
 }
 
 export interface AllSpeciesResponse {

@@ -1,15 +1,15 @@
 <div class="search-container">
   <input 
     type="text" 
-    placeholder="Buscar país o especie..."
+    placeholder="Search by country, territory or species"
     [(ngModel)]="searchTerm"
     (input)="onSearchInput(searchTerm)"
   />
 
   <div class="search-results" *ngIf="searchTerm.trim().length > 0">
-    <!-- Resultados de países -->
+    <!-- Resultados de paises -->
     <div class="result-section" *ngIf="filteredClusters.length > 0">
-      <h4>Países:</h4>
+      <h4>Countries/Territories:</h4>
       <ul>
         <li *ngFor="let cluster of filteredClusters" 
             (click)="onClusterClick(cluster)">
@@ -21,7 +21,7 @@
 
     <!-- Resultados de especies -->
     <div class="result-section" *ngIf="filteredSpecies.length > 0">
-      <h4>Especies:</h4>
+      <h4>Species:</h4>
       <ul>
         <li *ngFor="let species of filteredSpecies" (click)="selectSpeciesFromSearch(species)">
           <span *ngIf="species.country" class="fi fi-{{species.country | lowercase}}"></span>
@@ -72,7 +72,7 @@
       <div class="image-container">
         <div class="image-wrapper" *ngIf="selectedSpecies?.media?.length">
           <img 
-            [src]="currentImage?.identifier" 
+            [src]="currentImage?.identifier || '../../../assets/img/icons/no-media.png'" 
             [alt]="'Imagen de la especie'"
             class="main-image"
             (click)="toggleImageInfo()"
@@ -112,12 +112,10 @@
         <h3>{{ selectedSpecies.scientific_name }}</h3>
       </div>
   
-      <img src="../../../assets/img/species_status/CRITICALLY_ENDANGERED.png" *ngIf="selectedSpecies.category=='CR'" alt="" style="width: 300px;">
-      <img src="../../../assets/img/species_status/EXTINCT_IN_THE_WILD.png" *ngIf="selectedSpecies.category=='EW'" alt="" style="width: 300px;">
-      <img src="../../../assets/img/species_status/EXTINCT.png" *ngIf="selectedSpecies.category=='EX'" alt="" style="width: 300px;">
+      <img src="../../../assets/img/species_status/CRITICALLY_ENDANGERED.png" *ngIf="selectedSpecies.category=='CR'" alt="" style="width: 360px;filter: invert(1);">
+      <img src="../../../assets/img/species_status/EXTINCT_IN_THE_WILD.png" *ngIf="selectedSpecies.category=='EW'" alt="" style="width: 360px;filter: invert(1);">
+      <img src="../../../assets/img/species_status/EXTINCT.png" *ngIf="selectedSpecies.category=='EX'" alt="" style="width: 360px;filter: invert(1);">
   
-      <p><strong>Categoría:</strong> {{ selectedSpecies.category }}</p>
-      
       <p><strong>Kingdom:</strong> {{ selectedSpecies.kingdom }}</p>
       <p><strong>Phylum:</strong> {{ selectedSpecies.phylum }}</p>
       <p><strong>Class:</strong> {{ selectedSpecies.class }}</p>

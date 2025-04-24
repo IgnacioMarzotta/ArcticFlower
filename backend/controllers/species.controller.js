@@ -6,7 +6,21 @@ const { getGbifIdsForSpecies,
   getMediaForSpecies,
   getCommonNameForSpecies,
   getDescriptionForSpecies
+} = require('../services/populate.service');
+
+const {
+  getGbifSpeciesVernacularName,
+  getGbifSpeciesRedListCategory,
+  getGbifSpeciesMedia
 } = require('../services/gbif.service');
+
+const { 
+  getIucnSpeciesDescriptionByScientificName,
+  getIucnSpeciesAssessmentById
+} = require('../services/iucn.service');
+
+const sanitizeHtml = require('sanitize-html');
+
 
 exports.populateSpecies = async (req, res) => {
   try {
@@ -101,6 +115,7 @@ exports.populateSpecies = async (req, res) => {
   }
 };
 
+
 exports.getAllSpecies = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -126,6 +141,7 @@ exports.getAllSpecies = async (req, res) => {
   }
 };
 
+
 exports.getSpeciesById = async (req, res) => {
   try {
     const species = await Species.findById(req.params.id);
@@ -137,6 +153,7 @@ exports.getSpeciesById = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener especie' });
   }
 };
+
 
 exports.getSpeciesByCountry = async (req, res) => {
   try {
@@ -152,6 +169,7 @@ exports.getSpeciesByCountry = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener especies por país' });
   }
 };
+
 
 exports.searchSpecies = async (req, res) => {
   console.log('[SEARCH] Query parameters:', req.query);
@@ -217,3 +235,225 @@ exports.searchSpecies = async (req, res) => {
     });
   }
 };
+
+
+/**
+ * 0. Funcion central encargada de actualizar la especie desde la API. Si el usuario hizo click en una especie y esa especie no ha sido actualizada en cierto tiempo, se llama a esta funcion para actualizarla. Entre esto, se actualiza su categoria, common_name, media y description.
+ * @returns {Object} resultado con los nuevos datos a actualizar en la base de datos.
+ */
+exports.updateSpeciesStatusFromAPI = async (req, res) => {
+  try {
+    const speciesData = req.body;
+    const { id, taxon_id, category } = speciesData;
+    console.log("[species.controller - updateSpeciesStatusFromAPI] Updating species: ", taxon_id);
+    if (!id || !taxon_id) {
+      return res.status(400).json({ error: 'Falta id o taxon_id' });
+    }
+
+    //1. Validar IUCN category
+    console.log("[species.controller - updateSpeciesStatusFromAPI] 1. Validating category. Current: ", category);
+    const categoryResult = await validateSpeciesIucnCategory(id, taxon_id);
+
+    //2. Validar common_name
+    console.log("[species.controller - updateSpeciesStatusFromAPI] 2. Validating vernacular names.");
+    const vernacularResult = await validateVernacularName(id, taxon_id);
+
+    //3. Validar media
+    console.log("[species.controller - updateSpeciesStatusFromAPI] 3. Validating media");
+    const mediaResult = await validateSpeciesMedia(id, taxon_id);
+
+    //4. Validar description
+    console.log("[species.controller - updateSpeciesStatusFromAPI] 4. Validating description");
+    const descriptionResult = await validateSpeciesDescription(id);
+
+    return res.json({
+      message: 'Especie actualizada',
+      category: categoryResult,
+      vernacular: vernacularResult,
+      media: mediaResult,
+      description: descriptionResult,
+    });
+
+  } catch (error) {
+    console.error('[species.controller - updateSpeciesStatusFromAPI] Error al actualizar estado de especie:', error);
+    res.status(500).json({ error: 'Error interno al actualizar especie' });
+  }
+};
+
+
+/**
+ * 1. Obtiene la categoría de la Lista Roja de IUCN desde GBIF y actualiza el campo category.
+ * @returns {Object} resultado con la categoría anterior y la nueva
+ */
+async function validateSpeciesIucnCategory(id, taxon_id) {
+  //1.1 Busco la especie en la DB
+  const species = await Species.findById(id);
+  if (!species) throw new Error('Especie no encontrada');
+
+  //1.2 Siempre actualizo el estado de la especie con el endpoint de GBIF
+  const gbif = await getGbifSpeciesRedListCategory(taxon_id);
+  const newCode = gbif.code;
+  console.log("   [species.controller - validateSpeciesIucnCategory] New category: ", newCode);
+
+  //1.3 Actualizo unicamente si la categoria nueva es distinta a la actual
+  if (typeof newCode === 'string' && newCode !== species.category) {
+    const before = species.category;
+    species.category = newCode;
+    await species.save();
+    return { updated: true, field: 'category', before, after: newCode };
+  }
+
+  return { updated: false, field: 'category', current: species.category };
+}
+
+
+/**
+ * 2. Si la especie no tiene common_name o es 'Unknown', obtiene un vernacular name de GBIF y actualiza el documento.
+ * @returns {Object} resultado con el nuevo common_name o null si no cambió
+ */
+async function validateVernacularName(id, taxon_id) {
+  //2.1 Busco la especie en la DB
+  const species = await Species.findById(id);
+  if (!species) throw new Error('Especie no encontrada');
+
+  //2.2 Valido si la especie ya tiene un common_name, de ser asi, ignoro.
+  if (species.common_name && species.common_name !== 'Unknown') {
+    console.log("   [species.controller - validateSpeciesIucnCategory] Species already has common_name");
+    return { updated: false, field: 'common_name', current: species.common_name };
+  }
+
+  //2.3 Si la especie no tiene common_name, obtengo una lista de los vernacularNames desde GBIF
+  const gbif = await getGbifSpeciesVernacularName(taxon_id);
+
+  //2.4 Obtengo el primer common_name en ingles, de no existir, guardo el primero de cualquier idioma
+  const eng = gbif.results.find(n => n.language === 'eng');
+  const pick = eng ? eng.vernacularName : gbif.results[0]?.vernacularName;
+  if (pick) {
+    const before = species.common_name;
+    species.common_name = pick;
+    await species.save();
+    console.log("   [species.controller - validateSpeciesIucnCategory] New common_name: ", pick);
+    return { updated: true, field: 'common_name', before, after: pick };
+  }
+
+  return { updated: false, field: 'common_name', current: species.common_name };
+}
+
+
+/**
+* 3. Valida si existen medios para la especie. Si no tiene, consulto el endpoint de GBIF para obtener.
+* @returns {Object} resultado con los nuevos registros de media para almacenar en el array.
+*/
+async function validateSpeciesMedia(id, taxon_id) {
+  //3.1 Busco la especie en la DB
+  const species = await Species.findById(id);
+  if (!species) throw new Error('Especie no encontrada');
+
+  //3.2 Si la especie ya tiene media asociada, ignoro.
+  if (species.media && species.media.length > 0) {
+    console.log("   [species.controller - validateSpeciesMedia] Species already has media.");
+    return { updated: false, field: 'media', current: species.media.length };
+  }
+
+  //3.3 Si la especie no tiene media, obtengo una lista de los medios desde GBIF
+  const gbif = await getGbifSpeciesMedia(taxon_id);
+  const mappedMedia = gbif.results.map(media => ({
+    type: media.type || 'unknown',
+    format: media.format || 'unknown',
+    identifier: media.identifier,
+    title: media.title || '',
+    description: media.description || '',
+    creator: media.creator || '',
+    contributor: '',
+    publisher: media.publisher || '',
+    rightsHolder: '',
+    license: media.references || ''
+  }));
+
+  //3.4 Actualizo unicamente si hay algo que agregar
+  if (mappedMedia.length > 0) {
+    species.media = mappedMedia;
+    console.log("   [species.controller - validateSpeciesMedia] Obtained new media. Total: ", mappedMedia.length);
+    await species.save();
+    return { updated: true, field: 'media', added: mappedMedia.length };
+  }
+
+  return { updated: false, field: 'media', added: 0 };
+}
+
+
+/**
+* 4. Valida si existe desciption para la especie, si alguno de los campos esta vacio, consulta a IUCN por assessments que si tengan.
+* @returns {Object} resultado con los nuevos campos description limpios para almacenar.
+*/
+async function validateSpeciesDescription(id) {
+  
+  //4.1-Busco la especie en la base de datos
+  const species = await Species.findById(id);
+  if (!species) {
+    return { updated: false, reason: 'species not found' };
+  }
+  
+  //4.2-Con la especie, rescato genus y scientific_name
+  const { genus, scientific_name: sciName } = species;
+  if (!genus || !sciName) {
+    console.log("   [species.controller - validateSpeciesDescription]ERROR: Genus or scientific_name are missing:", { genus, sciName });
+    return { updated: false, reason: 'No genus or scientific_name found' };
+  }
+
+  //4.3-Construyo el nombre científico para la búsqueda con genus y scientific_name
+  const prefix = genus + ' ';
+  const speciesPart = sciName.startsWith(prefix)
+    ? sciName.slice(prefix.length)
+    : sciName;
+
+  //4.4-Llamo al endpoint de description para obtener una lista de los assessments mas recientes
+  const data = await getIucnSpeciesDescriptionByScientificName(genus, speciesPart);
+  
+  //4.5-Tomo el assessment mas reciente y llamo al endpoint de assessment para obtener la documentación
+  const firstAssessment = Array.isArray(data.assessments) && data.assessments[0];
+  if (!firstAssessment) {
+    console.log("   [species.controller - validateSpeciesDescription]WARN: Got no assessments from the IUCN API");
+    return { updated: false, reason: '[species.controller - validateSpeciesDescription] No assessments found for this species.' };
+  }
+  const assessmentDetail = await getIucnSpeciesAssessmentById(firstAssessment.assessment_id);
+  const doc = assessmentDetail.documentation || {};
+
+  //4.6-Defino los campos que voy a reemplazar
+  const mapping = {
+    rationale: 'rationale',
+    habitats: 'habitat',
+    threats: 'threats',
+    population: 'population',
+    population_trend: 'populationTrend',
+    range: 'range',
+    use_trade: 'useTrade',
+    measures: 'conservationActions'
+  };
+
+  //4.6.1-Validar que description existe
+  species.description = {};
+
+  //4.7-Reemplazo en la base de datos los campos no nulos que haya devuelto la API
+  for (const [docKey, modelKey] of Object.entries(mapping)) {
+    const raw = doc[docKey];
+    if (typeof raw === 'string' && raw.trim() !== '') {
+      const cleaned = cleanText(raw);
+      if (cleaned !== species.description[modelKey]) {
+        species.description[modelKey] = cleaned;
+        changed = true;
+      }
+    }
+  }
+
+  console.log("   [species.controller - validateSpeciesDescription] Updated species with new documentation from IUCN.");
+  await species.save();
+  return { updated: true, fields: Object.values(mapping) };
+}
+
+//Funcion encargada de limpiar el texto de caracteres no deseados. Principalmente usada antes de guardar description, ya que los resultados desde la API vienen con tags HTML y otros elementos no deseados.
+function cleanText(input = '') {
+  let cleaned = sanitizeHtml(input, { allowedTags: [], allowedAttributes: {} });
+  cleaned = cleaned.replace(/\s+/g, ' ').trim();
+  return cleaned;
+}

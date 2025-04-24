@@ -10,11 +10,7 @@ export class SpeciesService {
   private apiUrl = '/api/species';
   
   constructor(private http: HttpClient) { }
-  
-  populateSpecies(speciesData: any): Observable<any> {
-    return this.http.post(this.apiUrl, speciesData);
-  }
-  
+
   getAllSpecies(page: number = 1, limit: number = 1000): Observable<AllSpeciesResponse> {
     return this.http.get<AllSpeciesResponse>(
       `${this.apiUrl}?page=${page}&limit=${limit}`
@@ -33,6 +29,14 @@ export class SpeciesService {
     return this.http.get<any[]>(`${this.apiUrl}/country/${country}`);
   }
   
+  populateSpecies(speciesData: any): Observable<any> {
+    return this.http.post(this.apiUrl, speciesData);
+  }
+
+  updateSpeciesStatusFromAPI(species: any) {
+    return this.http.post<any>(`${this.apiUrl}/update-status`, species);
+  }
+
   searchSpecies(searchTerm: string, limit: number = 50): Observable<SpeciesPoint[]> {
     const params = new HttpParams()
     .set('q', searchTerm)

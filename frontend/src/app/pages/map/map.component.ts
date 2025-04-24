@@ -23,11 +23,14 @@ import countries from 'world-countries';
 
 export class MapComponent implements AfterViewInit {
   @ViewChild('globeContainer') globeContainer!: ElementRef;
+
+  //Instancia del globo, marcadores y vista movil/desktop
   private globeInstance: any;
   private markerSvg = `<svg viewBox="-4 0 36 36"><path fill="currentColor" d="M14,0 C21.732,0 28,5.641 28,12.6 C28,23.963 14,36 14,36 C14,36 0,24.064 0,12.6 C0,5.641 6.268,0 14,0 Z"></path><circle fill="black" cx="14" cy="14" r="7"></circle></svg>`;
   public isLoading: boolean = true;
   public isMobile: boolean = false;
   
+  //Marcadores y selecciones actuales
   public selectedSpecies: SpeciesPoint | null = null;
   public selectedCluster: ClusterPoint | null = null;
   private clusterPoints: ClusterPoint[] = [];
@@ -41,7 +44,9 @@ export class MapComponent implements AfterViewInit {
   private searchSubject = new Subject<string>();
   public searchLoading = false;
   private minSearchLength = 3;
+  public daysToCheck = 14;
   
+  //Carga de media
   public showImageInfo: boolean = false;
   currentImageIndex = 0;
   
@@ -61,7 +66,7 @@ export class MapComponent implements AfterViewInit {
     this.spinner.show();
     this.initializeGlobe();
     this.addClouds();
-    this.loadClusters();
+    this.loadAllClusters();
     
     setTimeout(() => {
       this.isLoading = false;
@@ -85,7 +90,6 @@ export class MapComponent implements AfterViewInit {
         const markerDiv = document.createElement('div');
         markerDiv.style.position = 'absolute';
         markerDiv.style.transform = 'translate(-50%, -50%)';
-        // Utilizamos la propiedad 'size' para establecer el ancho y alto
         markerDiv.style.width = `${d.size}px`;
         markerDiv.style.height = `${d.size}px`;
         markerDiv.style.border = '2px solid #fff';
@@ -101,7 +105,7 @@ export class MapComponent implements AfterViewInit {
         // Crea el elemento de la bandera usando flag-icons.
         const flagElement = document.createElement('span');
         flagElement.className = `fi fi-${d.country.toLowerCase()}`;
-        flagElement.style.fontSize = `${d.size}px`; // También ajustamos el tamaño de la bandera
+        flagElement.style.fontSize = `${d.size}px`;
         flagElement.style.width = '100%';
         flagElement.style.borderRadius = '50%';
         
@@ -151,16 +155,68 @@ export class MapComponent implements AfterViewInit {
   }
   
   onClusterClick(cluster: ClusterPoint): void {
+    this.clearCurrentSelection();
     if (this.expandedClusterId === cluster.id) {
-      this.clearCurrentSelection();
       return;
     }
-    this.clearCurrentSelection();
+    this.checkClusterUpdate(cluster);
     console.log("Cluster seleccionado:", cluster);
-    this.selectedSpecies = null;
     this.expandedClusterId = cluster.id;
     this.selectedCluster = cluster;
     this.spinner.show();
+    this.loadClusterSpecies(cluster);
+    this.flyToMarker(cluster);
+  }
+
+  checkClusterUpdate(cluster: ClusterPoint): void {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - this.daysToCheck);
+    if (new Date(cluster.updatedAt) < oneWeekAgo) {
+      console.log("El cluster no ha sido actualizado en el plazo establecido. Se realizará una llamada a la API para actualizar datos.");
+      this.clusterService.updateClusterStatusFromAPI(cluster.country).subscribe({
+        next: resp => {
+          console.log("RESPUESTA ENTERA:", resp);
+          console.log("Cluster actualizado:", resp.cluster);
+          console.log("GBIF details:   ", resp.gbif);
+          this.isLoading = false;
+        },
+        error: err => {
+          console.error('Error al obtener detalles de GBIF:', err);
+          this.isLoading = false;
+        }
+      });
+    }
+    else {
+      //No actualizar
+      console.log("El cluster ha sido actualizado recientemente. No es necesario realizar una llamada a la API externa.");
+      return;
+    }
+  }
+
+  checkSpeciesUpdate(species: SpeciesPoint): void {
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - this.daysToCheck);
+    if (new Date(species.updatedAt) < oneWeekAgo) {
+      //Actualizar
+      console.log("La especie no ha sido actualizada en el plazo establecido. Se realizará una llamada a la API para actualizar datos.");
+      this.speciesService.updateSpeciesStatusFromAPI(species).subscribe({
+        next: resp => {
+          this.isLoading = false;
+        },
+        error: err => {
+          console.error('Error al obtener detalles de API:', err);
+          this.isLoading = false;
+        }
+      });
+    }
+    else {
+      //No actualizar
+      console.log("La especie ha sido actualizado recientemente. No es necesario realizar una llamada a la API externa.");
+      return;
+    }
+  }
+
+  loadClusterSpecies(cluster: ClusterPoint): void {
     this.speciesService.getSpeciesByCountry(cluster.country).subscribe({
       next: (speciesArray: any[]) => {
         this.expandedSpeciesMarkers = speciesArray.map(species => {
@@ -174,9 +230,11 @@ export class MapComponent implements AfterViewInit {
                 lng: loc.lng,
                 name: species.common_name,
                 category: species.category,
-                size: 30,
+                size: 20,
                 color: this.getColorByCategory(species.category),
-                country: loc.country
+                country: loc.country,
+                updatedAt: species.updatedAt,
+                taxon_id: species.taxon_id,
               } as SpeciesPoint;
             }
           }
@@ -190,7 +248,6 @@ export class MapComponent implements AfterViewInit {
         this.spinner.hide();
       }
     });
-    this.flyToMarker(cluster);
   }
   
   private updateGlobeMarkers(): void {
@@ -207,7 +264,7 @@ export class MapComponent implements AfterViewInit {
     }
   }
   
-  private loadClusters(): void {
+  private loadAllClusters(): void {
     this.clusterService.getClusters().subscribe({
       next: (clusters: any[]) => {
         this.clusterPoints = clusters.map(cluster => ({
@@ -219,7 +276,8 @@ export class MapComponent implements AfterViewInit {
           size: cluster.markerSize,
           color: this.getColorByCategory(cluster.worstCategory),
           country: cluster.country,
-          count: cluster.count
+          count: cluster.count,
+          updatedAt: cluster.updatedAt
         }));
         
         this.expandedClusterId = null;
@@ -232,17 +290,21 @@ export class MapComponent implements AfterViewInit {
   
   public selectSpecies(species: SpeciesPoint): void {
     this.isLoading = true;
+    this.checkSpeciesUpdate(species);
     this.speciesService.getSpeciesDetail(species.id).subscribe({
       next: (detail) => {
         this.selectedSpecies = detail;
-        this.isLoading = false;
-        console.info('Detalle de la especie:', detail);
+        console.log("Taxon_ID:", detail.taxon_id);
       },
-      error: (err) => console.error('Error al obtener el detalle de la especie:', err)
+      error: (err) => {
+        console.error('Error al obtener el detalle de la especie:', err);
+        this.isLoading = false;
+      }
     });
+    
     this.flyToMarker(species);
   }
-  
+   
   // Metodo para cerrar el panel lateral
   public closePanel(): void {
     this.clearCurrentSelection();
@@ -288,7 +350,9 @@ export class MapComponent implements AfterViewInit {
                 category: species.category,
                 size: 30,
                 color: this.getColorByCategory(species.category),
-                country: loc.country
+                country: loc.country,
+                updatedAt: species.updatedAt,
+                taxon_id: species.taxon_id,
               });
             });
           }
@@ -375,14 +439,19 @@ export class MapComponent implements AfterViewInit {
   }
 
   public selectSpeciesFromSearch(species: SpeciesPoint): void {
-    const cluster = this.clusterPoints.find(c => c.country.toUpperCase() === species.country?.toUpperCase());
+    const cluster = this.clusterPoints.find(c => 
+      c.country.toUpperCase() === species.country?.toUpperCase()
+    );
     if (cluster) {
       this.onClusterClick(cluster);
-      this.selectSpecies(species);
+      setTimeout(() => {
+        this.selectSpecies(species);
+      }, 1000);
     } else {
       this.selectSpecies(species);
     }
   }
+  
   
   isCluster(result: ClusterPoint | SpeciesPoint): result is ClusterPoint {
     return 'count' in result;

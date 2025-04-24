@@ -33,15 +33,20 @@ $button-color: #E9B838;
     border: 2px solid white;
     font-weight: bold;
     border-radius: 100px;
-
-    &:hover {
-      border: 2px solid $primary-color;
-      transition: 0.2s;
-    }
+    outline: none;
+    box-shadow: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 
     &:focus {
       border: 2px solid $primary-color;
-      transition: 0.2s;
+      transition: border 0.2s;
+    }
+    
+    &:hover {
+      border: 2px solid $primary-color;
+      transition: border 0.2s;
     }
   }
 

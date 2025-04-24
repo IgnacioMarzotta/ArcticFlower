@@ -1,8 +1,11 @@
 const Cluster = require('../models/Cluster');
 const { getCountryCoordinates } = require('../services/geo.service');
+const { getOccurrencesByCountryBatch } = require('../services/populate.service');
+const { getGbifCountryData } = require('../services/gbif.service');
 const countries = require("i18n-iso-countries");
 const worldCountries = require('world-countries');
 countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
+
 
 //Ranking de categorias IUCN, determina la peor categoria de las especies del cluster y el color del cluster en el front-end.
 const categoryRanking = {
@@ -10,6 +13,7 @@ const categoryRanking = {
   'EW': 2,
   'EX': 3
 };
+
 
 // Funcion para calcular el tamaño del marcador segun el area del pais usando escala logaritmica (mas pequeño para paises isleños, por ejemplo, mas grande para paises grandes, China o Rusia, por ejemplo)
 exports.computeMarkerSize = async (countryCode) => {
@@ -23,6 +27,7 @@ exports.computeMarkerSize = async (countryCode) => {
   size = Math.max(minSize, Math.min(maxSize, size));
   return size;
 };
+
 
 // Funcion para actualizar el cluster de una especie
 exports.updateClusterForSpecies = async (input, res = null) => {
@@ -81,6 +86,64 @@ exports.updateClusterForSpecies = async (input, res = null) => {
     }
   }
 };
+
+
+exports.updateClusterStatusFromAPI = async (req, res) => {
+  try {
+    //1. Saco el countryCode desde la ruta
+    const countryCode = req.params.countryCode;
+
+    //2. Con el countryCode, consulto a la API de GBIF para obtener el total de occurrences de ese pais.
+    const data = await getGbifCountryData(countryCode);
+    const count = data.occurrences.count;
+
+    //3. Actualizo el cluster en la DB con el nuevo conteo de occurrences.
+    const updated = await Cluster.findOneAndUpdate(
+      { country: countryCode },
+      {
+        $set: { occurrences: count },
+        $currentDate: { updatedAt: true }
+      },
+      { new: true, select: '-__v' }
+    );
+
+    //4. Devuelvo ambas al front
+    res.json({
+      cluster: updated,
+      gbif:    data.occurrences
+    });
+  } catch (error) {
+    console.error("Error en updateClusterStatusFromAPI:", error);
+    res.status(500).json({ error: "Error interno en GBIF" });
+  }
+};
+
+
+exports.updateAllClusterOccurrences = async (req, res) => {
+  try {
+    // 1. Traer todos los clusters y sus country codes
+    const clusters = await Cluster.find().select('country');
+    const countryCodes = clusters.map(c => c.country);
+
+    // 2. Obtener todos los conteos de ocurrencias
+    const counts = await getOccurrencesByCountryBatch(countryCodes);
+
+    // 3. Actualizar en MongoDB
+    const updates = clusters.map(c => 
+      Cluster.updateOne(
+        { country: c.country },
+        { $set: { occurrences: counts[c.country] || 0 } }
+      )
+    );
+    await Promise.all(updates);
+
+    res.json({ message: 'Clusters actualizados con occurrences', counts });
+  } catch (err) {
+    console.error('Error actualizando occurrences:', err);
+    res.status(500).json({ error: 'No se pudo actualizar occurrences' });
+  }
+};
+
 
 exports.getSpeciesClusters = async (req, res) => {
   try {
