@@ -7,9 +7,9 @@ const {
     updateClusterStatusFromAPI 
 } = require('../controllers/cluster.controller');
 
-router.post('/update-occurrences', updateAllClusterOccurrences);
-router.get('/:countryCode/gbif', updateClusterStatusFromAPI);
+router.post('/gbif', updateClusterStatusFromAPI);
 router.post('/', updateClusterForSpecies);
 router.get('/', getSpeciesClusters);
+router.post('/update-occurrences', updateAllClusterOccurrences);
 
 module.exports = router;
