@@ -21,7 +21,7 @@ export class ClusterService {
     return this.http.post(this.apiUrl, speciesData);
   }
 
-  updateClusterStatusFromAPI(countryCode: string) {
-    return this.http.get<any>(`${this.apiUrl}/${countryCode}/gbif`);
+  updateClusterStatusFromAPI(cluster: ClusterPoint) {
+    return this.http.post<any>(`${this.apiUrl}/gbif`, cluster);
   }
 }

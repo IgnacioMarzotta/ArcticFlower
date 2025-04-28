@@ -23,21 +23,21 @@ import countries from 'world-countries';
 
 export class MapComponent implements AfterViewInit {
   @ViewChild('globeContainer') globeContainer!: ElementRef;
-
-  //Instancia del globo, marcadores y vista movil/desktop
+  
+  //Globe instance, markers and mobile/desktop view
   private globeInstance: any;
   private markerSvg = `<svg viewBox="-4 0 36 36"><path fill="currentColor" d="M14,0 C21.732,0 28,5.641 28,12.6 C28,23.963 14,36 14,36 C14,36 0,24.064 0,12.6 C0,5.641 6.268,0 14,0 Z"></path><circle fill="black" cx="14" cy="14" r="7"></circle></svg>`;
   public isLoading: boolean = true;
   public isMobile: boolean = false;
   
-  //Marcadores y selecciones actuales
+  //Markers and current selections
   public selectedSpecies: SpeciesPoint | null = null;
   public selectedCluster: ClusterPoint | null = null;
   private clusterPoints: ClusterPoint[] = [];
   private expandedClusterId: string | null = null;
   private expandedSpeciesMarkers: SpeciesPoint[] = [];
   
-  //Sistema de busqueda
+  //Search system
   public searchTerm: string = "";
   public filteredClusters: ClusterPoint[] = [];
   public filteredSpecies: SpeciesPoint[] = [];
@@ -46,7 +46,7 @@ export class MapComponent implements AfterViewInit {
   private minSearchLength = 3;
   public daysToCheck = 14;
   
-  //Carga de media
+  //Media carrousel
   public showImageInfo: boolean = false;
   currentImageIndex = 0;
   
@@ -73,7 +73,7 @@ export class MapComponent implements AfterViewInit {
       this.spinner.hide();
     }, 1500);
   }
-
+  
   private initializeGlobe(): void {
     this.globeInstance = GLOBE.default({ animateIn: false })(this.globeContainer.nativeElement)
     .globeImageUrl('../../../assets/img/globe/earth.jpg')
@@ -167,13 +167,13 @@ export class MapComponent implements AfterViewInit {
     this.loadClusterSpecies(cluster);
     this.flyToMarker(cluster);
   }
-
+  
   checkClusterUpdate(cluster: ClusterPoint): void {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - this.daysToCheck);
     if (new Date(cluster.updatedAt) < oneWeekAgo) {
       console.log("El cluster no ha sido actualizado en el plazo establecido. Se realizará una llamada a la API para actualizar datos.");
-      this.clusterService.updateClusterStatusFromAPI(cluster.country).subscribe({
+      this.clusterService.updateClusterStatusFromAPI(cluster).subscribe({
         next: resp => {
           console.log("RESPUESTA ENTERA:", resp);
           console.log("Cluster actualizado:", resp.cluster);
@@ -192,7 +192,7 @@ export class MapComponent implements AfterViewInit {
       return;
     }
   }
-
+  
   checkSpeciesUpdate(species: SpeciesPoint): void {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - this.daysToCheck);
@@ -215,7 +215,7 @@ export class MapComponent implements AfterViewInit {
       return;
     }
   }
-
+  
   loadClusterSpecies(cluster: ClusterPoint): void {
     this.speciesService.getSpeciesByCountry(cluster.country).subscribe({
       next: (speciesArray: any[]) => {
@@ -304,7 +304,7 @@ export class MapComponent implements AfterViewInit {
     
     this.flyToMarker(species);
   }
-   
+  
   // Metodo para cerrar el panel lateral
   public closePanel(): void {
     this.clearCurrentSelection();
@@ -397,7 +397,7 @@ export class MapComponent implements AfterViewInit {
       );
     }
   }
-
+  
   private setupSearch(): void {
     this.searchSubject.pipe(
       debounceTime(300),
@@ -412,7 +412,7 @@ export class MapComponent implements AfterViewInit {
       })
     ).subscribe(species => this.filteredSpecies = species);
   }
-
+  
   clearCurrentSelection(): void {
     this.selectedSpecies = null;
     this.currentImageIndex = 0;
@@ -437,7 +437,7 @@ export class MapComponent implements AfterViewInit {
       this.filteredSpecies = [];
     }
   }
-
+  
   public selectSpeciesFromSearch(species: SpeciesPoint): void {
     const cluster = this.clusterPoints.find(c => 
       c.country.toUpperCase() === species.country?.toUpperCase()
@@ -451,7 +451,6 @@ export class MapComponent implements AfterViewInit {
       this.selectSpecies(species);
     }
   }
-  
   
   isCluster(result: ClusterPoint | SpeciesPoint): result is ClusterPoint {
     return 'count' in result;
