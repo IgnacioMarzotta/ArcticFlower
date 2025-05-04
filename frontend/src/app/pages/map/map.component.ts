@@ -1,16 +1,17 @@
+import { debounceTime, distinctUntilChanged, switchMap, finalize, catchError, filter } from 'rxjs/operators';
 import { Component, AfterViewInit, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
-import * as GLOBE from 'globe.gl';
-import * as THREE from 'three';
-import { SpeciesService } from '../../core/services/species.service';
-import { ClusterService } from '../../core/services/cluster.service';
 import { CommonModule } from '@angular/common';
 import { NgxSpinnerComponent, NgxSpinnerService } from 'ngx-spinner';
 import { FormsModule } from '@angular/forms';
-import 'flag-icons/css/flag-icons.min.css';
 import { Subject, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, finalize, catchError, filter } from 'rxjs/operators';
-import { SpeciesPoint, ClusterPoint, SpeciesMedia } from '../../core/models/map.models';
+import * as GLOBE from 'globe.gl';
+import * as THREE from 'three';
 import countries from 'world-countries';
+import 'flag-icons/css/flag-icons.min.css';
+import { SpeciesPoint, ClusterPoint, SpeciesMedia } from '../../core/models/map.models';
+import { SpeciesService } from '../../core/services/species.service';
+import { ClusterService } from '../../core/services/cluster.service';
+import { ReportService } from 'src/app/core/services/report.service';
 
 @Component({
   selector: 'app-map',
@@ -55,6 +56,7 @@ export class MapComponent implements AfterViewInit {
     private cdr: ChangeDetectorRef,
     private spinner: NgxSpinnerService,
     private clusterService: ClusterService,
+    private reportService: ReportService
   ) {}
   
   ngOnInit(): void {
@@ -175,9 +177,13 @@ export class MapComponent implements AfterViewInit {
       console.log("El cluster no ha sido actualizado en el plazo establecido. Se realizará una llamada a la API para actualizar datos.");
       this.clusterService.updateClusterStatusFromAPI(cluster).subscribe({
         next: resp => {
-          console.log("RESPUESTA ENTERA:", resp);
           console.log("Cluster actualizado:", resp.cluster);
-          console.log("GBIF details:   ", resp.gbif);
+          const updatedCluster = resp.cluster;
+          cluster.updatedAt = updatedCluster.updatedAt || new Date().toISOString(); //Se actualiza el cluster con la fecha actual unicamente en el front-end, para evitar que las actualizaciones se disparen mas de 1 vez.
+          const idx = this.clusterPoints.findIndex(c => c.id === cluster.id);
+          if (idx !== -1) {
+            this.clusterPoints[idx].updatedAt = cluster.updatedAt;
+          }
           this.isLoading = false;
         },
         error: err => {
@@ -201,6 +207,7 @@ export class MapComponent implements AfterViewInit {
       console.log("La especie no ha sido actualizada en el plazo establecido. Se realizará una llamada a la API para actualizar datos.");
       this.speciesService.updateSpeciesStatusFromAPI(species).subscribe({
         next: resp => {
+          species.updatedAt = new Date().toISOString(); //Se actualiza la especie con la fecha actual unicamente en el front-end, para evitar que las actualizaciones se disparen mas de 1 vez.
           this.isLoading = false;
         },
         error: err => {
@@ -293,6 +300,7 @@ export class MapComponent implements AfterViewInit {
     this.checkSpeciesUpdate(species);
     this.speciesService.getSpeciesDetail(species.id).subscribe({
       next: (detail) => {
+        detail.id = detail._id;
         this.selectedSpecies = detail;
         console.log("Taxon_ID:", detail.taxon_id);
       },
@@ -478,5 +486,12 @@ export class MapComponent implements AfterViewInit {
   
   toggleImageInfo(): void {
     this.showImageInfo = !this.showImageInfo;
+  }
+
+  openSpeciesReport() {
+    console.log("Abriendo modal de reportes para la especie:", this.selectedSpecies?.id);
+    if (this.selectedSpecies?.id) {
+      this.reportService.triggerReport(this.selectedSpecies.id);
+    }
   }
 }

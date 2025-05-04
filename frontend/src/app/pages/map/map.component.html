@@ -112,9 +112,10 @@
         <h3>{{ selectedSpecies.scientific_name }}</h3>
       </div>
   
-      <img src="../../../assets/img/species_status/CRITICALLY_ENDANGERED.png" *ngIf="selectedSpecies.category=='CR'" alt="" style="width: 360px;filter: invert(1);">
-      <img src="../../../assets/img/species_status/EXTINCT_IN_THE_WILD.png" *ngIf="selectedSpecies.category=='EW'" alt="" style="width: 360px;filter: invert(1);">
-      <img src="../../../assets/img/species_status/EXTINCT.png" *ngIf="selectedSpecies.category=='EX'" alt="" style="width: 360px;filter: invert(1);">
+      <img src="../../../assets/img/species_status/CRITICALLY_ENDANGERED2.png" *ngIf="selectedSpecies.category=='CR'" alt="" style="width: 360px;">
+      <img src="../../../assets/img/species_status/CRITICALLY_ENDANGERED3.png" *ngIf="selectedSpecies.category=='CR'" alt="" style="width: 360px;">
+      <img src="../../../assets/img/species_status/EXTINCT_IN_THE_WILD.png" *ngIf="selectedSpecies.category=='EW'" alt="" style="width: 360px;">
+      <img src="../../../assets/img/species_status/EXTINCT.png" *ngIf="selectedSpecies.category=='EX'" alt="" style="width: 360px;">
   
       <p><strong>Kingdom:</strong> {{ selectedSpecies.kingdom }}</p>
       <p><strong>Phylum:</strong> {{ selectedSpecies.phylum }}</p>
@@ -122,8 +123,11 @@
       <p><strong>Order:</strong> {{ selectedSpecies.order }}</p>
       <p><strong>Family:</strong> {{ selectedSpecies.family }}</p>
       <p><strong>Genus:</strong> {{ selectedSpecies.genus }}</p>
-      <div *ngIf="selectedSpecies.description">
-        <h4>Descripción</h4>
+
+      <hr>
+
+      <div id="description" *ngIf="selectedSpecies.description">
+        <h4>Description</h4>
         <p *ngIf="selectedSpecies.description.rationale">
           <strong>Rationale:</strong> {{ selectedSpecies.description.rationale }}
         </p>
@@ -149,12 +153,24 @@
           <strong>Conservation Actions:</strong> {{ selectedSpecies.description.conservationActions }}
         </p>
       </div>
+
+      <hr>
+
+      <button class="report-species-btn" (click)="openSpeciesReport()">
+        <img src="../../../assets/img/icons/info-black.png" alt="">
+        Report an issue with this species
+      </button>
+
       <p><strong>Taxon_id:</strong> {{ selectedSpecies.taxon_id }}</p>
+
       <p><strong>Updated at:</strong> {{ selectedSpecies.updatedAt }}</p>
 
-      <h4>Presente en:</h4>
-      <div *ngFor="let location of selectedSpecies.locations">
-        <span class="fi fi-{{location.country | lowercase}}"></span>
+      <h4>Present in:</h4>
+      <div class="flags-container">
+        <span 
+        *ngFor="let location of selectedSpecies.locations" 
+        class="fi fi-{{location.country | lowercase}} flag">
+        </span>
       </div>
 
     </div>

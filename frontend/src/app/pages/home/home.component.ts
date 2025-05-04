@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
 import { CommonModule } from '@angular/common';
 import { NgxTypedJsModule } from 'ngx-typed-js';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-home',

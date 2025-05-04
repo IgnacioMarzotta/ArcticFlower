@@ -15,6 +15,8 @@ $button-color: #E9B838;
 }
 
 .search-container {
+  font-family: "Roboto";
+  text-align: justify;
   position: fixed;
   top: 100px;
   left: 20px;
@@ -24,7 +26,7 @@ $button-color: #E9B838;
   padding: 10px;
   border-radius: 5px;
   border: 2px solid $secondary-background;
-
+  
   input {
     width: 90%;
     padding: 8px;
@@ -38,7 +40,7 @@ $button-color: #E9B838;
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-
+    
     &:focus {
       border: 2px solid $primary-color;
       transition: border 0.2s;
@@ -49,14 +51,14 @@ $button-color: #E9B838;
       transition: border 0.2s;
     }
   }
-
+  
   .search-results {
     margin-top: 10px;
     max-height: 300px;
     overflow-y: auto;
     color: white;
     font-family: "Roboto";
-
+    
     ul {
       list-style: none;
       padding: 0;
@@ -67,12 +69,12 @@ $button-color: #E9B838;
       padding: 5px;
       cursor: pointer;
       border-bottom: 1px solid #eee;
-
+      
       &:hover {
         background-color: #f0f0f0;
       }
     }
-
+    
     .species-count {
       font-size: 12px;
       color: #b4b4b4;
@@ -93,6 +95,7 @@ $button-color: #E9B838;
   max-height: calc(85vh);
   overflow-y: auto;
   background: $primary-background;
+  font-family: "Roboto";
   color: white;
   z-index: 1000;
   border-radius: 10px;
@@ -109,7 +112,7 @@ $button-color: #E9B838;
       background: transparent;
       border: none;
       cursor: pointer;
-    
+      
       img {
         filter: invert(1);
         width: 18px;
@@ -128,7 +131,6 @@ $button-color: #E9B838;
       }
     }
   }
-
   
   .species-details{
     
@@ -207,9 +209,48 @@ $button-color: #E9B838;
         }
       }
     }
-
+    
     .species-data{
       padding: 10px;
+
+      .report-species-btn {
+        background: $button-color;
+        color: black;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        font-family: "Roboto";
+        transition: 0.3s;
+
+        &:hover {
+          transform: scale(1.03);
+          transition: 0.3s;
+          box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.532);
+        }
+        
+        img {
+          width: 16px;
+          height: 16px;
+        }
+      }
+      
+      #description {
+        text-align: justify;
+      }
+      
+      .flags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+        
+        .flag {
+          font-size: 1.5rem;
+          line-height: 1;
+        }
+      }
     }
   }
 }

@@ -30,6 +30,7 @@
     "ngx-spinner": "^17.0.0",
     "ngx-typed-js": "^2.1.1",
     "rxjs": "~7.5.0",
+    "sweetalert2": "^11.19.1",
     "three": "^0.173.0",
     "tslib": "^2.3.0",
     "turf": "^3.0.14",
