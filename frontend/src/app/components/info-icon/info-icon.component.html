@@ -1,0 +1,31 @@
+<span class="info-icon" (click)="toggleModal()" [title]="tooltip" aria-label="info">
+  <img src="../../../assets/img/icons/info-yellow.png" alt="">
+</span>
+
+<!-- modal -->
+<div class="modal-overlay" *ngIf="showModal">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h3>Submit a report</h3>
+    <form (ngSubmit)="submitReport()">
+      <label>
+        Type:
+      </label>
+      <select [(ngModel)]="type" name="type">
+        <option value="feedback">Suggestion</option>
+        <option value="bug">Technical error</option>
+        <option value="data_error">Data error</option>
+      </select>
+      <label>
+        Message:
+      </label>
+      <textarea [(ngModel)]="message" name="message" rows="4"></textarea>
+      <div class="buttons">
+        <button type="button" (click)="toggleModal()">Cancel</button>
+        <button type="submit" [disabled]="submitting">
+          {{ submitting ? 'Sending...' : 'Send' }}
+        </button>
+      </div>
+    </form>
+  </div>
+  <div class="backdrop" (click)="toggleModal()"></div>
+</div>

@@ -1,0 +1,117 @@
+.info-icon {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    cursor: pointer;
+    background: #21170B;
+    border: 1px solid #412B14;
+    border-radius: 50%;
+    padding: 8px;
+    box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.306);
+    z-index: 1001;
+
+    img {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+.info-icon:hover {
+    box-shadow: 0 0 5px 5px #e9b738;
+    transform: scale(1.05);
+    transition: 0.5s;
+}
+
+.backdrop {
+    position: absolute;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    position: relative;
+    background: #21170B;
+    font-family: "Roboto";
+    font-size: 20px;
+    padding: 1.5em;
+    border-radius: 4px;
+    max-width: 400px;
+    width: 90%;
+    z-index: 1001;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    border: solid 2px #412B14;
+    color: white;
+
+    h3 {
+        margin-top: 0;
+    }
+
+    label {
+        display: block;
+        margin-top: 0.7em;
+        margin-bottom: 0.7em;
+    }
+
+    select,
+    textarea {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        max-width: 100%;
+        min-width: 100%;
+        width: 100%;
+        background-color: #412B14;
+        border: solid 1px white;
+        color: white;
+        padding: 10px;
+        font-size: 16px;
+    }
+
+    select {
+        border-radius: 5px;
+    }
+
+    textarea {
+        border-radius: 10px;
+
+        &:focus {
+            border: 1px solid #8FCD3C;
+            transition: border 0.2s;
+        }
+        
+        &:hover {
+          border: 1px solid #8FCD3C;
+          transition: border 0.2s;
+        }
+    }
+    
+    .buttons {
+        text-align: right;
+        margin-top: 1em;
+
+        button {
+            margin-left: 0.5em;
+            background-color: #412B14;
+            border: solid 1px white;
+            border-radius: 5%;
+            padding: 10px 20px;
+            color: white;
+
+            &:hover {
+                background-color: #8FCD3C;
+                color: #21170B;
+                transition: background-color 0.2s, color 0.2s;
+            }
+        }
+    }
+}
