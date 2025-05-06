@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth.routes');
 const speciesRoutes = require('./routes/species.routes');
 const clusterRoutes = require('./routes/cluster.routes');
 const reportRoutes = require('./routes/report.routes');
+const favRoutes = require('./routes/favorite.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,6 +24,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/species', speciesRoutes);
 app.use('/api/clusters', clusterRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/favorites', favRoutes);
 
 // Manejo de errores global
 app.use((err, req, res, next) => {

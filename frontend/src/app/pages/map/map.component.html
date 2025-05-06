@@ -12,7 +12,7 @@
       <h4>Countries/Territories:</h4>
       <ul>
         <li *ngFor="let cluster of filteredClusters" 
-            (click)="onClusterClick(cluster)">
+            (click)="selectCluster(cluster)">
           <span class="fi fi-{{cluster.country | lowercase}}"></span>
           {{ cluster.name }} <span class="species-count">({{ cluster.count }} especies)</span>
         </li>
@@ -52,6 +52,26 @@
 >
   <img src="../../assets/img/logos/arcticflower.png" alt="Cargando..." class="spinner-image">
 </ngx-spinner>
+
+<div class="favorites-container">
+
+  <button class="favorites-btn" (click)="toggleFavoritesPanel()">
+    <img src="../../../assets/img/icons/heart-yellow.png" alt="">
+  </button>
+  
+  <div class="favorites-panel" *ngIf="showFavoritesPanel">
+    <h4>Especies Favoritas ({{ favoriteList.length }})</h4>
+    <h5 *ngIf="favoriteList.length === 0">You haven't added any favorite species yet!</h5>
+    <ul>
+      <li *ngFor="let fav of favoriteList" (click)="goToFavorite(fav)">
+        <span class="fi fi-{{ fav.clusterId.country | lowercase }}"></span>
+        {{ fav.speciesId.common_name !== 'Unknown'
+             ? fav.speciesId.common_name
+             : fav.speciesId.scientific_name }}
+      </li>
+    </ul>
+  </div>
+</div>
 
 <div #globeContainer class="globe-container"></div>
 
@@ -104,16 +124,34 @@
 
     <div class="species-data">
 
-      <div *ngIf="selectedSpecies.common_name != 'Unknown'">
-        <h3>{{ selectedSpecies.common_name }}</h3><i>{{ selectedSpecies.scientific_name }}</i>
+      <div class="title-fav-container">
+
+        <div class="title-col">
+          <ng-container *ngIf="selectedSpecies.common_name !== 'Unknown'; else sciOnly">
+            <h3>{{ selectedSpecies.common_name }}</h3>
+            <i>{{ selectedSpecies.scientific_name }}</i>
+          </ng-container>
+          <ng-template #sciOnly>
+            <h3>{{ selectedSpecies.scientific_name }}</h3>
+          </ng-template>
+        </div>
+
+        <div class="fav-col">
+          <div id="heart-container" *ngIf="selectedSpecies">
+            <input
+              type="checkbox"
+              class="heart-toggle"
+              id="toggle"
+              [checked]="isFavorited"
+              (change)="toggleFavorite()"
+            />
+            <div id="fav-heart"></div>
+          </div>
+        </div>
+
       </div>
 
-      <div *ngIf="selectedSpecies.common_name == 'Unknown'">
-        <h3>{{ selectedSpecies.scientific_name }}</h3>
-      </div>
-  
-      <img src="../../../assets/img/species_status/CRITICALLY_ENDANGERED2.png" *ngIf="selectedSpecies.category=='CR'" alt="" style="width: 360px;">
-      <img src="../../../assets/img/species_status/CRITICALLY_ENDANGERED3.png" *ngIf="selectedSpecies.category=='CR'" alt="" style="width: 360px;">
+      <img src="../../../assets/img/species_status/CRITICALLY_ENDANGERED.png" *ngIf="selectedSpecies.category=='CR'" alt="" style="width: 360px;">
       <img src="../../../assets/img/species_status/EXTINCT_IN_THE_WILD.png" *ngIf="selectedSpecies.category=='EW'" alt="" style="width: 360px;">
       <img src="../../../assets/img/species_status/EXTINCT.png" *ngIf="selectedSpecies.category=='EX'" alt="" style="width: 360px;">
   
