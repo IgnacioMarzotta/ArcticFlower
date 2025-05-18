@@ -15,7 +15,7 @@ export interface SpeciesPoint {
   order?: string;
   family?: string;
   genus?: string;
-  locations?: any[];
+  locations?: { country: string; lat: number; lng: number }[];
   media?: SpeciesMedia[];
   taxon_id: string;
   createdAt?: string;
@@ -67,6 +67,5 @@ export interface AllSpeciesResponse {
   page: number;
   totalPages: number;
 }
-
 
 export type MapMarker = SpeciesPoint | ClusterPoint;

@@ -1,5 +1,6 @@
 const figlet = require("figlet");
 
+//Funcion menor de animacion al iniciar el servidor backend
 figlet.text(
     "ArcticFlower",
     {

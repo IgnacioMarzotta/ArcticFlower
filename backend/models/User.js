@@ -26,7 +26,17 @@ const userSchema = new mongoose.Schema({
     min: 0,
     max: 1
   },
-  google_id: String
+    xp: {
+    type: Number,
+    default: 0
+  },
+  level: {
+    type: Number,
+    default: 1
+  },
+  google_id: {
+    type: String
+  }
 }, {
   timestamps: true
 });

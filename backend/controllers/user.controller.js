@@ -27,6 +27,7 @@ exports.register = async (req, res) => {
   }
 };
 
+
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -47,10 +48,27 @@ exports.login = async (req, res) => {
     const token = jwt.sign(
       { userId: user._id, permissions: user.permissions },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '24h' }
     );
 
     res.json({ token, permissions: user.permissions });
+  } catch (error) {
+    res.status(500).json({ message: 'Error en el servidor', error: error.message });
+  }
+};
+
+
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('username email createdAt');
+    if (!user) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+    res.json({
+      username: user.username,
+      email: user.email,
+      created_at: user.createdAt
+    });
   } catch (error) {
     res.status(500).json({ message: 'Error en el servidor', error: error.message });
   }

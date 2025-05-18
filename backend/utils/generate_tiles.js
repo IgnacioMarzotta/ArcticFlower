@@ -11,6 +11,7 @@ if (!fs.existsSync(outputDir)) {
   fs.mkdirSync(outputDir);
 }
 
+//Funcion experimental, utilizada para la generacion de tiles individuales para la futura implementacion de un sistema de LOD (Level of Detail) para eliminar la perdida de calidad de imagen al momento de hacer zoom en el globo.
 (async () => {
   try {
 

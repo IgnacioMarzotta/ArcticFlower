@@ -38,6 +38,10 @@ const FORMAT_MAP = {
   pdf: 'application/pdf'
 };
 
+
+/**
+ * Devuelve un mapa de todos los ids de gbif asociados a esa especie para futuras consultas.
+ */
 exports.getGbifIdsForSpecies = async (taxonId) => {
   const taxonKey = parseInt(taxonId, 10);
   if (isNaN(taxonKey)) {
@@ -58,6 +62,10 @@ exports.getGbifIdsForSpecies = async (taxonId) => {
   return rows.map(r => r.gbifID.toString());
 };
 
+
+/**
+ * Obtiene las coordenadas unicas de la especie, con un maximo de 1 por pais.
+ */
 exports.getUniqueLocations = async (gbifIds) => {
   return new Promise((resolve, reject) => {
     if (!gbifIds.length) return resolve([]);
@@ -126,6 +134,10 @@ function getContinent(countryCode) {
   return country?.region?.replace(/\s+/g, ' ').trim() || 'Unknown';
 }
 
+
+/**
+ * Obtiene todas las referencias y derechos de autor asociados a la especie y sus medios.
+ */
 exports.getUniqueReferences = async (gbifIds) => {
   const CHUNK_SIZE = 999;
   const references = new Set();
@@ -149,6 +161,10 @@ exports.getUniqueReferences = async (gbifIds) => {
   return Array.from(references).filter(Boolean);
 };
 
+
+/**
+ * Obtiene todos los medios asociados a la especie (imagenes, videos, documentos, etc).
+ */
 exports.getMediaForSpecies = async (gbifIds) => {
   return new Promise((resolve, reject) => {
     media_db.all(`
@@ -188,6 +204,10 @@ exports.getMediaForSpecies = async (gbifIds) => {
   });
 };
 
+
+/**
+ * Busca el vernacularName de la especie y lo devuelve para almacenar como common_name.
+ */
 exports.getCommonNameForSpecies = async (gbifIds) => {
   if (!gbifIds.length) return "Unknown";
 
@@ -213,6 +233,10 @@ exports.getCommonNameForSpecies = async (gbifIds) => {
   return "Unknown";
 };
 
+
+/**
+ * Devuelve un objeto con todos los atributos des decription obtenidos de IUCN.
+ */
 exports.getDescriptionForSpecies = async (scientific_name) => {
   return new Promise((resolve, reject) => {
     const query = `
@@ -239,8 +263,9 @@ exports.getDescriptionForSpecies = async (scientific_name) => {
   });
 };
 
+
 /**
- * Devuelve un mapa { countryCode: totalOccurrences } para todos los países indicados.
+ * Devuelve un mapa { countryCode: totalOccurrences } para todos los paises indicados.
  * @param {string[]} countryCodes
  * @returns {Promise<Record<string, number>>}
  */

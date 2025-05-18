@@ -13,6 +13,18 @@
             <p><strong>Username:</strong> {{ userData?.username }}</p>
             <p><strong>Email:</strong> {{ userData?.email }}</p>
             <p><strong>Miembro desde:</strong> {{ userData?.created_at | date }}</p>
-        </div>       
+        </div>
+
+        <h3>Especies Favoritas ({{favorites.length}})</h3>
+        <div class="favorites-scroll">
+          <div class="favorite-card" *ngFor="let fav of favorites">
+            <span class="fi fi-{{ fav.clusterId.country | lowercase }}"></span>
+            <div class="fav-name">
+              {{ fav.speciesId.common_name !== 'Unknown'
+                  ? fav.speciesId.common_name
+                  : fav.speciesId.scientific_name }}
+            </div>
+          </div>
+        </div>
     </div>
 </div>

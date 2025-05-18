@@ -3,6 +3,7 @@ const { updateAllClusterOccurrences } = require('../controllers/cluster.controll
 
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/arcticflower';
 
+//Funcion utilizada para refrescar los atributos de los clusters, recalcula la cantidad de especies y otros atributos.
 (async () => {
   await mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
   console.log('Conectado a MongoDB, arrancando actualización de occurrences…');

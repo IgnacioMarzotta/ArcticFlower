@@ -21,6 +21,7 @@ function cleanField(text) {
   return cleaned || null;
 }
 
+//Utilidad deprecada, utilizada originalmente para la limpieza de uno de los datasets utilizados en la creacion de la base de datos de produccion, especificamente la tabla assessments, de la que se rescatan elementos como redListCategory, rationale, habitat, threats, population, descripcion general, entre otros.
 function cleanIUCNRow(row) {
   return {
     assessmentId: parseInt(row.assessmentId) || null,

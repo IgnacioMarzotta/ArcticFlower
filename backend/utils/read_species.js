@@ -4,6 +4,7 @@ const csv = require('csv-parser');
 const INPUT_CSV = 'data/iucn_assessments_clean.csv';
 const SAMPLE_SIZE = 5;
 
+//Utilidad deprecada, utilizada para la visualizacion grafica de los datasets utilizados en la creacion de la base de datos de produccion.
 function readCSVSample() {
   const results = [];
   

@@ -173,12 +173,11 @@ exports.updateClusterStatusFromAPI = async (req, res) => {
         //4.1.1 Si no existe, creo y guardo en la base de datos.
         const {kingdom, phylum, class: className, order, family, genus} = occurrence;
         console.error(`   [cluster.controller - updateClusterStatusFromAPI] Species not found for taxonKey: ${taxonKey}, creating...`);
-        
         //4.1.2 Generar la estructura de la nueva especie
         const newSpecies = {
           body: {
             taxon_id: taxonKey,
-            scientific_name: occurrence.scientificName || `taxon_${taxonKey}`,
+            scientific_name: occurrence.scientificName.split(' ').slice(0, 2).join(' '),
             category: occurrence.iucnRedListCategory || 'CR',
             kingdom,
             phylum,
@@ -196,7 +195,11 @@ exports.updateClusterStatusFromAPI = async (req, res) => {
         };
         
         //4.1.3 Delegar la creacion de la especie con la estructura generada a la funcion createSpecies del controller de especies.
-        await speciesController.createSpecies(newSpecies, res);
+        speciesController.createSpecies(
+          newSpecies,
+          { status() { return this; }, json() { return this; } }
+        )
+        .catch(err => console.error("[async createSpecies]", err));
         
         continue;
       }
@@ -236,7 +239,7 @@ exports.updateClusterStatusFromAPI = async (req, res) => {
     //6. Devolver al front
     res.json({
       message: 'Cluster actualizado',
-      infoUpdate: infoResult
+      cluster: infoResult
     });
     
   } catch (error) {
