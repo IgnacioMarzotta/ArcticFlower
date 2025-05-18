@@ -6,6 +6,7 @@ const { Transform } = require('stream');
 const API_URL = 'http://localhost:3000/api/species';
 const BATCH_SIZE = 1; // Procesamiento estrictamente secuencial
 
+//Utilidad deprecada, utilizada originalmente para obtener una a una las especies para generar la base de datos de produccion utilizando los distintos datasets.
 const processSpecies = async (speciesData) => {
   try {
     const response = await axios.post(API_URL, speciesData);

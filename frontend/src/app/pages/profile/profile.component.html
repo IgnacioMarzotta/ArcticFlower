@@ -15,7 +15,7 @@
             <p><strong>Miembro desde:</strong> {{ userData?.created_at | date }}</p>
         </div>
 
-        <h3>Especies Favoritas</h3>
+        <h3>Especies Favoritas ({{favorites.length}})</h3>
         <div class="favorites-scroll">
           <div class="favorite-card" *ngFor="let fav of favorites">
             <span class="fi fi-{{ fav.clusterId.country | lowercase }}"></span>

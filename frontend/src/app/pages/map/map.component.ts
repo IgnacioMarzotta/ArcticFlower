@@ -8,12 +8,19 @@ import * as GLOBE from 'globe.gl';
 import * as THREE from 'three';
 import countries from 'world-countries';
 import 'flag-icons/css/flag-icons.min.css';
+import Swal from 'sweetalert2';
+
 import { SpeciesPoint, ClusterPoint } from '../../core/models/map.models';
 import { Favorite } from '../../core/models/favorite.model';
+import { Mission } from '../../core/models/mission.models';
+
 import { SpeciesService } from '../../core/services/species.service';
 import { ClusterService } from '../../core/services/cluster.service';
 import { ReportService } from 'src/app/core/services/report.service';
 import { FavoriteService } from '../../core/services/favorite.service';
+import { MissionService } from '../../core/services/mission.service';
+import { MissionEventService } from '../../core/services/mission-event.service';
+import { MissionEngineService } from 'src/app/core/services/mission-engine.service';
 
 @Component({
   selector: 'app-map',
@@ -51,6 +58,7 @@ export class MapComponent implements AfterViewInit {
   //Media carrousel
   public showImageInfo: boolean = false;
   currentImageIndex = 0;
+  isImageLoading: boolean = true;
   
   //Favorites system
   public isFavorited = false;
@@ -58,6 +66,12 @@ export class MapComponent implements AfterViewInit {
   public favoriteList: Favorite[] = [];
   private favoriteIds = new Set<string>();
   private favoriteClusters = new Map<string, string>();
+
+  //Missions system
+  missions: Mission[] = [];
+  public showMissionsPanel = false;
+  prev: Record<string, boolean> = {};
+  public Toast = Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 5000, timerProgressBar: true });
   
   constructor(
     private speciesService: SpeciesService,
@@ -66,11 +80,16 @@ export class MapComponent implements AfterViewInit {
     private clusterService: ClusterService,
     private reportService: ReportService,
     private favoriteService: FavoriteService,
+    private missionService: MissionService,
+    private missionEvents: MissionEventService,
+    private missionEngine: MissionEngineService,
   ) {}
   
   ngOnInit(): void {
     this.setupSearch();
     this.initializeFavorites();
+    this.listenForMissionUpdates();
+    this.loadDailyMissions();
   }
   
   ngAfterViewInit(): void {
@@ -167,7 +186,7 @@ export class MapComponent implements AfterViewInit {
         el.onclick = () => this.selectSpecies(d);
         return el;
       }
-    });  
+    });
     
     //Zoom minimo y maximo:
     const controls = this.globeInstance.controls();
@@ -185,8 +204,7 @@ export class MapComponent implements AfterViewInit {
       this.clusterService.updateClusterStatusFromAPI(cluster).subscribe({
         next: resp => {
           console.log("Cluster actualizado:", resp.cluster);
-          const updatedCluster = resp.cluster;
-          cluster.updatedAt = updatedCluster.updatedAt || new Date().toISOString(); //Se actualiza el cluster con la fecha actual unicamente en el front-end, para evitar que las actualizaciones se disparen mas de 1 vez.
+          cluster.updatedAt = new Date().toISOString(); //Se actualiza el cluster con la fecha actual unicamente en el front-end, para evitar que las actualizaciones se disparen mas de 1 vez.
           const idx = this.clusterPoints.findIndex(c => c.id === cluster.id);
           if (idx !== -1) {
             this.clusterPoints[idx].updatedAt = cluster.updatedAt;
@@ -317,6 +335,23 @@ export class MapComponent implements AfterViewInit {
         this.selectedSpecies = detail;
         this.isFavorited = this.favoriteIds.has(species.id);
         this.isLoading = false;
+        const matchingLoc = detail.locations.find((loc: any) =>
+          loc.country.toUpperCase() === this.selectedCluster?.country.toUpperCase()
+        ) || detail.locations[0];
+        const { lat, lng } = matchingLoc;
+
+        console.log("Emitiendo evento de especie.", lat, " " , lng);
+        this.missionEvents.emit({
+          type: 'SPECIES_VIEW',
+          payload: {
+            clusterId: species.country,
+            status: detail.category,
+            speciesId: detail._id,
+            lat,
+            lng
+          }
+        });
+        console.log("Evento emitido.", lat, lng);
       },
       error: err => {
         console.error('Error al obtener el detalle de la especie:', err);
@@ -577,6 +612,9 @@ export class MapComponent implements AfterViewInit {
   
   //Muestra u oculta el panel de favoritos.
   public toggleFavoritesPanel(): void {
+    if (!this.showFavoritesPanel && this.showMissionsPanel) {
+      this.showMissionsPanel = false;
+    }
     this.showFavoritesPanel = !this.showFavoritesPanel;
   }
   
@@ -589,5 +627,41 @@ export class MapComponent implements AfterViewInit {
       setTimeout(() => this.selectSpecies(fav.speciesId), 1000);
     }
     this.showFavoritesPanel = false;
+  }
+
+  /* Missions */
+
+  //Muestra u oculta el panel de misiones, cerrando el panel de favoritos en caso de estar abierto
+  public toggleMissionsPanel(): void {
+    if (!this.showMissionsPanel && this.showFavoritesPanel) {
+      this.showFavoritesPanel = false;
+    }
+    this.showMissionsPanel = !this.showMissionsPanel;
+  }
+
+  //Suscripcion a cambio de misiones y lanzamiento de toasts en caso de que se complete la mision
+  private listenForMissionUpdates(): void {
+    this.missionEngine.missions$.subscribe(miss => {
+      miss.forEach(m => {
+        const wasCompleted = this.prev[m._id] || false;
+        if (!wasCompleted && m.completed) {
+          this.Toast.fire({
+            icon: 'success',
+            title: 'Mission completed!'
+          });
+        }
+        this.prev[m._id] = m.completed;
+      });
+      this.missions = miss;
+      this.cdr.detectChanges();
+    });
+  }
+
+  //Funcion encargada de la carga de misiones del dia
+  private loadDailyMissions(): void {
+    this.missionService.getDailyMissions().subscribe({
+      next: data => this.missions = data,
+      error: err => console.error('No se pudieron cargar misiones', err)
+    });
   }
 }

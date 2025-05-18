@@ -32,6 +32,7 @@ const csvWriter = createObjectCsvWriter({
   ]
 });
 
+//Utilidad deprecada, utilizada originalmente para la limpieza de uno de los datasets utilizados en la creacion de la base de datos de produccion, especificamente la tabla verbatim, de la que se rescatan elementos como kingdom, phylum, class, order, vernacularName, entre otros.
 async function processFile() {
   let count = 0;
   const records = [];

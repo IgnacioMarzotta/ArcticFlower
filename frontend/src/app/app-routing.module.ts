@@ -9,7 +9,8 @@ export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'profile', component: ProfileComponent, canActivate: [AuthGuard] },
   { path: 'auth', loadChildren: () => import('./modules/auth/auth.module').then(m => m.AuthModule) },
-  { path: 'map', component: MapComponent }
+  { path: 'map', component: MapComponent },
+  { path: 'missions', loadChildren: () => import('./missions/missions.module').then(m => m.MissionsModule) },
 ];
 
 @NgModule({

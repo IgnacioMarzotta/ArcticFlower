@@ -13,7 +13,7 @@ function generateRandomCountryCodes(num) {
 }
 
 /**
-* Genera datos de una especie de prueba.
+* Utilidad deprecada, genera datos falsos para una especie de prueba usando faker.
 * La propiedad "country" se genera como una cadena de codigos separados por comas.
 */
 function generateSpeciesData() {

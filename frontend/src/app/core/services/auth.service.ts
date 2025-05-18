@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
@@ -41,5 +41,18 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem('auth_token');
     this.currentUserSubject.next(null);
+  }
+
+  getProfile(): Observable<{ username: string; email: string; created_at: string }> {
+    const token = localStorage.getItem('auth_token');
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return this.http.get<{ username: string; email: string; created_at: string }>(
+      `${this.apiUrl}/profile`,
+      { headers }
+    ).pipe(
+      tap(profile => {
+        this.currentUserSubject.next(profile);
+      })
+    );
   }
 }

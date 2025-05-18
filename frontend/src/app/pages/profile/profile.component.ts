@@ -22,12 +22,19 @@ export class ProfileComponent implements OnInit {
   ) {}
   
   ngOnInit(): void {
-    this.userData = {
-      username: 'UsuarioEjemplo',
-      email: 'usuario@example.com',
-      created_at: '2023-10-01'
-    };
+    this.initializeUserProfile();
     this.loadFavorites();
+  }
+  
+  private initializeUserProfile() {
+    this.authService.getProfile().subscribe({
+      next: data => {
+        this.userData = data;
+      },
+      error: err => {
+        console.error('No se pudo cargar el perfil', err);
+      }
+    });
   }
 
   loadFavorites() {

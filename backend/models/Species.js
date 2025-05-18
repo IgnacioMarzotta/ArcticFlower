@@ -104,32 +104,38 @@ const speciesSchema = new mongoose.Schema({
   kingdom: {
     type: String,
     required: true,
-    maxlength: 64
+    maxlength: 64,
+    default: 'Unknown'
   },
   phylum: {
     type: String,
     required: true,
-    maxlength: 64
+    maxlength: 64,
+    default: 'Unknown'
   },
   class: {
     type: String,
     required: true,
-    maxlength: 64
+    maxlength: 64,
+    default: 'Unknown'
   },
   order: {
     type: String,
     required: true,
-    maxlength: 64
+    maxlength: 64,
+    default: 'Unknown'
   },
   family: {
     type: String,
     required: true,
-    maxlength: 64
+    maxlength: 64,
+    default: 'Unknown'
   },
   genus: {
     type: String,
     required: true,
-    maxlength: 64
+    maxlength: 64,
+    default: 'Unknown'
   },
   locations: {
     type: [locationSchema],

@@ -14,6 +14,78 @@ $button-color: #E9B838;
   z-index: 1;
 }
 
+.missions-container {
+
+  .missions-btn {
+    position: fixed;
+    bottom: 16px;
+    left: 84px;
+    cursor: pointer;
+    background: $primary-background;
+    border: 1px solid $secondary-background;
+    border-radius: 50%;
+    padding: 8px;
+    padding-bottom: 3px;
+    box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.306);
+    z-index: 1001;
+
+    img {
+      width: 32px;
+      height: 32px;
+    }
+  
+    &:hover {
+      box-shadow: 0 0 5px 5px #e9b738;
+      transform: scale(1.05);
+      transition: 0.5s;
+    }
+  }
+
+  .missions-panel {
+    display: flex;
+    bottom: 80px;
+    left: 20px;
+    position: absolute;
+  
+    aside {
+      width: 300px;
+      z-index: 1000;
+      overflow-y: auto;
+      font-family: "Roboto";
+      background: $primary-background;
+      color: white;
+      border: 2px solid $secondary-background;
+      border-radius: 6px;
+      padding: 10px;
+
+      h3 {
+        margin: 0;
+      }
+
+      .quest-img{
+        height: 24px;
+        width: 24px;
+        margin-right: 8px;
+      }
+
+      ul {
+        margin-bottom: 0;
+        padding-left: 12px;
+
+        li {
+          
+          list-style: none;
+
+          img {
+            width: 16px;
+            height: 16px
+          }
+        }
+      }
+    }
+  }
+}
+
 .favorites-container {
   
   .favorites-btn {
@@ -55,6 +127,12 @@ $button-color: #E9B838;
     border-radius: 6px;
     padding: 10px;
     z-index: 2000;
+
+    .fav-img{
+      height: 18px;
+      width: 18px;
+      margin-right: 8px;
+    }
   
     h4 {
       margin-top: 0;

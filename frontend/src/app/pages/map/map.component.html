@@ -53,6 +53,33 @@
   <img src="../../assets/img/logos/arcticflower.png" alt="Cargando..." class="spinner-image">
 </ngx-spinner>
 
+<div class="missions-container">
+
+  <button class="missions-btn" (click)="toggleMissionsPanel()">
+    <img src="../../../assets/img/icons/crown-yellow.png" alt="">
+  </button>
+  
+  <div class="missions-panel" *ngIf="showMissionsPanel">
+    <aside>
+      <h3>
+        <img src="../../../assets/img/icons/crown-yellow.png" alt="" class="quest-img">
+        Daily quests
+      </h3>
+      <div *ngIf="missions.length === 0">No daily quests for today!</div>
+      <ul *ngIf="missions.length > 0">
+        <li *ngFor="let m of missions">
+          <img src="../../../assets/img/icons/crown-yellow.png" alt="" *ngIf="!m.completed">
+          <img src="../../../assets/img/icons/check-yellow.png" alt="" *ngIf="m.completed">
+          <strong>{{ m.missionId.type }}</strong>
+          {{ m.description }}
+          <hr>
+        </li>
+      </ul>
+    </aside>
+  </div>
+
+</div>
+
 <div class="favorites-container">
 
   <button class="favorites-btn" (click)="toggleFavoritesPanel()">
@@ -60,7 +87,12 @@
   </button>
   
   <div class="favorites-panel" *ngIf="showFavoritesPanel">
-    <h4>Especies Favoritas ({{ favoriteList.length }})</h4>
+    
+    <h4>
+      <img src="../../../assets/img/icons/heart-yellow.png" alt="" class="fav-img">
+      Favorite species ({{ favoriteList.length }})
+    </h4>
+
     <h5 *ngIf="favoriteList.length === 0">You haven't added any favorite species yet!</h5>
     <ul>
       <li *ngFor="let fav of favoriteList" (click)="goToFavorite(fav)">
@@ -91,11 +123,24 @@
     <div class="simple-gallery">
       <div class="image-container">
         <div class="image-wrapper" *ngIf="selectedSpecies?.media?.length">
+          <ngx-spinner
+            bdColor="rgba(0, 0, 0, 0.8)"
+            size="small"
+            type="ball-spin-fade"
+            color="#ffffff" 
+            class="spinner" 
+            *ngIf="isImageLoading"
+          >
+            <img src="../../assets/img/logos/arcticflower.png" alt="Cargando..." class="spinner-image">
+          </ngx-spinner>
           <img 
             [src]="currentImage?.identifier || '../../../assets/img/icons/no-media.png'" 
             [alt]="'Imagen de la especie'"
             class="main-image"
             (click)="toggleImageInfo()"
+            (load)="isImageLoading = false"
+            (error)="isImageLoading = false"
+            [class.hidden]="isImageLoading"
           />
           <div class="nav-arrow left" (click)="prevImage(); $event.stopPropagation()">
             ‹

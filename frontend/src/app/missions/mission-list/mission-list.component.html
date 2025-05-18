@@ -1,0 +1,9 @@
+<div *ngIf="loading">Cargando misiones...</div>
+<div class="missions-container" *ngIf="!loading">
+  <app-mission-card
+  *ngFor="let m of missions"
+  [mission]="m"
+  (complete)="onComplete(m._id)"
+  (claim)="onClaim(m._id)">
+  </app-mission-card>
+</div>

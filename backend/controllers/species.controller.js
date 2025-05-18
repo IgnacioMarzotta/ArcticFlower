@@ -268,9 +268,11 @@ exports.createSpecies = async (req, res) => {
     } = req.body;
     
     if (!taxon_id || !scientific_name || !category || !locations?.length) {
+      console.error("[species.controller - createSpecies] Missing required fields for species creation.");
       return res.status(400).json({ error: 'Faltan campos obligatorios para creación de especie' });
     }
     
+    console.log("[species.controller - createSpecies] Creating species: ", taxon_id, " with scientific_name: ", scientific_name);
     // 2) Crear documento inicial
     const newSpecie = await Species.create({
       taxon_id,
@@ -285,14 +287,22 @@ exports.createSpecies = async (req, res) => {
       description: {}
     });
     
+    console.log("[species.controller - createSpecies] Created species, updating from API.");
     // 3) Actualizar desde APIs (media, description, common_name, taxonomy si aplica)
-    await exports.updateSpeciesStatusFromAPI({ body: { id: newSpecie._id, taxon_id, category } }, res);
+    exports.updateSpeciesStatusFromAPI(
+      { body: { id: newSpecie._id, taxon_id, category } },
+      { 
+        status() { return this; }, 
+        json()   { return this; } 
+      }
+    ).catch(err => console.error("[species.controller - createSpecies] updateSpeciesStatusFromAPI error:", err));
     
+    console.log("[species.controller - createSpecies] Species ",taxon_id," was created successfully!");
     // 4) Responder con la especie creada
     return res.status(201).json(newSpecie);
     
   } catch (error) {
-    console.error('[createSpecies] error:', error);
+    console.error('[species.controller - createSpecies] Error:', error);
     return res.status(500).json({ error: error.message });
   }
 };
@@ -336,8 +346,12 @@ exports.updateSpeciesStatusFromAPI = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('[species.controller - updateSpeciesStatusFromAPI] Error al actualizar estado de especie:', error);
-    res.status(500).json({ error: 'Error interno al actualizar especie' });
+    console.error('[species.controller - updateSpeciesStatusFromAPI] Error al actualizar estado de especie:');
+    console.log("STATUS: ", error.response.status, " ", error.response.statusText);
+    console.log("CODE: ", error.code);
+    console.log("URL: ", error.config.url);
+    console.log("HEADERS: ", error.config.headers);
+    res.status(error.status || 500).json({ error: 'Error interno al actualizar especie' });
   }
 };
 
@@ -379,7 +393,7 @@ async function validateVernacularName(id, taxon_id) {
   
   //2.2 Valido si la especie ya tiene un common_name, de ser asi, ignoro.
   if (species.common_name && species.common_name !== 'Unknown') {
-    console.log("   [species.controller - validateSpeciesIucnCategory] Species already has common_name");
+    console.log("   [species.controller - validateVernacularName] Species already has common_name");
     return { updated: false, field: 'common_name', current: species.common_name };
   }
   
@@ -393,7 +407,7 @@ async function validateVernacularName(id, taxon_id) {
     const before = species.common_name;
     species.common_name = pick;
     await species.save();
-    console.log("   [species.controller - validateSpeciesIucnCategory] New common_name: ", pick);
+    console.log("   [species.controller - validateVernacularName] New common_name: ", pick);
     return { updated: true, field: 'common_name', before, after: pick };
   }
   
