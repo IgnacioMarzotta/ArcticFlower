@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MissionService } from './mission.service';
 import { MissionEventService, MissionEvent } from './mission-event.service';
-import { switchMap, filter, tap } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 import { BehaviorSubject } from 'rxjs';
 import { Mission } from '../models/mission.models';
 
@@ -13,7 +13,6 @@ export class MissionEngineService {
     private missionService: MissionService,
     private missionEvents: MissionEventService
   ) {
-    
     this.loadMissions();
     this.missionEvents.on().subscribe(event => this.processEvent(event));
   }
@@ -24,18 +23,22 @@ export class MissionEngineService {
   }
 
   private processEvent(event: MissionEvent) {
-
     const current = this.missions$.value;
+
     current
       .filter(m => !m.completed)
       .forEach(m => {
-        this.missionService.checkMissionEvent(m._id, event)
+        this.missionService.handleEvent(m._id, event)
           .pipe(
-            filter(ok => ok),
-            switchMap(() => this.missionService.completeMission(m._id)),
-            tap(() => {
+            tap(response => {
               const updated = this.missions$.value.map(x =>
-                x._id === m._id ? { ...x, completed: true } : x
+                x._id === m._id
+                  ? {
+                      ...x,
+                      completed: response.completed,
+                      progress:  response.progress
+                    }
+                  : x
               );
               this.missions$.next(updated);
             })

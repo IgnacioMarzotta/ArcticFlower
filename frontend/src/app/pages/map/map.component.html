@@ -71,7 +71,7 @@
           <img src="../../../assets/img/icons/crown-yellow.png" alt="" *ngIf="!m.completed">
           <img src="../../../assets/img/icons/check-yellow.png" alt="" *ngIf="m.completed">
           <strong>{{ m.missionId.type }}</strong>
-          {{ m.description }}
+          {{ m.description }}: {{ m.progress?.seen?.length || 0 }} / {{ m.params.targetCount }}
           <hr>
         </li>
       </ul>

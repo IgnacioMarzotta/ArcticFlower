@@ -73,3 +73,32 @@ exports.getProfile = async (req, res) => {
     res.status(500).json({ message: 'Error en el servidor', error: error.message });
   }
 };
+
+
+exports.refresh = async (req, res) => {
+
+  const token = req.cookies['refresh_token'];
+  if (!token) return res.status(401).end();
+
+  try {
+    const payload = jwt.verify(token, process.env.REFRESH_SECRET);
+    const user = await User.findById(payload.userId);
+    if (!user) return res.status(401).end();
+
+    const newAccess = jwt.sign(
+      { userId: user._id, permissions: user.permissions },
+      process.env.JWT_SECRET,
+      { expiresIn: '15m' }
+    );
+    
+    const newRefresh = jwt.sign(
+      { userId: user._id },
+      process.env.REFRESH_SECRET,
+      { expiresIn: '14d' }
+    );
+
+    res.cookie('refresh_token', newRefresh, { httpOnly: true, secure: true }).json({ accessToken: newAccess });
+  } catch (e) {
+    return res.status(401).end();
+  }
+};

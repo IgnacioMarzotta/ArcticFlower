@@ -113,7 +113,10 @@ exports.handleEvent = async (req, res) => {
   const ok  = await tpl.onEvent(event, userMission.params);
 
   if (!ok) {
-    return res.json(false);
+    return res.json({
+      completed: userMission.completed,
+      progress:  userMission.progress || { seen: [] }
+    });
   }
 
   userMission.progress = userMission.progress || {};
@@ -131,7 +134,11 @@ exports.handleEvent = async (req, res) => {
   }
 
   await userMission.save();
-  res.json(userMission.completed);
+  
+  res.json({
+    completed: userMission.completed,
+    progress:  userMission.progress
+  });
 };
 
 

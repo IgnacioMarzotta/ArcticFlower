@@ -36,3 +36,29 @@ html{
     padding: 0;
 }
 
+::ng-deep .swal2-popup.swal2-toast {
+    background: #21170B;
+    color: #fff;
+    border: 2px solid #412B14;
+    border-radius: 8px;
+    margin-top: 20px;
+    
+    &.swal2-icon-success {
+        font-family: "Roboto";
+        
+        .swal2-timer-progress-bar {
+            background: #8FCD3C;
+        }
+    }
+
+    &.swal2-icon-info {
+        .swal2-title {
+            font-family: "Roboto";
+        }
+        
+        .swal2-timer-progress-bar {
+            background: #3fc3ee;
+        }
+    }
+
+}

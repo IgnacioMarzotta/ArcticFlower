@@ -71,7 +71,13 @@ export class MapComponent implements AfterViewInit {
   missions: Mission[] = [];
   public showMissionsPanel = false;
   prev: Record<string, boolean> = {};
-  public Toast = Swal.mixin({ toast: true, position: 'top', showConfirmButton: false, timer: 5000, timerProgressBar: true });
+  public Toast = Swal.mixin({ 
+    toast: true,
+    position: 'top',
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+  });
   
   constructor(
     private speciesService: SpeciesService,
@@ -88,8 +94,8 @@ export class MapComponent implements AfterViewInit {
   ngOnInit(): void {
     this.setupSearch();
     this.initializeFavorites();
-    this.listenForMissionUpdates();
     this.loadDailyMissions();
+    this.listenForMissionUpdates();
   }
   
   ngAfterViewInit(): void {
@@ -590,6 +596,10 @@ export class MapComponent implements AfterViewInit {
           !(f.speciesId.id === sid && f.clusterId.id === cid)
         );
         this.favoriteClusters.delete(sid);
+        this.Toast.fire({
+          icon: 'info',
+          title: 'Removed from favorites :('
+        });
       });
     } else {
       this.favoriteService.addFavorite(sid, cid).subscribe(fav => {
@@ -606,6 +616,11 @@ export class MapComponent implements AfterViewInit {
         this.favoriteIds.add(sid);
         this.favoriteList.push(normalized);
         this.favoriteClusters.set(sid, cid);
+
+        this.Toast.fire({
+          icon: 'info',
+          title: 'Species added to favorites!'
+        });
       });
     }
   }
@@ -643,8 +658,7 @@ export class MapComponent implements AfterViewInit {
   private listenForMissionUpdates(): void {
     this.missionEngine.missions$.subscribe(miss => {
       miss.forEach(m => {
-        const wasCompleted = this.prev[m._id] || false;
-        if (!wasCompleted && m.completed) {
+        if (this.prev.hasOwnProperty(m._id) && this.prev[m._id] === false && m.completed) {
           this.Toast.fire({
             icon: 'success',
             title: 'Mission completed!'
@@ -660,7 +674,10 @@ export class MapComponent implements AfterViewInit {
   //Funcion encargada de la carga de misiones del dia
   private loadDailyMissions(): void {
     this.missionService.getDailyMissions().subscribe({
-      next: data => this.missions = data,
+      next: data => {
+        this.missions = data;
+        data.forEach(m => this.prev[m._id] = m.completed);
+      },
       error: err => console.error('No se pudieron cargar misiones', err)
     });
   }
