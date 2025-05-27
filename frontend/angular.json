@@ -30,8 +30,13 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/_styles.scss"
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src"
+              ]
+            },
             "scripts": [],
             "browser": "src/main.ts"
           },
@@ -99,8 +104,13 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/_styles.scss"
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src"
+              ]
+            },
             "scripts": []
           }
         }

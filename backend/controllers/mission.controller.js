@@ -60,7 +60,6 @@ exports.getDailyMissions = async (req, res) => {
         .lean();
     }
 
-    // 3) Devolver
     res.json(missions);
 
   } catch (err) {
@@ -88,24 +87,6 @@ exports.completeMission = async (req, res) => {
 };
 
 
-exports.claimMission = async (req, res) => {
-  try {
-    const um = await UserMission.findOne({ _id: req.params.id, userId: req.userId }).populate('missionId');
-    if (!um) return res.status(404).json({ message: 'Misión no encontrada' });
-    if (!um.completed) return res.status(400).json({ message: 'Misión no completada' });
-
-    // suma XP al usuario (aquí tu lógica)
-    // await User.findByIdAndUpdate(req.userId, { $inc: { xp: um.missionId.rewardXP } });
-
-    await um.remove();
-    res.json({ message: 'Recompensa reclamada', rewardXP: um.missionId.rewardXP });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Error reclamando misión', error: err.message });
-  }
-};
-
-
 exports.handleEvent = async (req, res) => {
   const { event } = req.body;
   const userMission = await UserMission.findOne({ _id: req.params.id, userId: req.userId }).populate('missionId');  
@@ -128,7 +109,7 @@ exports.handleEvent = async (req, res) => {
   }
 
   if (userMission.progress.seen.length >= userMission.params.targetCount) {
-    console.log("MISSION COMPLETE - UPDATING");
+    console.log("[mission.controller - handleEvent] Mission complete, updating.");
     userMission.completed = true;
     await User.findByIdAndUpdate(req.userId, { $inc: { xp: userMission.missionId.rewardXP } });
   }

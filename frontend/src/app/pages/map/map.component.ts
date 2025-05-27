@@ -1,21 +1,26 @@
+//Third-party libraries and modules
 import { debounceTime, distinctUntilChanged, switchMap, finalize, catchError, filter } from 'rxjs/operators';
 import { Component, AfterViewInit, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgxSpinnerComponent, NgxSpinnerService } from 'ngx-spinner';
 import { FormsModule } from '@angular/forms';
-import { Subject, of, forkJoin } from 'rxjs';
+import { Subject, of } from 'rxjs';
 import * as GLOBE from 'globe.gl';
 import * as THREE from 'three';
 import countries from 'world-countries';
 import 'flag-icons/css/flag-icons.min.css';
 import Swal from 'sweetalert2';
+import { Router } from '@angular/router';
 
+//Front-end models
 import { SpeciesPoint, ClusterPoint } from '../../core/models/map.models';
 import { Favorite } from '../../core/models/favorite.model';
 import { Mission } from '../../core/models/mission.models';
 
+//Services 
 import { SpeciesService } from '../../core/services/species.service';
 import { ClusterService } from '../../core/services/cluster.service';
+import { AuthService } from '../../core/services/auth.service';
 import { ReportService } from 'src/app/core/services/report.service';
 import { FavoriteService } from '../../core/services/favorite.service';
 import { MissionService } from '../../core/services/mission.service';
@@ -38,6 +43,8 @@ export class MapComponent implements AfterViewInit {
   private markerSvg = `<svg viewBox="-4 0 36 36"><path fill="currentColor" d="M14,0 C21.732,0 28,5.641 28,12.6 C28,23.963 14,36 14,36 C14,36 0,24.064 0,12.6 C0,5.641 6.268,0 14,0 Z"></path><circle fill="black" cx="14" cy="14" r="7"></circle></svg>`;
   public isLoading: boolean = true;
   public isMobile: boolean = false;
+  showPanel = false;
+  public isUser = false;
   
   //Markers and current selections
   public selectedSpecies: SpeciesPoint | null = null;
@@ -81,21 +88,32 @@ export class MapComponent implements AfterViewInit {
   
   constructor(
     private speciesService: SpeciesService,
-    private cdr: ChangeDetectorRef,
-    private spinner: NgxSpinnerService,
     private clusterService: ClusterService,
+    private authService: AuthService,
     private reportService: ReportService,
     private favoriteService: FavoriteService,
     private missionService: MissionService,
     private missionEvents: MissionEventService,
     private missionEngine: MissionEngineService,
+    private cdr: ChangeDetectorRef,
+    private spinner: NgxSpinnerService,
+    private router: Router,
   ) {}
   
   ngOnInit(): void {
     this.setupSearch();
-    this.initializeFavorites();
-    this.loadDailyMissions();
-    this.listenForMissionUpdates();
+    
+    this.isUser = this.authService.isAuthenticated()
+
+    if (this.isUser) {
+      console.log("USER IS LOGGED IN");
+      this.initializeFavorites();
+      this.loadDailyMissions();
+      this.listenForMissionUpdates();
+    } else {
+      console.log("USER IS NOT LOGGED IN");
+      this.missions = [];
+    }
   }
   
   ngAfterViewInit(): void {
@@ -110,14 +128,16 @@ export class MapComponent implements AfterViewInit {
       this.spinner.hide();
     }, 1500);
     
-    this.favoriteService.getFavorites().subscribe(favs => {
-      this.favoriteIds = new Set(
-        favs.map(f => typeof f.speciesId === 'string'
-          ? f.speciesId
-          : (f.speciesId as any)._id
-        )
-      );
-    });
+    if (this.isUser) {
+      this.favoriteService.getFavorites().subscribe(favs => {
+        this.favoriteIds = new Set(
+          favs.map(f => typeof f.speciesId === 'string'
+            ? f.speciesId
+            : (f.speciesId as any)._id
+          )
+        );
+      });
+    }
   }
 
   //Funcion principal para inicializar el globo, que se encarga de crear el globo y asignar los datos de los paises y marcadores.
@@ -339,6 +359,7 @@ export class MapComponent implements AfterViewInit {
       next: detail => {
         detail.id = detail._id;
         this.selectedSpecies = detail;
+        console.log(this.selectedSpecies);
         this.isFavorited = this.favoriteIds.has(species.id);
         this.isLoading = false;
         const matchingLoc = detail.locations.find((loc: any) =>
@@ -357,6 +378,7 @@ export class MapComponent implements AfterViewInit {
             lng
           }
         });
+        this.showPanel = true;
         console.log("Evento emitido.", lat, lng);
       },
       error: err => {
@@ -471,6 +493,7 @@ export class MapComponent implements AfterViewInit {
   
   //Funcion para limpiar la seleccion actual, que se encarga de reiniciar las variables de seleccion y actualizar los marcadores del globo.
   clearCurrentSelection(): void {
+    this.showPanel = false;
     this.selectedSpecies = null;
     this.currentImageIndex = 0;
     this.expandedClusterId = null;

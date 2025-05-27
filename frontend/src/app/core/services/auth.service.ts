@@ -35,7 +35,11 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('auth_token');
+    if (localStorage.getItem('auth_token')) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   logout(): void {
@@ -56,7 +60,7 @@ export class AuthService {
     );
   }
 
-    getAccessToken(): string | null {
+  getAccessToken(): string | null {
     return localStorage.getItem('auth_token');
   }
 

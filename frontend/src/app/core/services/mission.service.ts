@@ -28,14 +28,6 @@ export class MissionService {
     );
   }
   
-  claimMission(id: string): Observable<{ rewardXP: number }> {
-    return this.http.post<{ rewardXP: number }>(
-      `${this.apiUrl}/${id}/claim`,
-      {},
-      { headers: this.getAuthHeaders() }
-    );
-  }
-  
   handleEvent(id: string, event: any): Observable<{ completed: boolean; progress: { seen: string[] } }> {
     return this.http.post<{ completed: boolean; progress: { seen: string[] } }>(
       `${this.apiUrl}/${id}/event`,
