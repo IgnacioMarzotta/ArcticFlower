@@ -30,8 +30,13 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/_styles.scss"
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src"
+              ]
+            },
             "scripts": [],
             "browser": "src/main.ts"
           },
@@ -88,7 +93,7 @@
           }
         },
         "test": {
-          "builder": "@angular-devkit/build-angular:karma",
+          "builder": "@angular-builders/custom-webpack:karma",
           "options": {
             "main": "src/test.ts",
             "polyfills": "src/polyfills.ts",
@@ -99,8 +104,16 @@
               "src/assets"
             ],
             "styles": [
-              "src/styles.css"
+              "src/_styles.scss"
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src"
+              ]
+            },
+            "customWebpackConfig": {
+              "path": "./webpack.test.config.js"
+            },
             "scripts": []
           }
         }

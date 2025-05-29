@@ -6,7 +6,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test --watch=false --browsers=ChromeHeadless",
+    "test:watch": "ng test"
   },
   "private": true,
   "dependencies": {
@@ -28,11 +29,12 @@
     "flag-icons": "^7.3.2",
     "globe.gl": "^2.39.6",
     "i18n-iso-countries": "^7.14.0",
+    "jwt-decode": "^4.0.0",
     "ng-circle-progress": "^1.7.1",
     "ngx-spinner": "^17.0.0",
     "ngx-typed-js": "^2.1.1",
     "rxjs": "~7.5.0",
-    "sweetalert2": "^11.19.1",
+    "sweetalert2": "^11.6.13",
     "three": "^0.173.0",
     "tslib": "^2.3.0",
     "turf": "^3.0.14",
@@ -40,6 +42,7 @@
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
+    "@angular-builders/custom-webpack": "^19.0.1",
     "@angular-devkit/build-angular": "^19.2.1",
     "@angular/cli": "^19.2.1",
     "@angular/compiler-cli": "^19.2.1",
@@ -49,12 +52,15 @@
     "@types/d3-shape": "^3.1.7",
     "@types/jasmine": "~3.10.0",
     "@types/node": "^12.11.1",
+    "css-loader": "^7.1.2",
     "jasmine-core": "~4.0.0",
     "karma": "~6.3.0",
     "karma-chrome-launcher": "~3.1.0",
     "karma-coverage": "~2.1.0",
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "~1.7.0",
+    "null-loader": "^4.0.1",
+    "style-loader": "^4.0.0",
     "typescript": "~5.8.2"
   }
 }

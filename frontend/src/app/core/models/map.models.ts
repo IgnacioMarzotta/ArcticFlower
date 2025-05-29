@@ -22,6 +22,7 @@ export interface SpeciesPoint {
   updatedAt: string;
   __v?: number;
   description?: SpeciesDescription;
+  references?: string[],
 }
 
 export interface SpeciesDescription {

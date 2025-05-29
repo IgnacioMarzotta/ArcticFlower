@@ -1,0 +1,95 @@
+<div class="main">
+
+    <div class="video-banner">
+        <video preload="auto" autoplay loop muted>
+            <source src="assets/video/banner_video.mp4" type="video/mp4">
+            Sorry, your browser does not support HTML5 video.
+        </video>
+    </div>
+
+    <div class="content">
+
+        <div class="form">
+    
+            <!-- Tabs -->
+            <ul class="tab-group">
+                <li class="tab" [class.active]="!isLoginMode" (click)="setMode(false)">
+                    <a href="javascript:void(0)">Register</a>
+                </li>
+                <li class="tab" [class.active]="isLoginMode" (click)="setMode(true)">
+                    <a href="javascript:void(0)">Log In</a>
+                </li>
+            </ul>
+            
+            <!-- Tab Content -->
+            <div class="tab-content">
+    
+                <!-- Registro -->
+                <div id="signup" [class.active-tab]="!isLoginMode">
+                    <h1>Create your account</h1>
+                    <form *ngIf="!isLoginMode" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+                        <div class="field-wrap">
+                            <label [class.active]="registerForm.get('username')?.value" [class.highlight]="registerForm.get('username')?.touched">
+                                Username<span class="req">*</span>
+                            </label>
+                            <input type="text" formControlName="username" required autocomplete="off"/>
+                        </div>
+                        <div class="field-wrap">
+                            <label [class.active]="registerForm.get('email')?.value" [class.highlight]="registerForm.get('email')?.touched">
+                                Email Address<span class="req">*</span>
+                            </label>
+                            <input type="email" formControlName="email" required autocomplete="off"/>
+                        </div>
+                        
+                        <div class="field-wrap">
+                            <label [class.active]="registerForm.get('password')?.value" [class.highlight]="registerForm.get('password')?.touched">
+                                Set A Password<span class="req">*</span>
+                            </label>
+                            <input type="password" formControlName="password" required autocomplete="off"/>
+                        </div>
+                        
+                        <div *ngIf="errorMessage" class="error-message">
+                            {{ errorMessage }}
+                        </div>
+                        
+                        <button type="submit" class="button button-block" [disabled]="registerForm.invalid">
+                            Get Started
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Login -->
+                <div id="login" [class.active-tab]="isLoginMode">
+                    <h1>Welcome Back!</h1>
+                    <form *ngIf="isLoginMode" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+                        <div class="field-wrap">
+                            <label [class.active]="loginForm.get('email')?.value" [class.highlight]="loginForm.get('email')?.touched">
+                                Email Address<span class="req">*</span>
+                            </label>
+                            <input type="email" formControlName="email" required autocomplete="off"/>
+                        </div>
+                        
+                        <div class="field-wrap">
+                            <label [class.active]="loginForm.get('password')?.value" [class.highlight]="loginForm.get('password')?.touched">
+                                Password<span class="req">*</span>
+                            </label>
+                            <input type="password" formControlName="password" required autocomplete="off"/>
+                        </div>
+                        
+                        <div *ngIf="errorMessage" class="error-message">
+                            {{ errorMessage }}
+                        </div>
+                        
+                        <button class="button button-block" type="submit" [disabled]="loginForm.invalid">
+                            Log In
+                        </button>
+                    </form>
+                </div>
+    
+            </div>
+    
+        </div>
+
+    </div>
+
+</div>

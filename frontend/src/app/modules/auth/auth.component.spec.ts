@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { AuthComponent } from './auth.component';
 
 describe('AuthComponent', () => {
@@ -8,9 +7,8 @@ describe('AuthComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ AuthComponent ]
-    })
-    .compileComponents();
+      imports: [AuthComponent]
+    }).compileComponents();
   });
 
   beforeEach(() => {
@@ -19,7 +17,14 @@ describe('AuthComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create', () => {
+  it('should create the component', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('should render the default template message', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    const p = compiled.querySelector('p');
+    expect(p).withContext('El párrafo <p> debe existir').toBeTruthy();
+    expect(p?.textContent).toContain('auth works!');
   });
 });

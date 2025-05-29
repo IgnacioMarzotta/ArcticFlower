@@ -33,7 +33,6 @@ exports.populateSpecies = async (req, res) => {
       category: 'Categoría IUCN es requerida'
     };
     
-    // Validar campos obligatorios
     const missingFields = Object.entries(requiredFields)
     .filter(([field]) => !req.body[field])
     .map(([_, message]) => message);
@@ -347,11 +346,35 @@ exports.updateSpeciesStatusFromAPI = async (req, res) => {
     
   } catch (error) {
     console.error('[species.controller - updateSpeciesStatusFromAPI] Error al actualizar estado de especie:');
-    console.log("STATUS: ", error.response.status, " ", error.response.statusText);
-    console.log("CODE: ", error.code);
-    console.log("URL: ", error.config.url);
-    console.log("HEADERS: ", error.config.headers);
-    res.status(error.status || 500).json({ error: 'Error interno al actualizar especie' });
+    let statusCode = 500;
+    let responseErrorObject = { error: 'Error interno al actualizar especie' };
+
+    if (error.response && error.response.status) { 
+
+      statusCode = error.response.status;      
+      console.log("AXIOS ERROR DETECTED");
+      console.log("STATUS: ", error.response.status, " ", error.response.statusText);
+      console.log("RESPONSE DATA: ", error.response.data); 
+      console.log("CODE (Axios): ", error.code);
+      if (error.config) {
+        console.log("URL: ", error.config.url);
+      }
+
+    } else { 
+
+      console.log("NON-AXIOS ERROR DETECTED");
+      console.log("MESSAGE: ", error.message);
+      console.log("CODE (Native/Custom): ", error.code);
+      if (error.message === 'Especie no encontrada') {
+        statusCode = 404;
+        responseErrorObject.error = 'Especie no encontrada';
+        responseErrorObject.details = error.message;
+      } else {
+        responseErrorObject.details = process.env.NODE_ENV === 'development' ? error.message : undefined;
+      }
+    }
+    
+    res.status(statusCode).json(responseErrorObject);
   }
 };
 

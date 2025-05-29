@@ -1,10 +1,12 @@
+@use 'styles' as s;
+
 .info-icon {
     position: fixed;
     bottom: 16px;
     right: 16px;
     cursor: pointer;
-    background: #21170B;
-    border: 1px solid #412B14;
+    background: s.$primary-background;
+    border: 1px solid s.$secondary-background;
     border-radius: 50%;
     padding: 8px;
     padding-bottom: 4px;
@@ -15,12 +17,12 @@
         width: 32px;
         height: 32px;
     }
-}
 
-.info-icon:hover {
-    box-shadow: 0 0 5px 5px #e9b738;
-    transform: scale(1.05);
-    transition: 0.5s;
+    &:hover {
+        box-shadow: 0 0 5px 5px #e9b738;
+        transform: scale(1.05);
+        transition: 0.5s;
+    }
 }
 
 .backdrop {
@@ -41,7 +43,7 @@
 
 .modal-content {
     position: relative;
-    background: #21170B;
+    background: s.$primary-background;
     font-family: "Roboto";
     font-size: 20px;
     padding: 1.5em;
@@ -50,7 +52,7 @@
     width: 90%;
     z-index: 1001;
     box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-    border: solid 2px #412B14;
+    border: solid 2px s.$secondary-background;
     color: white;
 
     h3 {
@@ -71,7 +73,7 @@
         max-width: 100%;
         min-width: 100%;
         width: 100%;
-        background-color: #412B14;
+        background-color: s.$secondary-background;
         border: solid 1px white;
         color: white;
         padding: 10px;
@@ -86,12 +88,12 @@
         border-radius: 10px;
 
         &:focus {
-            border: 1px solid #8FCD3C;
+            border: 1px solid s.$primary-color;
             transition: border 0.2s;
         }
         
         &:hover {
-          border: 1px solid #8FCD3C;
+          border: 1px solid s.$primary-color;
           transition: border 0.2s;
         }
     }
@@ -102,15 +104,15 @@
 
         button {
             margin-left: 0.5em;
-            background-color: #412B14;
+            background-color: s.$secondary-background;
             border: solid 1px white;
             border-radius: 5%;
             padding: 10px 20px;
             color: white;
 
             &:hover {
-                background-color: #8FCD3C;
-                color: #21170B;
+                background-color: s.$primary-color;
+                color: s.$primary-background;
                 transition: background-color 0.2s, color 0.2s;
             }
         }

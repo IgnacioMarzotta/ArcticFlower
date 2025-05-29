@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
 interface LoginResponse {
@@ -35,7 +35,11 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return !!localStorage.getItem('auth_token');
+    if (localStorage.getItem('auth_token')) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   logout(): void {
@@ -54,5 +58,27 @@ export class AuthService {
         this.currentUserSubject.next(profile);
       })
     );
+  }
+
+  getAccessToken(): string | null {
+    return localStorage.getItem('auth_token');
+  }
+
+  async refreshToken(): Promise<string> {
+
+    const resp = await firstValueFrom(
+      this.http.post<{ accessToken: string }>(
+        '/api/auth/refresh',
+        {},
+        { withCredentials: true }
+      )
+    );
+
+    if (!resp || !resp.accessToken) {
+      throw new Error('No se obtuvo accessToken en el refresh');
+    }
+
+    localStorage.setItem('auth_token', resp.accessToken);
+    return resp.accessToken;
   }
 }

@@ -1,8 +1,4 @@
-$primary-background: #21170B;
-$secondary-background: #412B14;
-$primary-color: #8FCD3C;
-$secondary-color: #1B3518;
-$button-color: #E9B838;
+@use 'styles' as s;
 
 .globe-container {
   position: fixed;
@@ -15,67 +11,67 @@ $button-color: #E9B838;
 }
 
 .missions-container {
-
+  
   .missions-btn {
     position: fixed;
     bottom: 16px;
     left: 84px;
     cursor: pointer;
-    background: $primary-background;
-    border: 1px solid $secondary-background;
+    background: s.$primary-background;
+    border: 1px solid s.$secondary-background;
     border-radius: 50%;
     padding: 8px;
     padding-bottom: 3px;
     box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.306);
     z-index: 1001;
-
+    
     img {
       width: 32px;
       height: 32px;
     }
-  
+    
     &:hover {
       box-shadow: 0 0 5px 5px #e9b738;
       transform: scale(1.05);
       transition: 0.5s;
     }
   }
-
+  
   .missions-panel {
     display: flex;
     bottom: 80px;
     left: 20px;
     position: absolute;
-  
+    
     aside {
       width: 300px;
       z-index: 1000;
       overflow-y: auto;
       font-family: "Roboto";
-      background: $primary-background;
+      background: s.$primary-background;
       color: white;
-      border: 2px solid $secondary-background;
+      border: 2px solid s.$secondary-background;
       border-radius: 6px;
       padding: 10px;
-
+      
       h3 {
         margin: 0;
       }
-
+      
       .quest-img{
         height: 24px;
         width: 24px;
         margin-right: 8px;
       }
-
+      
       ul {
         margin-bottom: 0;
         padding-left: 12px;
-
+        
         li {
           
           list-style: none;
-
+          
           img {
             width: 16px;
             height: 16px
@@ -93,19 +89,19 @@ $button-color: #E9B838;
     bottom: 16px;
     left: 16px;
     cursor: pointer;
-    background: $primary-background;
-    border: 1px solid $secondary-background;
+    background: s.$primary-background;
+    border: 1px solid s.$secondary-background;
     border-radius: 50%;
     padding: 8px;
     padding-bottom: 3px;
     box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.306);
     z-index: 1001;
-  
+    
     img {
       width: 32px;
       height: 32px;
     }
-  
+    
     &:hover {
       box-shadow: 0 0 5px 5px #e9b738;
       transform: scale(1.05);
@@ -117,79 +113,79 @@ $button-color: #E9B838;
     position: fixed;
     bottom: 80px;
     left: 20px;
-    width: 240px;
+    width: 300px;
     max-height: 70vh;
     overflow-y: auto;
     font-family: "Roboto";
-    background: $primary-background;
+    background: s.$primary-background;
     color: white;
-    border: 2px solid $secondary-background;
+    border: 2px solid s.$secondary-background;
     border-radius: 6px;
     padding: 10px;
     z-index: 2000;
-
+    
     .fav-img{
       height: 18px;
       width: 18px;
       margin-right: 8px;
     }
-  
+    
     h4 {
       margin-top: 0;
       margin-bottom: 8px;
     }
-  
+    
     ul {
       list-style: none;
       padding: 0;
       margin: 0;
-  
+      
       li {
         padding: 6px 4px;
         cursor: pointer;
         border-bottom: 1px solid rgba(255,255,255,0.2);
-  
+        
         &:hover {
           background: rgba(255,255,255,0.1);
         }
       }
     }
-  
+    
     .close-favorites {
       margin-top: 8px;
       background: transparent;
-      border: 1px solid $primary-color;
-      color: $primary-color;
+      border: 1px solid s.$primary-color;
+      color: s.$primary-color;
       padding: 4px 8px;
       cursor: pointer;
       border-radius: 4px;
       width: 100%;
     }
   }
-
+  
 }
 
 .search-container {
   font-family: "Roboto";
   text-align: justify;
   position: fixed;
-  top: 100px;
+  top: 9%;
   left: 20px;
   z-index: 10;
   width: 300px;
-  background: $primary-background;
+  background: s.$primary-background;
   padding: 10px;
   border-radius: 5px;
-  border: 2px solid $secondary-background;
+  border: 2px solid s.$secondary-background;
   
   input {
     width: 90%;
     padding: 8px;
-    background-color: transparent;
+    background-color: s.$secondary-background;
     color: white;
     border: 2px solid white;
     font-weight: bold;
-    border-radius: 100px;
+    border-radius: 5px;
     outline: none;
     box-shadow: none;
     -webkit-appearance: none;
@@ -197,12 +193,12 @@ $button-color: #E9B838;
     appearance: none;
     
     &:focus {
-      border: 2px solid $primary-color;
+      border: 2px solid s.$primary-color;
       transition: border 0.2s;
     }
     
     &:hover {
-      border: 2px solid $primary-color;
+      border: 2px solid s.$primary-color;
       transition: border 0.2s;
     }
   }
@@ -238,8 +234,7 @@ $button-color: #E9B838;
 }
 
 .spinner-image {
-  width: 100px;
-  height: 100px;
+  max-width: 100px;
 }
 
 .side-panel {
@@ -249,12 +244,12 @@ $button-color: #E9B838;
   width: 400px;
   max-height: calc(85vh);
   overflow-y: auto;
-  background: $primary-background;
+  background: s.$primary-background;
   font-family: "Roboto";
   color: white;
   z-index: 1000;
   border-radius: 10px;
-  border: 2px solid $secondary-background;
+  border: 2px solid s.$secondary-background;
   
   .species-header{
     display: flex;
@@ -288,6 +283,7 @@ $button-color: #E9B838;
   }
   
   .species-details{
+    overflow-x: hidden;
     
     .simple-gallery {
       max-width: 800px;
@@ -367,7 +363,7 @@ $button-color: #E9B838;
     
     .species-data{
       padding: 10px;
-
+      
       .title-fav-container {
         display: flex;
         justify-content: space-between;
@@ -385,12 +381,12 @@ $button-color: #E9B838;
         display: flex;
         align-items: center;
         justify-content: center;
-
+        
         #heart-container {
           width: 42px;
           height: 42px;
           position: relative;
-
+          
           #fav-heart {  
             position: absolute;  background:url('../../../assets/img/icons/heart_animation.png');
             background-position: 0px;
@@ -413,15 +409,182 @@ $button-color: #E9B838;
           }
           
           @keyframes heart-animate {
-             100% { 
-               background-position: -2800px;
+            100% { 
+              background-position: -2800px;
             }
           }
         }
       }
 
+      .tree {
+        position: relative;
+        margin-top: 20px;
+        font-family: "Roboto";
+        font-size: 18px;
+        font-weight: 400;
+        line-height: 1.5;
+        color: white;
+        
+        span {
+          font-size: 13px;
+          font-style: italic;
+          letter-spacing: .4px;
+          color: #a8a8a8;
+        }
+        
+        ul {
+          padding-left: 5px;
+          list-style: none;
+          
+          li {
+            position: relative;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            padding-left: 15px;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            user-select:none;
+            
+            details{
+              summary {outline:none}
+              summary::-webkit-details-marker {
+                display:block;
+              }
+              
+              &[open] > summary i:before{
+                content:"\f07c"
+              }
+              
+              &[disabled] > summary{
+                cursor:not-allowed;
+                
+                & i:before{
+                  content:"\f65d";
+                  color:#7f96ae;
+                }
+              }
+            }
+            
+            &:before {
+              position: absolute;
+              top: 19px;
+              left: 0;
+              width: 12px;
+              height: 1px;
+              margin: auto;
+              content: '';
+              background-color: #666;
+            }
+            
+            &:after {
+              position: absolute;
+              top: 0;
+              bottom: 0;
+              left: 0;
+              width: 1px;
+              height: 100%;
+              content: '';
+              background-color: #666;
+            }
+            
+            &:last-child:after {
+              height: 20px;
+            }
+          }
+          
+          a {
+            cursor: pointer;
+            
+            &:hover {
+              text-decoration: none;
+            }
+          }
+        }
+      }
+
+      .visit-button {
+        display: inline-flex;
+        height: 50px;
+        width: 180px;
+        border: 2px solid #BFC0C0;
+        color: #BFC0C0;
+        text-transform: uppercase;
+        text-decoration: none;
+        background-color: s.$secondary-background;
+        font-size: 14px;
+        letter-spacing: 1.5px;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+
+        a {
+          position: relative;
+          left: 0;
+          transition: all .35s ease-Out;
+        }
+
+        &#iucn {
+          margin-right: 8px;
+
+          span {
+            color: red;
+            margin-left: 4px;
+            font-weight: bold;
+          }
+
+          img {
+            width: 50px;
+            height: auto;
+          }
+        }
+        
+
+        &#gbif {
+
+          span {
+            color: green;
+            margin-left: 4px;
+            font-weight: bold;
+          }
+
+          img {
+            width: 90px;
+            height: auto;
+          }
+        }
+
+        #logo-container {
+          width: 100%;
+          height: 100%;
+          background: #BFC0C0;
+          left: -200px;
+          position: absolute;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all .35s ease-Out;
+          bottom: 0;
+        }
+
+        &:hover {
+
+          #logo-container {
+            left: 0;
+          }
+
+          a {
+            left: 150px;
+          }
+
+        }
+      }
+
       .report-species-btn {
-        background: $button-color;
+        background: s.$button-color;
         color: black;
         padding: 10px 20px;
         border-radius: 5px;
@@ -430,7 +593,7 @@ $button-color: #E9B838;
         font-size: 16px;
         font-family: "Roboto";
         transition: 0.3s;
-
+        
         &:hover {
           transform: scale(1.03);
           transition: 0.3s;
@@ -463,24 +626,37 @@ $button-color: #E9B838;
 }
 
 @media (min-width: 768px) {
-  .info-panel {
-    bottom: 10px;
-    right: 10px;
-    width: 400px;
-    height: 90%;
-    transform: translateX(0);
-    border-radius: 10px;
-  }
+  
 }
 
 @media (max-width: 767px) {
-  .info-panel {
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 50vh;
-    transform: translateY(0);
-    border-top-left-radius: 10px;
-    border-top-right-radius: 10px;
+  .side-panel {
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 60vh;
+    max-height: 100vh;
+    transform: translateY(100%);
+    border-radius: 12px 12px 0 0;
+    transition: transform 0.3s ease;
+    touch-action: none;
+    will-change: transform;
+    z-index: 2000;
+    
+    .open {
+      transform: translateY(0);
+    }
+    
+    .species-header {
+      cursor: grab;
+      touch-action: pan-y;
+    }
   }
+  
+  .search-container {
+    width: 80%;
+  }
+  
 }

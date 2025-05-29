@@ -7,24 +7,71 @@
     </div>
     
     <div class="content">
-        <h2>Tu Perfil</h2>
         
-        <div class="profile-details">
-            <p><strong>Username:</strong> {{ userData?.username }}</p>
-            <p><strong>Email:</strong> {{ userData?.email }}</p>
-            <p><strong>Miembro desde:</strong> {{ userData?.created_at | date }}</p>
-        </div>
-
-        <h3>Especies Favoritas ({{favorites.length}})</h3>
-        <div class="favorites-scroll">
-          <div class="favorite-card" *ngFor="let fav of favorites">
-            <span class="fi fi-{{ fav.clusterId.country | lowercase }}"></span>
-            <div class="fav-name">
-              {{ fav.speciesId.common_name !== 'Unknown'
-                  ? fav.speciesId.common_name
-                  : fav.speciesId.scientific_name }}
+        <div class="profile-body">
+            <div class="photo">
+                <img src="https://static.vecteezy.com/system/resources/previews/009/292/244/non_2x/default-avatar-icon-of-social-media-user-vector.jpg" class="image--cover">
             </div>
-          </div>
+            <div class="profile" *ngIf="isUser">
+                <h2 class="username"> {{ userData.username }}</h2>
+                <h4 class="email">{{ userData?.email }}</h4>
+                <h5 class="member-since">Member since: {{ userData?.created_at | date }}</h5>
+                <p class="description">Mussum Ipsum, cacilds vidis litro abertis. Tá deprimidis, eu conheço uma cachacis que pode alegrar sua vidis. Quem manda na minha terra sou euzis! Nullam volutpat risus nec leo commodo, ut interdum diam laoreet. Sed non consequat odio. Suco de cevadiss, é um leite divinis, qui tem lupuliz, matis, aguis e fermentis.</p>
+                
+                <h3>Favorite species ({{favorites.length}})</h3>
+                <div class="favorites-scroll">
+                    <div class="favorite-card" *ngFor="let fav of favorites">
+                        <div class="fav-name">
+                            <span class="fi fi-{{ fav.clusterId.country | lowercase }}"></span>
+                            {{ fav.speciesId.common_name !== 'Unknown'
+                            ? fav.speciesId.common_name
+                            : fav.speciesId.scientific_name }}
+                        </div>
+                    </div>
+                </div>
+                
+                <div *ngIf="reports.length > 0" class="reports">
+                    <h3>Your reports</h3>
+                    <ul>
+                        <li *ngFor="let r of reports">
+                            <span *ngIf="r.resolved">✅</span>
+                            <span *ngIf="!r.resolved">❌</span>
+                            <strong>{{ r.type }}</strong> —
+                            {{ r.message }} 
+                            <span *ngIf="r.species">
+                                (Especie: {{ r.species || 'N/D' }})
+                            </span>
+                            <em>{{ r.createdAt | date:'short' }}</em>
+                        </li>
+                    </ul>
+                </div>
+                <div *ngIf="reports.length === 0">
+                    <p>You haven't made any reports yet.</p>
+                </div>
+
+                <div *ngIf="missions.length > 0" class="missions">
+                    <h3>Current missions</h3>
+                    <ul>
+                        <li *ngFor="let m of missions">
+                            <span *ngIf="m.completed">✅</span>
+                            <span *ngIf="!m.completed">❌</span>
+                            <span>{{m.completed}}</span>
+                            <span> - {{m.description}}</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="socialmedia">
+                    <a href="#" class="button-facebook"><i class="fab fa-facebook-square"></i></a>
+                    <a href="#" class="button-instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="button-twitter"><i class="fab fa-twitter-square"></i></a>
+                    <a href="#" class="button-whatsapp"><i class="fab fa-whatsapp-square"></i></a>
+                </div>
+            </div>
+            
+            <div class="profile" *ngIf="!isUser">
+                
+            </div>
         </div>
     </div>
 </div>

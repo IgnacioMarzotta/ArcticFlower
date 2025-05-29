@@ -20,9 +20,11 @@ const UserMissionSchema = new Schema({
         type: String, 
         default: '' 
     },
-    progress: { 
-        type: Schema.Types.Mixed, 
-        default: {} 
+    progress: {
+        seen: {
+            type: [String],
+            default: []
+        }
     },
     completed: { 
         type: Boolean, 

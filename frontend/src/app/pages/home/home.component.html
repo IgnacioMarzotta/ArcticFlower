@@ -1,5 +1,4 @@
 <div class="main">
-  <!-- Video de fondo -->
   <div class="video-banner">
     <video preload="auto" autoplay loop muted>
       <source src="assets/video/banner_video.mp4" type="video/mp4">
@@ -8,7 +7,6 @@
   </div>
 
     
-  <!-- Contenedor de contenido -->
   <div class="content">
     
     <div class="title-container">
@@ -36,87 +34,355 @@
     </section>
 
     <div class="main-container">
-      <div class="chart-container">
-        <h2>Extinctions since 1500.</h2>
-        <p>Cumulative % of species based on background rate of 0.1-2 extinctions per million species per year.</p>
-        <ngx-charts-line-chart
-          [view]="view"
-          [results]="graph1Data"
-          [gradient]="true"
-          [legend]="true"
-          [xAxis]="true"
-          [yAxis]="true"
-          [showGridLines]="true"
-          [xAxisLabel]="'Year'"
-          [yAxisLabel]="'Cumulative % of species driven extinct'"
-          [showXAxisLabel]="true"
-          [showYAxisLabel]="true"
-          [scheme]="graph1Scheme">
-        </ngx-charts-line-chart>
-      </div>
-      <div class="chart-container">
-        <h2>Extinctions since 1500.</h2>
-        <p>Cumulative % of species based on background rate of 0.1-2 extinctions per million species per year.</p>
-        <ngx-charts-bar-horizontal
-          [view]="view"
-          [results]="graph2Data"
-          [gradient]="true"
-          [legend]="true"
-          [showGridLines]="true"
-          [xAxisLabel]="'Year'"
-          [yAxisLabel]="'Cumulative % of species driven extinct'"
-          [showDataLabel]="true"
-          [scheme]="graph2Scheme">
-        </ngx-charts-bar-horizontal>
-      </div>
-    </div>
 
-    <div class="title-container conclusion">
-      <h1>
-        It's not just our blue marble, it's also the place 
-        <a href="https://ourworldindata.org/how-many-species-are-there" style="text-decoration: none; color: white;"> more than 2.150.000 </a> 
-        species call home.</h1>
+      <section class="graph-row" style="padding-bottom: 80px;">
 
-        <h1>It's our duty to protect it for those who don't have a voice to do so.</h1>
-    </div>
+        <div class="chart-container">
+            <h2>Extinctions since 1500.</h2>
+            <p>Cumulative % of species based on background rate of 0.1-2 extinctions per million species per year.</p>
+            <ngx-charts-line-chart
+              [view]="view"
+              [results]="graph1Data"
+              [gradient]="true"
+              [xAxis]="true"
+              [yAxis]="true"
+              [showGridLines]="true"
+              [xAxisLabel]="'Year'"
+              [yAxisLabel]="'Cumulative % of species driven extinct'"
+              [showXAxisLabel]="true"
+              [showYAxisLabel]="true"
+              [legend]="true"
+              [legendPosition]="legendPosition">
+            </ngx-charts-line-chart>
+        </div>
 
-    <div class="main-container">
-      <div class="chart-container">
-        <h2>Almost 18.000 species are endangered</h2>
-        <p>Preliminary number of animal species on the IUCN Red List in 2024, by class.</p>
-        <ngx-charts-bar-vertical
-          [view]="view"
-          [results]="graph3Data"
-          [gradient]="true"
-          [legend]="true"
-          [showGridLines]="true"
-          [xAxisLabel]="'Year'"
-          [yAxisLabel]="'Cumulative % of species driven extinct'"
-          [showDataLabel]="true"
-          [scheme]="graph3Scheme">
-        </ngx-charts-bar-vertical>
-      </div>
-      <div class="chart-container">
-        <h2>Crisis de Biodiversidad: Especies en Peligro</h2>
-        <ngx-charts-pie-chart
-          [view]="view"
-          [results]="graph1Data"
-          [labels]="true"
-          [animations]="true"
-          [doughnut]="true"
-          [arcWidth]="0.4"
-          [gradient]="true">
+        <div class="description">
+
+          <h2> <img src="../../../assets/img/icons/info-black.png" alt="">What does this mean?</h2>
+          <p>
+            From 1500 until well into the 20th century, virtually no extinctions were recorded among amphibians, mammals, birds, reptiles, and fish.
+            <br><br>
+            However, starting in 1900, the curve rose sharply and rapidly, reaching levels between 0.3% and 1.7% of the species assessed by the IUCN in 2018. 
+            <br><br>
+            Although these percentages may seem low, they represent hundreds of species lost forever and reflect the direct impact of human activity—such as habitat destruction, hunting, and pollution—on our biodiversity. 
+            <br><br>
+            This trend underscores the urgency of action today: every tenth of a percentage point hides an animal or plant that no longer exists, and protecting wildlife is everyone's responsibility.
+          </p>
+
+          <button class="source-btn">
+            <a href="https://datazone.birdlife.org/articles/many-bird-species-have-already-gone-extinct" target="_blank">
+              <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+            </a>
+          </button>
+          <button class="source-btn">
+            <a href="https://datazone.birdlife.org/articles/one-in-eight-of-all-bird-species-is-threatened-with-global-extinction" target="_blank">
+              <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+            </a>
+          </button>
+          <button class="source-btn">
+            <a href="https://invasives.org.au/blog/invasive-species-greatest-threats-australias-endemic-terrestrial-mammals" target="_blank">
+              <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+            </a>
+          </button>
+          <button class="source-btn">
+            <a href="https://www.nature.com/articles/s41586-023-06578-4" target="_blank">
+              <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+            </a>
+          </button>
+          <button class="source-btn">
+            <a href="https://www.nature.com/articles/s41586-022-04664-7" target="_blank">
+              <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+            </a>
+          </button>
+            
+        </div>
+
+      </section>
+
+      <section class="graph-row">
+
+        <div class="chart-container">
+            <h2>Living Planet Index</h2>
+            <p>Global trend in vertebrate populations since 1970.</p>
+            <ngx-charts-line-chart
+              [view]="view"
+              [results]="graph2Data"
+              [gradient]="true"
+              [xAxis]="true"
+              [yAxis]="true"
+              [showGridLines]="true"
+              [xAxisLabel]="'Year'"
+              [yAxisLabel]="'Relative abundance index (1970 = 1.0)'"
+              [showXAxisLabel]="true"
+              [showYAxisLabel]="true"
+              [legend]="true"
+              [legendPosition]="legendPosition">
+            </ngx-charts-line-chart>
+        </div>
+
+        <div class="description">
+            <h2> <img src="../../../assets/img/icons/info-black.png" alt="">What does this mean?</h2>
+            <p>
+              The Living Planet Index (LPI), developed by WWF and the Zoological Society of London, is a key tool for monitoring the health of global biodiversity. Based on more than 35,000 populations of 5,495 vertebrate species, the LPI indicates that, on average, these populations have declined by 73% between 1970 and 2020. This decline reflects the significant impact of human activities, such as habitat destruction, overexploitation, and climate change, on wildlife. The situation in Latin America and the Caribbean is particularly alarming, where populations have fallen by 95%.
+              <br><br>
+              Despite its usefulness, the LPI has received criticism for potential methodological biases. Some studies suggest that the index may overestimate population declines due to the disproportionate influence of certain populations in extreme decline. Furthermore, it has been pointed out that the LPI is based solely on monitored vertebrates, excluding many less-studied taxonomic groups, which could limit and undermine it's representativeness of global biodiversity.
+              <br><br>
+              Nevertheless, the LPI remains a valuable tool for visualizing overall trends in vertebrate populations and raising awareness about the importance of biodiversity conservation. Although it should be interpreted with caution and complemented by other indicators and studies, the LPI provides a crucial insight into the magnitude of biodiversity loss and underscores the urgency of taking action to protect our planet's wildlife.
+            </p>
+
+            <button class="source-btn">
+              <a href="https://cadenaser.com/nacional/2024/10/10/alerta-medioambiental-el-73-de-las-poblaciones-de-vertebrados-han-desaparecido-desde-1970-cadena-ser/" target="_blank">
+                <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+              </a>
+            </button>
+            <button class="source-btn">
+              <a href="https://ourworldindata.org/living-planet-index-region" target="_blank">
+                <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+              </a>
+            </button>
+            <button class="source-btn">
+              <a href="https://ourworldindata.org/grapher/living-planet-index-by-region" target="_blank">
+                <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+              </a>
+            </button>
+            <button class="source-btn">
+              <a href="https://www.theguardian.com/environment/2024/oct/10/collapsing-wildlife-populations-points-no-return-living-planet-report-wwf-zsl-warns" target="_blank">
+                <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+              </a>
+            </button>
+            <button class="source-btn">
+              <a href="https://files.worldwildlife.org/wwfcmsprod/files/Publication/file/5gc2qerb1v_2024_living_planet_report_a_system_in_peril.pdf" target="_blank">
+                <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+              </a>
+            </button>
+            
+        </div>
+
+      </section>
+
+      <section class="graph-row">
+
+        <div class="chart-container">
+            <h2>Almost 18,000 Species Are Endangered</h2>
+            <p>Preliminary number of <b>animal</b> species on the IUCN Red List in 2024, by class</p>
+            <ngx-charts-advanced-pie-chart
+              [view]="view"
+              [results]="graph3Data"
+              [animations]="true"
+              label="Endangered Species"
+              id="endangered-species"
+              >
+            </ngx-charts-advanced-pie-chart>
+        </div>
+
+        <div class="description">
+            
+          <h2> <img src="../../../assets/img/icons/info-black.png" alt="">What does this mean?</h2>
+          <p>
+            This chart offers a striking visual representation of the magnitude of the global extinction crisis. Based on preliminary data fromthe IUCN Red List for 2024, this chart classifies threatened species by taxonomic group, highlighting that fish top the list with 4017 endangered species, followed by amphibians (2,873), molluscs such as snails (2,456), insects (2,423), reptiles (1,845), mammals(1,354), and birds (1,311). Additionally, the "Other" category groups together an additional 1,533 species at risk.
+            <br><br>
+            This graph reveals that the threat of extinction is not limited to the best-known vertebrates, but profoundly affects less visiblebut ecologically crucial groups, such as mollusks and insects. The high number of endangered species within these groups underscoresthe urgent need to expand conservation efforts beyond iconic species, also addressing those that play fundamental roles inecosystems, such as pollination and nutrient recycling.
+          </p>
+          <button class="source-btn">
+            <a href="https://www.statista.com/chart/17122/number-of-threatened-species-red-list/" target="_blank">
+              <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+            </a>
+          </button>
+          <button class="source-btn">
+            <a href="https://www.iucnredlist.org/resources/threat-classification-scheme" target="_blank">
+              <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+            </a>
+          </button>
+          <button class="source-btn">
+            <a href="https://www.iucnredlist.org/resources/classification-schemes" target="_blank">
+              <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+            </a>
+          </button>
+          <button class="source-btn">
+            <a href="https://nc.iucnredlist.org/redlist/content/attachment_files/2025-1_RL_Table_1a.pdf" target="_blank">
+              <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+            </a>
+          </button>
+            
+        </div>
+        
+      </section>
+
+      <section id="consequences">
+        
+        <h2>What are the consequences of this?</h2>
+        <h4>What does this mean for the enviroment and for us?</h4>
+
+        <div class="cards-container">
+          <div class="card">
+            <a href="https://www.ochabitats.org/post/ecosystem-services-the-value-of-nature"><img src="../../../assets/img/landing/ecosystem_services.jpg" alt=""></a>
+            <p> This extinction crisis represents one of the <span id="yellow"> most serious threats to life on Earth </span>. Although the number of extinct or endangered species may seem small compared to the planet's vast diversity, each species plays multiple essential roles in its ecosystem. These functions include crop pollination, pest control, water purification, and the formation of fertile soil. <span id="yellow">The loss of a single species can trigger ripple effects that affect many others</span>, disrupting the natural balance and compromising the health of the ecosystem as a whole.</p>
+          </div>
+
+          <div class="card">
+            <a href="https://www.ontario.anglican.ca/creation-care/ecosystem-services"><img src="../../../assets/img/landing/human_services.png" alt=""></a>
+            <p>The disappearance of species is not only an ecological tragedy but also has <span id="yellow">direct consequences for humanity</span>. Healthy ecosystems provide vital services such as <span id="green">food, medicine, and clean air</span>. The loss of biodiversity can weaken these systems, increasing vulnerability to disease, reducing food security, and exacerbating the effects of climate change. Furthermore, the decline of pollinators, such as bees, threatens agricultural production and, consequently, the global economy.</p>
+          </div>
+
+          <div class="card">
+            <a href="https://phys.org/news/2018-10-mammals-evolve-fast-current-extinction.html"><img src="../../../assets/img/landing/the_future.jpg" alt=""></a>
+            <p>It is essential to recognize that every species, no matter how small or seemingly insignificant, contributes to the complex fabric of life on our planet. Protecting biodiversity is not just a matter of conserving nature for its intrinsic beauty, but an <span id="yellow">urgent necessity to ensure a sustainable future for all life forms, including our own</span>. Collective and conscious action is essential to halt and reverse this crisis before its effects become irreversible.</p>
+          </div>
+        </div>
+
+        <button class="source-btn">
+          <a href="https://www.worldwildlife.org/descubre-wwf/historias/que-es-la-sexta-extincion-masiva-y-que-podemos-hacer-al-respecto" target="_blank">
+            <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+          </a>
+        </button>
+        <button class="source-btn">
+          <a href="https://www.biodiversidad.gob.mx/biodiversidad/porque.html" target="_blank">
+            <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+          </a>
+        </button>
+        <button class="source-btn">
+          <a href="https://www.biodiversidad.gob.mx/especies/extincion" target="_blank">
+            <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+          </a>
+        </button>
+        <button class="source-btn">
+          <a href="https://www.lineaverdeponferrada.org/lv/noticiasDestacadas.asp" target="_blank">
+            <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+          </a>
+        </button>
+        <button class="source-btn">
+          <a href="https://sentientmedia.org/es/humanos-destruyendo-ecosistemas-como-medir-nuestro-impacto-en-el-medio-ambiente/" target="_blank">
+            <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+          </a>
+        </button>
+        <button class="source-btn">
+          <a href="https://www.anthesisgroup.com/co/art%C3%ADculos/por-que-la-crisis-de-la-biodiversidad-es-una-crisis-empresarial" target="_blank">
+            <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+          </a>
+        </button>
+        <button class="source-btn">
+          <a href="https://es.wikipedia.org/wiki/Disminuci%C3%B3n_de_polinizadores" target="_blank">
+            <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+          </a>
+        </button>
+      </section>
+
+      <section id="causes">
+        
+        <h2>How did we get here?</h2>
+        <h4>What were some of the causes for things to get this bad?</h4>
+
+        <div class="cards-container">
+          <div class="card">
+            <a href="https://www.consumersinternational.org/news-resources/blog/posts/built-to-fail-is-planned-obsolescence-really-happening/"><img src="../../../assets/img/landing/planned_obsolescence.png" alt=""></a>
+            <p>The climate and biodiversity crisis we face today is not a natural accident, but the result of a <span id="yellow">production and consumption</span> model that prioritizes accumulation and unlimited growth over <span id="green">ecological balance</span>. This system drives a constant demand for new products, encouraging practices such as <span id="yellow"> planned obsolescence</span>, where devices are designed to fail or become <span id="yellow">obsolete quickly</span>, forcing consumers to replace them frequently. This strategy not only generates mountains of electronic waste, but also depletes natural resources and increases greenhouse gas emissions.</p>
+          </div>
+
+          <div class="card">
+            <a href="https://www.consciouslifeandstyle.com/fashion-waste-atacama-desert/"><img src="../../../assets/img/landing/atacama.jpg" alt=""></a>
+            <p>The fast fashion industry exemplifies this problem. To meet the demand for cheap, short-lived garments, a huge amount of clothing is produced, most of which ends up in landfills or is incinerated shortly after purchase. This cycle of production and disposal contributes significantly to water and air pollution, and the emission of polluting gases. An alarming example is the textile dump in the Atacama Desert, Chile, where tons of discarded clothing from developed countries accumulate, severely impacting the local environment.</p>
+          </div>
+
+          <div class="card">
+            <a href="https://www.innovationnewsnetwork.com/deforestation-in-the-amazon/9274/"><img src="../../../assets/img/landing/deforestation_livestock.jpg" alt=""></a>
+            <p>Furthermore, intensive food production, especially industrial livestock farming, and deforestation for raw materials such as timber and minerals have led to the massive destruction of natural habitats. These activities not only release large amounts of greenhouse gases but also threaten the survival of countless species and human communities that depend on these ecosystems. <span id="yellow"> This development model, focused on short-term economic gain, has ignored the long-term consequences for the planet and its inhabitants. </span></p>
+          </div>
+        </div>
+
+        <button class="source-btn">
+          <a href="https://www.iberdrola.com/sostenibilidad/obsolescencia-programada" target="_blank">
+            <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+          </a>
+        </button>
+        <button class="source-btn">
+          <a href="https://blog.colegiosdelreal.mx/hubfs/RealMUN%202024/Middle%20School/UNEA%201%20Topico%20A%20MS.pdf" target="_blank">
+            <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+          </a>
+        </button>
+        <button class="source-btn">
+          <a href="https://elpais.com/planeta-futuro/2024-11-27/por-que-depositar-ropa-usada-en-un-contenedor-de-reciclaje-no-permite-tener-la-conciencia-tranquila.html" target="_blank">
+            <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+          </a>
+        </button>
+        <button class="source-btn">
+          <a href="https://www.greenpeace.org/mexico/blog/9514/fast-fashion/" target="_blank">
+            <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+          </a>
+        </button>
+        <button class="source-btn">
+          <a href="https://elpais.com/chile/2025-05-23/una-segunda-vida-a-la-ropa-desechada-en-el-desierto-de-atacama-en-chile-el-vertedero-textil-mas-grande-del-mundo.html" target="_blank">
+            <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+          </a>
+        </button>
+        <button class="source-btn">
+          <a href="https://es.wikipedia.org/wiki/Vertedero_de_ropa_usada_en_el_Desierto_de_Atacama" target="_blank">
+            <img src="../../../assets/img/icons/external-link.svg" alt="">Source
+          </a>
+        </button>
+      </section>
+
+      <section id="solutions">
+        
+        <h2>What can we do about it?</h2>
+        <h4>So things are bad, what can we do about it?</h4>
+
+        <div class="cards-container">
           
-          <ng-template #tooltipTemplate let-model="model">
-            <div class="custom-tooltip danger">
-              <h4>⚠️ {{ model.name }}</h4>
-              <p>{{ model.value | number }} individuos</p>
-              <small>Categoría IUCN: En peligro crítico</small>
+          <div class="card">
+            <a href="https://science.howstuffworks.com/environmental/conservation/issues/point-no-return-for-climate-action-is-2035.htm"><img src="../../../assets/img/landing/no_return.jpg" alt=""></a>
+            <p>The current environmental situation is deeply alarming. Scientific indicators show that we have passed several critical points, <span id="yellow"> implying that future generations will inherit a planet radically different from the one we know.</span> However, recognizing the severity of this crisis should not lead us to inaction, but rather to act with determination and <span id="green"> hope.</span></p>
+          </div>
+
+          <div class="card">
+            <a href="https://blogs.bath.ac.uk/climate-action/2022/04/13/climate-change-can-one-person-really-make-a-difference/"><img src="../../../assets/img/landing/individual_actions.png" alt=""></a>
+            <p>At the individual level, there are actions that can make a positive contribution: reducing unnecessary consumption, choosing long-lasting products, recycling properly, saving energy and water, and supporting local conservation initiatives. These practices, while valuable, are <span id="yellow">insufficient</span> on their own to reverse the magnitude of the environmental challenges we face.</p>
+          </div>
+
+          <div class="card">
+            <a href=""><img src="../../../assets/img/landing/volunteering.jpg" alt=""></a>
+            <p>It is <span id="yellow"> essential </span>to support and participate in broader collective efforts. Organizations such as the International Union for Conservation of Nature (IUCN), Greenpeace, and the Global Biodiversity Information Facility (GBIF) play crucial roles in protecting biodiversity and promoting sustainable policies. Furthermore, initiatives such as "This is My Earth" allow individuals to directly contribute to the conservation of critical habitats through transparent and participatory donations. UN-backed programs such as the UN Decade on Ecosystem Restoration seek to restore vast degraded areas, while movements such as "Right to Repair" promote the repair and reuse of products to reduce waste.</p>
+          </div>
+
+        </div>
+
+        <div class="final-message">
+          <p>However, to effectively address the root causes of the environmental crisis, it is imperative to <span id="yellow">challenge and transform</span> systems that prioritize short-term economic profit over <span id="yellow">long-term sustainability</span>. The excessive exploitation of natural resources, driven by unsustainable production and consumption models, has led to ecosystem degradation and the depletion of biodiversity. Adopting an approach that values <span id="green"> collective well-being, equity, and respect for ecological limits </span> is essential to ensuring a livable future for all life forms on our planet.</p>
+        </div>
+
+      </section>
+
+      <section id="conclusions">
+        <h2>Get involved</h2>
+        <h4>The fight for a better future needs <span id="green">you</span>.</h4>
+        <div class="gallery-container">
+
+          <div class="gallery-cards">
+            <div class="gallery-card" *ngFor="let item of pagedItems">
+              <a href="{{item.url}}" target="_blank"><img [src]="item.img" [alt]="item.text" /></a>
+              <p>{{ item.text }}</p>
+              <div class="button-wrapper">
+                <a href="{{item.url}}" target="_blank">
+                  <button class="neon-pulse">
+                    <span>Get involved</span>
+                  </button>
+                </a>
+              </div>
             </div>
-          </ng-template>
-          
-        </ngx-charts-pie-chart>
-      </div>
+          </div>
+
+          <div class="pagination">
+            <button (click)="prevPage()" [disabled]="currentPage === 1">‹ Prev</button>
+            <span>{{ currentPage }} / {{ totalPages }}</span>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next ›</button>
+          </div>
+
+        </div>
+      </section>
+
+    </div>
+
+    <div class="subtitle-container">
+      <h1>It is our responsibility to forge a future where wildlife flourishes and future generations inherit a truly vibrant and balanced planet. After all, it's <br><span style="color: green;">our blue marble.</span></h1>
     </div>
 
   </div>

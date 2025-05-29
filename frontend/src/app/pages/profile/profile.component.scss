@@ -1,13 +1,9 @@
-$primary-background: #21170B;
-$secondary-background: #412B14;
-$primary-color: #8FCD3C;
-$secondary-color: #1B3518;
-$button-color: #E9B838;
+@use 'styles' as s;
 
 :host {
     display: block;
     background-color: #000;
-    animation: fadeIn 1s ease-out;
+    animation: fadeIn .3s ease-out;
     transition: none;
 }
 
@@ -20,9 +16,7 @@ $button-color: #E9B838;
     margin: 0;
     padding: 0;
     background-color: #000;
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     color: #fff;
-    overflow-x: hidden;
 }
 
 .video-banner {
@@ -31,7 +25,6 @@ $button-color: #E9B838;
     left: 0;
     width: 100%;
     height: 100vh;
-    overflow: hidden;
     z-index: 1;
     
     video {
@@ -47,9 +40,6 @@ $button-color: #E9B838;
     position: relative;
     z-index: 2;
     font-family: "LemonMilk";
-    background-color: $primary-background;
-    border-right: 2px solid $secondary-background;
-    max-width: 40vw;
     height: 100%;
     
     @media (max-width: 768px) {
@@ -57,88 +47,97 @@ $button-color: #E9B838;
     }
 }
 
-.chart-container {
-    padding: 2rem;
-    border-radius: 16px;
-    margin: 2rem auto;
-    transition: all 0.3s ease;
-    
-    @media (max-width: 768px) {
-        margin: 1rem;
-        padding: 1.5rem;
-    }
+
+.photo {
+    margin-top: 300px;
 }
 
-.custom-tooltip.danger {
-    background: #fff5f5;
-    border-left: 4px solid #ff6b6b;
-    
-    h4 { color: #c92a2a; }
-    p { color: #ff6b6b; }
+.image--cover {
+    width: 300px;
+    height: 300px;
+    border: #fff 3px solid;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: auto;
+    margin-top: -40px;    
 }
 
-.ngx-charts {
-    .pie-label {
-        font-size: 12px !important;
-        font-weight: 600 !important;
-        fill: #2c3e50 !important;
-    }
-    
-    .pie-chart-arcs {
-        path {
-            transition: transform 0.3s ease, opacity 0.3s ease;
-            
-            &:hover {
-                transform: scale(1.05);
-                opacity: 0.9;
-            }
-        }
-    }
+.profile {
+    margin-top: -50px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: s.$primary-background;
+    padding-left: 5vw;
+    padding-right: 5vw;
+    padding-top: 4vw;
+    z-index: 0;
+    height: 100%;
 }
 
-.favorites-scroll {
-    display: flex;
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-    gap: 1rem;
-    padding: 0.5rem 0;
-  
-    &::-webkit-scrollbar {
-      height: 6px;
-    }
-    &::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.3);
-      border-radius: 3px;
-    }
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
-  }
-  
-  .favorite-card {
-    flex: 0 0 auto;
-    background: $secondary-background;
-    border: 1px solid $secondary-color;
-    border-radius: 8px;
-    padding: 0.5rem;
+.socialmedia {
     text-align: center;
-    min-width: 120px;
-    color: #fff;
-  
-    .fi {
-      font-size: 2rem;
-      display: block;
-      margin-bottom: 0.5rem;
-    }
-  
-    .fav-name {
-      font-size: 0.9rem;
-      font-weight: bold;
-    }
-  }
+}
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+.username,
+.email,
+.member-since{
+    text-align: center;
+    font-family: 'Roboto';
+    padding: 0;
+    margin: 1px;
+}
+
+.username {
+    
+    font-size: 20pt;
+    margin: 2px
+}
+
+.profession {
+    font-size: 14pt;
+}
+
+.locationname {
+    font-size: 14pt;
+    margin: 2px
+}
+
+.description {
+    border-top: #969696 solid 1px;
+    padding: 10px;
+    font-size: 11pt;
+    margin: 5px;
+}
+
+.button-facebook,
+.button-instagram,
+.button-twitter,
+.button-whatsapp {
+    padding: 5px;
+    font-size: 30pt;
+}
+.button-facebook {
+    color: #3C5A99;
+}
+.button-instagram {
+    color: #893dc2;
+}
+.button-twitter {
+    color: #1DA1F2;
+}
+.button-whatsapp {
+    color: #4AC959;
+}
+
+@media (max-width: 767px) { 
+    .photo {
+        margin-top: 150px;
+    }
+    .profile {
+        padding-top: 60px;
+    }
 }

@@ -1,7 +1,8 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Report } from '../models/report.model';
 import { Observable, Subject } from 'rxjs';
+import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class ReportService {
@@ -10,10 +11,27 @@ export class ReportService {
   private openReportSource = new Subject<string|undefined>();
   openReport$ = this.openReportSource.asObservable();
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService 
+  ) {}
 
   create(report: Partial<Report>): Observable<Report> {
-    return this.http.post<Report>(this.apiUrl, report);
+    const token = this.authService.getAccessToken();
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.post<Report>(this.apiUrl, report, { headers });
+  }
+
+  getUserReports(): Observable<Report[]> {
+    const token = this.authService.getAccessToken();
+    let headers = new HttpHeaders();
+    if (token) {
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    }
+    return this.http.get<Report[]>(`${this.apiUrl}/user`, { headers });
   }
 
   getAll(): Observable<Report[]> {
