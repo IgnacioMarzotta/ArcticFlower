@@ -242,11 +242,9 @@ export class HomeComponent implements OnInit {
   }
 
   private updatePageSize(width: number) {
-    // Si estamos en móvil (<768px) show 1 por página, si no 3
     const newSize = width < 768 ? 1 : 3;
     if (newSize !== this.pageSize) {
       this.pageSize = newSize;
-      // si la página actual ya no existe tras el cambio, reajústala
       const maxPage = this.totalPages;
       if (this.currentPage > maxPage) {
         this.currentPage = maxPage;
