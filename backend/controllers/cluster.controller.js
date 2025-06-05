@@ -70,7 +70,7 @@ exports.updateClusterForSpecies = async (input, res = null) => {
   try {
     const species = input.body ? input.body : input;
     
-    if (!species || !species.locations || !Array.isArray(species.locations)) {
+    if (!species || !species.locations || !Array.isArray(species.locations) || species.locations.length === 0) {
       throw new Error("La especie no posee ubicaciones válidas.");
     }
     

@@ -16,6 +16,9 @@ import { Router } from '@angular/router';
 import { SpeciesPoint, ClusterPoint } from '../../core/models/map.models';
 import { Favorite } from '../../core/models/favorite.model';
 import { Mission } from '../../core/models/mission.models';
+import { UserQuizStatus, ActiveQuizData } from '../../core/models/quiz.models';
+
+import { QuizModalComponent } from '../../components/quiz-modal/quiz-modal.component';
 
 //Services 
 import { SpeciesService } from '../../core/services/species.service';
@@ -26,12 +29,13 @@ import { FavoriteService } from '../../core/services/favorite.service';
 import { MissionService } from '../../core/services/mission.service';
 import { MissionEventService } from '../../core/services/mission-event.service';
 import { MissionEngineService } from 'src/app/core/services/mission-engine.service';
+import { QuizService } from '../../core/services/quiz.service';
 
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
-  imports: [CommonModule, FormsModule, NgxSpinnerComponent],
+  imports: [CommonModule, FormsModule, NgxSpinnerComponent, QuizModalComponent],
   standalone: true,
 })
 
@@ -85,6 +89,12 @@ export class MapComponent implements AfterViewInit {
     timer: 3000,
     timerProgressBar: true,
   });
+
+  //Quiz system
+  public showQuizModal = false;
+  public activeQuizContent: ActiveQuizData | null = null;
+  public currentQuizAttemptNumber: number | undefined;
+  private quizCheckInProgress = false;
   
   constructor(
     private speciesService: SpeciesService,
@@ -98,6 +108,7 @@ export class MapComponent implements AfterViewInit {
     private cdr: ChangeDetectorRef,
     private spinner: NgxSpinnerService,
     private router: Router,
+    private quizService: QuizService,
   ) {}
   
   ngOnInit(): void {
@@ -107,6 +118,7 @@ export class MapComponent implements AfterViewInit {
 
     if (this.isUser) {
       console.log("USER IS LOGGED IN");
+      this.checkAndInitiateQuiz();
       this.initializeFavorites();
       this.loadDailyMissions();
       this.listenForMissionUpdates();
@@ -124,8 +136,10 @@ export class MapComponent implements AfterViewInit {
     this.loadAllClusters();
     
     setTimeout(() => {
-      this.isLoading = false;
-      this.spinner.hide();
+      if (!this.showQuizModal) {
+        this.isLoading = false;
+        this.spinner.hide();
+      }
     }, 1500);
     
     if (this.isUser) {
@@ -355,7 +369,7 @@ export class MapComponent implements AfterViewInit {
     this.isLoading = true;
     this.checkSpeciesUpdate(species);
     
-    this.speciesService.getSpeciesDetail(species.id).subscribe({
+    this.speciesService.getSpeciesById(species.id).subscribe({
       next: detail => {
         detail.id = detail._id;
         this.selectedSpecies = detail;
@@ -703,5 +717,74 @@ export class MapComponent implements AfterViewInit {
       },
       error: err => console.error('No se pudieron cargar misiones', err)
     });
+  }
+
+  private checkAndInitiateQuiz(): void {
+    if (!this.isUser || this.quizCheckInProgress || this.showQuizModal) {
+      return;
+    }
+    this.quizCheckInProgress = true;
+
+    console.log("Llamando a quizService.getUserQuizStatus()");
+    this.quizService.getUserQuizStatus().subscribe({
+      next: (status: UserQuizStatus) => {
+        console.log('Estado del Cuestionario Recibido:', status);
+        if (status.status === 'PENDING_ATTEMPT_1' || status.status === 'PENDING_ATTEMPT_2') {
+          if (status.quizIdentifier && status.quizVersion !== undefined && status.attemptNumber) {
+            this.currentQuizAttemptNumber = status.attemptNumber;
+            this.quizService.getActiveQuiz().subscribe({
+              next: (quizData: ActiveQuizData) => {
+                console.log('Datos del Cuestionario Activo Recibidos:', quizData);
+                if (quizData && quizData.questions && quizData.questions.length > 0 &&
+                    quizData.quiz_identifier === status.quizIdentifier &&
+                    quizData.version === status.quizVersion) {
+                  
+                  this.activeQuizContent = quizData;
+                  this.showQuizModal = true;
+                  this.isLoading = false; 
+                  this.spinner.hide();
+                  this.cdr.detectChanges(); 
+                  console.log("Modal del cuestionario debería estar visible.");
+                } else {
+                  console.warn("Discrepancia en datos del cuestionario o no hay preguntas.", "Estado:", status, "QuizData:", quizData);
+                  this.quizCheckInProgress = false;
+                }
+              },
+              error: (err) => {
+                console.error('Error obteniendo datos del cuestionario activo:', err);
+                this.quizCheckInProgress = false;
+              }
+            });
+          } else {
+             console.warn("Estado del cuestionario recibido es inválido para iniciar un intento:", status);
+             this.quizCheckInProgress = false;
+          }
+        } else {
+          console.log('No se requiere cuestionario en este momento:', status.message);
+          this.quizCheckInProgress = false;
+          if(this.isLoading) {
+            this.spinner.hide();
+            this.isLoading = false;
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Error obteniendo estado del cuestionario:', err);
+        this.quizCheckInProgress = false;
+      }
+    });
+  }
+
+  public handleQuizClosed(submittedSuccessfully: boolean): void {
+    console.log('Modal del cuestionario cerrado. Enviado exitosamente:', submittedSuccessfully);
+    this.showQuizModal = false;
+    this.activeQuizContent = null;
+    this.currentQuizAttemptNumber = undefined;
+    this.quizCheckInProgress = false;
+    this.cdr.detectChanges();
+
+    if (this.isUser) {
+        this.checkAndInitiateQuiz();
+    }
   }
 }

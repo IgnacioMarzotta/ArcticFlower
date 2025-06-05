@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {
-  populateSpecies,
+  //populateSpecies,
   getAllSpecies,
   getSpeciesById,
   getSpeciesByCountry,
@@ -14,6 +14,6 @@ router.get('/country/:country', getSpeciesByCountry);
 router.get('/search', searchSpecies);
 router.get('/:id', getSpeciesById);
 router.get('/', getAllSpecies);
-router.post('/', populateSpecies);
+//router.post('/', populateSpecies);
 
 module.exports = router;

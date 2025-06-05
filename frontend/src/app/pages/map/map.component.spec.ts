@@ -10,7 +10,7 @@ import { Subject, of } from 'rxjs';
 const authServiceStub = { isAuthenticated: jasmine.createSpy('isAuthenticated').and.returnValue(false) };
 const speciesServiceStub = {
   getSpeciesByCountry: jasmine.createSpy('getSpeciesByCountry').and.returnValue(of([])),
-  getSpeciesDetail: jasmine.createSpy('getSpeciesDetail').and.returnValue(of({ locations: [], _id: '1' })),
+  getSpeciesById: jasmine.createSpy('getSpeciesById').and.returnValue(of({ locations: [], _id: '1' })),
   searchSpecies: jasmine.createSpy('searchSpecies').and.returnValue(of([])),
   updateSpeciesStatusFromAPI: jasmine.createSpy('updateSpeciesStatusFromAPI').and.returnValue(of({}))
 };

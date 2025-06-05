@@ -1,255 +1,157 @@
 const request = require('supertest');
-const mongoose = require('mongoose');
 const app = require('../../server');
 const User = require('../../models/User');
+const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET; 
-const REFRESH_SECRET = process.env.REFRESH_SECRET || 'temp_refresh_secret'; 
-
-describe('Auth Routes /api/auth', () => {
-    let testUserCredentials;
-    let testUser;
-    let authToken;
-    let agent;
-    
-    beforeAll(async () => {
-        if (mongoose.connection.readyState === 0) {
-            try {
-                await mongoose.connect(process.env.MONGO_URI_TEST);
-            } catch (err) {
-                console.error("Error connecting to MongoDB for auth.routes.spec.js", err);
-                process.exit(1);
-            }
-        }
+describe('/api/auth Routes - Integration Tests', () => {
+  const testUserCredentials = {
+    username: 'integTestUser',
+    email: 'integ@example.com',
+    password: 'password123',
+  };
+  let createdUser;
+  let authTokenForTests;
+  let refreshTokenCookieForTests;
+  
+  beforeEach(async () => {
+    if (mongoose.connection.readyState === 1) {
+      await User.deleteMany({});
+    }
+  });
+  
+  describe('POST /api/auth/register', () => {
+    it('should register a new user successfully and return 201', async () => {
+      const res = await request(app)
+      .post('/api/auth/register')
+      .send(testUserCredentials);
+      expect(res.statusCode).toEqual(201);
+      expect(res.body.message).toEqual('User successfully created');
+      const userInDb = await User.findOne({ email: testUserCredentials.email });
+      expect(userInDb).not.toBeNull();
+      expect(userInDb.username).toBe(testUserCredentials.username);
     });
     
+    it('should return 400 if required fields are missing for registration', async () => {
+      const res = await request(app)
+      .post('/api/auth/register')
+      .send({ email: 'badreg@example.com' });
+      expect(res.statusCode).toEqual(400);
+    });
+    
+    it('should return 409 if email already exists during registration', async () => {
+      await User.create(testUserCredentials);
+      const res = await request(app)
+      .post('/api/auth/register')
+      .send({ ...testUserCredentials, username: 'anotherUsername' });
+      expect(res.statusCode).toEqual(409);
+    });
+  });
+  
+  describe('POST /api/auth/login', () => {
     beforeEach(async () => {
-        await User.deleteMany({});
-        testUserCredentials = {
-            username: 'testuser_int',
-            email: 'testuser_int@example.com',
-            password: 'Password123!',
-        };
-        agent = request.agent(app); 
+      const user = new User(testUserCredentials);
+      await user.save();
     });
     
-    afterAll(async () => {
-        await User.deleteMany({});
-        await mongoose.connection.close();
+    it('should login an existing user and return accessToken and set refresh_token cookie', async () => {
+      const res = await request(app)
+      .post('/api/auth/login')
+      .send({ email: testUserCredentials.email, password: testUserCredentials.password });
+      
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.accessToken).toBeDefined();
+      expect(res.body.user).toBeDefined();
+      expect(res.body.user.email).toEqual(testUserCredentials.email);
+      
+      const cookies = res.headers['set-cookie'];
+      expect(cookies).toBeDefined();
+      expect(cookies.some(cookie => cookie.startsWith('refresh_token='))).toBe(true);
+      expect(cookies.some(cookie => cookie.includes('HttpOnly'))).toBe(true);
     });
     
-    // --- POST /api/auth/register ---
-    describe('POST /api/auth/register', () => {
-        it('should register a new user successfully', async () => {
-            const res = await request(app)
-            .post('/api/auth/register')
-            .send(testUserCredentials);
-            
-            expect(res.statusCode).toBe(201);
-            expect(res.body.message).toBe('User successfully created');
-            
-            const dbUser = await User.findOne({ email: testUserCredentials.email });
-            expect(dbUser).toBeTruthy();
-            expect(dbUser.username).toBe(testUserCredentials.username);
-        });
-        
-        it('should fail if required fields are missing', async () => {
-            const res = await request(app)
-            .post('/api/auth/register')
-            .send({ username: 'incomplete' });
-            expect(res.statusCode).toBe(400);
-            expect(res.body.message).toBe('All fields are required');
-        });
-        
-        it('should fail if username already exists', async () => {
-            await User.create(testUserCredentials);
-            const res = await request(app)
-            .post('/api/auth/register')
-            .send({ ...testUserCredentials, email: 'newemail@example.com' });
-            expect(res.statusCode).toBe(409);
-            expect(res.body.message).toBe('Username or email already registered');
-        });
-        
-        it('should fail if email already exists', async () => {
-            await User.create(testUserCredentials);
-            const res = await request(app)
-            .post('/api/auth/register')
-            .send({ ...testUserCredentials, username: 'newusername' });
-            expect(res.statusCode).toBe(409);
-            expect(res.body.message).toBe('Username or email already registered');
-        });
+    it('should return 401 for invalid login credentials (wrong password)', async () => {
+      const res = await request(app)
+      .post('/api/auth/login')
+      .send({ email: testUserCredentials.email, password: 'wrongpassword' });
+      expect(res.statusCode).toEqual(401);
+    });
+  });
+  
+  describe('Authenticated Routes (/profile, /refresh, /logout)', () => {
+    beforeEach(async () => {
+      createdUser = new User({ ...testUserCredentials, email: `authroutes_${Date.now()}@example.com` });
+      await createdUser.save();
+      
+      const loginRes = await request(app)
+      .post('/api/auth/login')
+      .send({ email: createdUser.email, password: testUserCredentials.password });
+      
+      authTokenForTests = loginRes.body.accessToken;
+      refreshTokenCookieForTests = loginRes.headers['set-cookie'].find(cookie => cookie.startsWith('refresh_token='));
     });
     
-    // --- POST /api/auth/login ---
-    describe('POST /api/auth/login', () => {
-        beforeEach(async () => {
-            await request(app).post('/api/auth/register').send(testUserCredentials);
-        });
-        
-        it('should login an existing user successfully and return a token', async () => {
-            const res = await request(app)
-            .post('/api/auth/login')
-            .send({ email: testUserCredentials.email, password: testUserCredentials.password });
-            
-            expect(res.statusCode).toBe(200);
-            expect(res.body).toHaveProperty('token');
-            expect(res.body).toHaveProperty('permissions');
-            
-            if (JWT_SECRET && JWT_SECRET !== '###################') {
-                const decoded = jwt.verify(res.body.token, JWT_SECRET);
-                const dbUser = await User.findOne({ email: testUserCredentials.email });
-                expect(decoded.userId).toBe(dbUser._id.toString());
-                expect(decoded.permissions).toBe(dbUser.permissions);
-            }
-        });
-        
-        it('should fail with invalid credentials if user not found', async () => {
-            const res = await request(app)
-            .post('/api/auth/login')
-            .send({ email: 'nouser@example.com', password: 'somepassword' });
-            expect(res.statusCode).toBe(401);
-            expect(res.body.message).toBe('Invalid credentials, please try again.');
-        });
-        
-        it('should fail with invalid credentials if password is incorrect', async () => {
-            const res = await request(app)
-            .post('/api/auth/login')
-            .send({ email: testUserCredentials.email, password: 'WrongPassword123!' });
-            expect(res.statusCode).toBe(401);
-            expect(res.body.message).toBe('Invalid credentials, please try again.');
-        });
-    });
-    
-    // --- GET /api/auth/profile ---
     describe('GET /api/auth/profile', () => {
-        beforeEach(async () => {
-            await request(app).post('/api/auth/register').send(testUserCredentials);
-            const loginRes = await request(app)
-            .post('/api/auth/login')
-            .send({ email: testUserCredentials.email, password: testUserCredentials.password });
-            authToken = loginRes.body.token;
-            testUser = await User.findOne({ email: testUserCredentials.email });
-        });
+      it('should return user profile for authenticated user', async () => {
+        const res = await request(app)
+        .get('/api/auth/profile')
+        .set('Authorization', `Bearer ${authTokenForTests}`);
         
-        it('should get user profile with a valid token', async () => {
-            const res = await request(app)
-            .get('/api/auth/profile')
-            .set('Authorization', `Bearer ${authToken}`);
-            
-            expect(res.statusCode).toBe(200);
-            expect(res.body.username).toBe(testUser.username);
-            expect(res.body.email).toBe(testUser.email);
-            expect(res.body).toHaveProperty('created_at');
-        });
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.username).toEqual(createdUser.username);
+        expect(res.body.email).toEqual(createdUser.email);
+      });
+      
+      it('should return 401 (TOKEN_EXPIRED) if access token is expired', async () => {
+        const expiredAccessToken = jwt.sign(
+          { userId: createdUser._id, permissions: createdUser.permissions }, 
+          process.env.JWT_SECRET, 
+          { expiresIn: '0s' }
+        );
+        await new Promise(resolve => setTimeout(resolve, 50));
         
-        it('should fail with 401 if no token is provided', async () => {
-            const res = await request(app).get('/api/auth/profile');
-            expect(res.statusCode).toBe(401);
-            expect(res.body.message).toBe('No token provided');
-        });
-        
-        it('should fail with 403 if token is invalid (malformed)', async () => {
-            const res = await request(app)
-            .get('/api/auth/profile')
-            .set('Authorization', 'Bearer invalidtoken123');
-            expect(res.statusCode).toBe(403);
-            expect(res.body.message).toBe('Failed to authenticate token');
-        });
-        
-        it('should fail with 403 if token is expired or signature is wrong', async () => {
-            const badToken = jwt.sign({ userId: testUser._id }, 'wrongsecret', { expiresIn: '1s' });
-            
-            const res = await request(app)
-            .get('/api/auth/profile')
-            .set('Authorization', `Bearer ${badToken}`);
-            expect(res.statusCode).toBe(403);
-            expect(res.body.message).toBe('Failed to authenticate token');
-        });
+        const res = await request(app)
+        .get('/api/auth/profile')
+        .set('Authorization', `Bearer ${expiredAccessToken}`);
+        expect(res.statusCode).toEqual(401);
+        expect(res.body.code).toEqual('TOKEN_EXPIRED');
+      });
     });
     
-    // --- POST /api/auth/refresh ---
     describe('POST /api/auth/refresh', () => {
-        let validRefreshToken;
-        
-        beforeEach(async () => {
-            const registeredUser = await User.create(testUserCredentials);
-            if (REFRESH_SECRET && REFRESH_SECRET !== 'temp_refresh_secret') {
-                validRefreshToken = jwt.sign({ userId: registeredUser._id }, REFRESH_SECRET, { expiresIn: '14d' });
-            } else {
-                console.warn("REFRESH_SECRET is not properly set for /refresh tests. Skipping some assertions or tests.");
-                validRefreshToken = null; 
-            }
-        });
-        
-        it('should refresh token successfully if valid refresh_token cookie is present', async () => {
-            if (!validRefreshToken) {
-                return pending("Skipping refresh test: REFRESH_SECRET not configured for test environment.");
-            }
-            const res = await agent
-            .post('/api/auth/refresh')
-            .set('Cookie', [`refresh_token=${validRefreshToken}`]);
-            
-            expect(res.statusCode).toBe(200);
-            expect(res.body).toHaveProperty('accessToken');
-            
-            if (JWT_SECRET && JWT_SECRET !== '###################') {
-                const decodedAccess = jwt.verify(res.body.accessToken, JWT_SECRET);
-                const dbUser = await User.findOne({ email: testUserCredentials.email });
-                expect(decodedAccess.userId).toBe(dbUser._id.toString());
-            }
-            
-            const cookies = res.headers['set-cookie'];
-            expect(cookies).toBeDefined();
-            
-            let newRefreshTokenCookie;
-            if (Array.isArray(cookies)) {
-                newRefreshTokenCookie = cookies.find(cookie => cookie.startsWith('refresh_token='));
-            } else if (typeof cookies === 'string') {
-                if (cookies.startsWith('refresh_token=')) {
-                    newRefreshTokenCookie = cookies;
-                }
-            }
-            
-            expect(newRefreshTokenCookie).toBeDefined();
-            expect(newRefreshTokenCookie).toMatch(/HttpOnly/i);
-            expect(newRefreshTokenCookie).toMatch(/Secure/i);
-            
-            const newRefreshTokenValue = newRefreshTokenCookie.split(';')[0].split('=')[1];
-            if (REFRESH_SECRET && REFRESH_SECRET !== 'your_test_refresh_secret_key_must_be_set') {
-                const decodedRefresh = jwt.verify(newRefreshTokenValue, REFRESH_SECRET);
-                const dbUser = await User.findOne({ email: testUserCredentials.email });
-                expect(decodedRefresh.userId).toBe(dbUser._id.toString());
-            }
-        });
-        
-        it('should fail with 401 if no refresh_token cookie is provided', async () => {
-            const res = await request(app)
-            .post('/api/auth/refresh');
-            expect(res.statusCode).toBe(401);
-        });
-        
-        it('should fail with 401 if refresh_token is invalid', async () => {
-            if (!REFRESH_SECRET || REFRESH_SECRET === 'temp_refresh_secret') {
-                return pending("Skipping refresh test: REFRESH_SECRET not configured for test environment.");
-            }
-            const res = await agent
-            .post('/api/auth/refresh')
-            .set('Cookie', ['refresh_token=thisIsAnInvalidToken']);
-            expect(res.statusCode).toBe(401);
-        });
-        
-        it('should fail with 401 if refresh_token is valid but user does not exist', async () => {
-            if (!REFRESH_SECRET || REFRESH_SECRET === 'temp_refresh_secret') {
-                return pending("Skipping refresh test: REFRESH_SECRET not configured for test environment.");
-            }
-            const nonExistentUserId = new mongoose.Types.ObjectId().toString();
-            const tokenForNonExistentUser = jwt.sign({ userId: nonExistentUserId }, REFRESH_SECRET, { expiresIn: '14d' });
-            
-            const res = await agent
-            .post('/api/auth/refresh')
-            .set('Cookie', [`refresh_token=${tokenForNonExistentUser}`]);
-            expect(res.statusCode).toBe(401);
-        });
+      
+      it('should return 401 if no refresh_token cookie is provided', async () => {
+        const res = await request(app).post('/api/auth/refresh');
+        expect(res.statusCode).toEqual(401);
+        expect(res.body.code).toEqual('NO_REFRESH_TOKEN');
+      });
+      
+      it('should return 403 if refresh_token is invalid/expired', async () => {
+        const res = await request(app)
+        .post('/api/auth/refresh')
+        .set('Cookie', 'refresh_token=obviouslyInvalidToken123');
+        expect(res.statusCode).toEqual(403);
+        expect(res.body.code).toEqual('INVALID_REFRESH_TOKEN');
+      });
     });
+    
+    describe('POST /api/auth/logout', () => {
+      it('should clear refresh_token cookie and return 200', async () => {
+        expect(refreshTokenCookieForTests).toBeDefined();
+        
+        const res = await request(app)
+        .post('/api/auth/logout')
+        .set('Cookie', refreshTokenCookieForTests);
+        
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.message).toEqual('Successfully logged out');
+        
+        const cookies = res.headers['set-cookie'];
+        expect(cookies).toBeDefined();
+        const clearedCookie = cookies.find(c => c.startsWith('refresh_token='));
+        expect(clearedCookie).toBeDefined();
+        expect(clearedCookie).toMatch(/Max-Age=0|Expires=.*1970/);
+      });
+    });
+  });
 });

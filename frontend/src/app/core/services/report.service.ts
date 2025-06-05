@@ -3,10 +3,11 @@ import { Injectable } from '@angular/core';
 import { Report } from '../models/report.model';
 import { Observable, Subject } from 'rxjs';
 import { AuthService } from './auth.service';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ReportService {
-  private apiUrl = '/api/reports';
+  private apiUrl = `${environment.apiUrl}/reports`;
 
   private openReportSource = new Subject<string|undefined>();
   openReport$ = this.openReportSource.asObservable();

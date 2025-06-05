@@ -10,6 +10,7 @@ const clusterRoutes = require('./routes/cluster.routes');
 const reportRoutes  = require('./routes/report.routes');
 const favRoutes     = require('./routes/favorite.routes');
 const missionRoutes = require('./routes/mission.routes');
+const quizRoutes    = require('./routes/quiz.routes');
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use('/api/clusters', clusterRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/favorites', favRoutes);
 app.use('/api/missions', missionRoutes);
+app.use('/api/quizzes', quizRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

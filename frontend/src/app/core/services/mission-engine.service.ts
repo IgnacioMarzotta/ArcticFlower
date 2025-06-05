@@ -5,6 +5,7 @@ import { tap } from 'rxjs/operators';
 import { BehaviorSubject } from 'rxjs';
 import { Mission } from '../models/mission.models';
 import { AuthService } from './auth.service';
+
 @Injectable({ providedIn: 'root' })
 export class MissionEngineService {
   public missions$ = new BehaviorSubject<Mission[]>([]);
@@ -14,12 +15,10 @@ export class MissionEngineService {
     private missionEvents: MissionEventService,
     private authService: AuthService,
   ) {
-
     if (this.authService.isAuthenticated()) {
       this.loadMissions();
       this.missionEvents.on().subscribe(event => this.processEvent(event));
     }
-    
   }
   
   private loadMissions() {
