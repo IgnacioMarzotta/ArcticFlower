@@ -132,6 +132,13 @@
 
 <div #globeContainer class="globe-container"></div>
 
+<app-quiz-modal
+  *ngIf="showQuizModal && activeQuizContent && currentQuizAttemptNumber !== undefined"
+  [quizData]="activeQuizContent"
+  [attemptNumber]="currentQuizAttemptNumber"
+  (quizClosed)="handleQuizClosed($event)">
+</app-quiz-modal>
+
 <div class="side-panel" *ngIf="selectedCluster" [class.open]="showPanel">
   
   <div class="species-header">

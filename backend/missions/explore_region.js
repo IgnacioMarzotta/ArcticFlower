@@ -20,17 +20,14 @@ module.exports = {
     sahara:     { name: 'Sahara Desert', bounds: { minLat: 15.871525, maxLat: 30.977609, minLng: -16.413574, maxLng: 36.760254 } },
     congolian:  { name: 'Congolian Rainforest', bounds: { minLat: -5.911117, maxLat: 5.151128, minLng: 9.678955, maxLng: 30.047607 } },
     kalahari:   { name: 'Kalahari Desert', bounds: { minLat: -30.420256, maxLat: -17.235252, minLng: 16.987610, maxLng: 27.969818 } },
-    gobi:       { name: 'Gobi Desert', bounds: { minLat: 38.539573, maxLat: 46.365884, minLng: 88.775024, maxLng: 113.384399 } },
     borneo:     { name: 'Borneo', bounds: { minLat: -4.215286, maxLat: 7.274952, minLng: 109.161186, maxLng: 118.960476 } },
   },
 
   async generateParams() {
-    // Escoge región al azar
     const keys = Object.keys(this.regions);
     const key  = keys[Math.floor(Math.random() * keys.length)];
     const region = this.regions[key];
 
-    // Parámetros: bounds + meta
     return {
       regionKey:    key,
       regionName:   region.name,
@@ -49,7 +46,6 @@ module.exports = {
     const { lat, lng, speciesId } = event.payload;
     const { bounds, targetCount } = params;
 
-    // Verificar si la coordenada cae dentro del rectángulo
     if (
       lat  < bounds.minLat || lat  > bounds.maxLat ||
       lng  < bounds.minLng || lng  > bounds.maxLng
@@ -57,7 +53,6 @@ module.exports = {
       return false;
     }
 
-    // Si está dentro del área, devolvemos true para contarla
     return true;
   }
 };

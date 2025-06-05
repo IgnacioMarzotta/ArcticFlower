@@ -345,7 +345,7 @@ exports.updateSpeciesStatusFromAPI = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('[species.controller - updateSpeciesStatusFromAPI] Error al actualizar estado de especie:');
+    console.error('[species.controller - updateSpeciesStatusFromAPI] Error al actualizar estado de especie.');
     let statusCode = 500;
     let responseErrorObject = { error: 'Error interno al actualizar especie' };
 

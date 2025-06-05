@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { SpeciesPoint, AllSpeciesResponse } from '../models/map.models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SpeciesService {
-  private apiUrl = '/api/species';
+  private apiUrl = `${environment.apiUrl}/species`;
   
   constructor(private http: HttpClient) { }
 
@@ -15,10 +16,6 @@ export class SpeciesService {
     return this.http.get<AllSpeciesResponse>(
       `${this.apiUrl}?page=${page}&limit=${limit}`
     );
-  }
-  
-  getSpeciesDetail(id: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/${id}`);
   }
   
   getSpeciesById(id: string): Observable<any> {

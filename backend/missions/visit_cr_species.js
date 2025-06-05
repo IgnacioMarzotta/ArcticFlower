@@ -26,7 +26,7 @@ module.exports = {
 
   async onEvent(event, params) {
     console.log('onEvent', event, params);
-    if (event.type === 'SPECIES_VIEW' && event.payload.status === 'CR' && event.payload.clusterId.toUpperCase() === params.country.toUpperCase()) {
+    if (event.type === 'SPECIES_VIEW' && event.payload.status === 'CR' && event.payload.clusterId === params.country) {
       console.log("===========");
       console.log("VALID");
       console.log("===========");
@@ -34,7 +34,7 @@ module.exports = {
     return (
       event.type === 'SPECIES_VIEW' &&
       event.payload.status === 'CR' &&
-      event.payload.clusterId.toUpperCase() === params.country.toUpperCase()
+      event.payload.clusterId === params.country
     );
   }
 };

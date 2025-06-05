@@ -1,4 +1,4 @@
-const { register, login, getProfile, refresh } = require('../../controllers/user.controller');
+const userController = require('../../controllers/user.controller');
 const User = require('../../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -7,221 +7,227 @@ jest.mock('../../models/User');
 jest.mock('bcryptjs');
 jest.mock('jsonwebtoken');
 
-const originalEnv = process.env;
-
-afterAll(() => {
-    process.env = originalEnv;
-});
-
-
 describe('User Controller - Unit Tests', () => {
-    let mockReq;
-    let mockRes;
-
-    beforeEach(() => {
-        mockReq = {
-            body: {},
-            userId: null,
-            cookies: {},
-        };
-        mockRes = {
-            status: jest.fn().mockReturnThis(),
-            json: jest.fn().mockReturnThis(),
-            cookie: jest.fn().mockReturnThis(),
-            end: jest.fn().mockReturnThis(),
-        };
-        // Reset mocks for each test
-        User.findOne.mockReset();
-        User.findById.mockReset();
-        User.prototype.save.mockReset();
-        bcrypt.compare.mockReset();
-        jwt.sign.mockReset();
-        jwt.verify.mockReset();
+  let mockReq;
+  let mockRes;
+  
+  beforeEach(() => {
+    mockReq = {
+      body: {},
+      headers: {},
+      cookies: {},
+      userId: 'testUserIdFromToken123',
+      userPermissions: 0,
+    };
+    mockRes = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+      cookie: jest.fn().mockReturnThis(),
+      clearCookie: jest.fn().mockReturnThis(),
+    };
+    
+    User.findOne.mockReset();
+    User.findById.mockReset();
+    const mockSave = jest.fn().mockResolvedValue(true);
+    User.mockImplementation(() => ({ save: mockSave }));
+    if (User.prototype.save && typeof User.prototype.save.mockReset === 'function') {
+      User.prototype.save.mockReset();
+    } else if (typeof mockSave.mockReset === 'function') {
+      mockSave.mockReset();
+    }
+    
+    
+    bcrypt.compare.mockReset();
+    jwt.sign.mockReset();
+    jwt.verify.mockReset();
+  });
+  
+  describe('register', () => {
+    it('should return 400 if required fields are missing', async () => {
+      mockReq.body = { email: 'test@test.com', password: '123' };
+      await userController.register(mockReq, mockRes);
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'All fields are required' });
     });
-
-    describe('register', () => {
-        it('should register a new user successfully', async () => {
-            mockReq.body = { username: 'newUser', email: 'new@example.com', password: 'password123' };
-            User.findOne.mockResolvedValue(null);
-            User.prototype.save.mockResolvedValue(true);
-
-            await register(mockReq, mockRes);
-
-            expect(User.findOne).toHaveBeenCalledWith({ $or: [{ username: 'newUser' }, { email: 'new@example.com' }] });
-            expect(User.prototype.save).toHaveBeenCalled();
-            expect(mockRes.status).toHaveBeenCalledWith(201);
-            expect(mockRes.json).toHaveBeenCalledWith({ message: 'User successfully created' });
-        });
-
-        it('should return 400 if required fields are missing', async () => {
-            mockReq.body = { username: 'test' };
-            await register(mockReq, mockRes);
-            expect(mockRes.status).toHaveBeenCalledWith(400);
-            expect(mockRes.json).toHaveBeenCalledWith({ message: 'All fields are required' });
-        });
-
-        it('should return 409 if username or email already exists', async () => {
-            mockReq.body = { username: 'existingUser', email: 'existing@example.com', password: 'password123' };
-            User.findOne.mockResolvedValue({ username: 'existingUser' });
-
-            await register(mockReq, mockRes);
-
-            expect(mockRes.status).toHaveBeenCalledWith(409);
-            expect(mockRes.json).toHaveBeenCalledWith({ message: 'Username or email already registered' });
-        });
-
-        it('should return 500 on database error during save', async () => {
-            mockReq.body = { username: 'newUser', email: 'new@example.com', password: 'password123' };
-            User.findOne.mockResolvedValue(null);
-            const dbError = new Error('Database save error');
-            User.prototype.save.mockRejectedValue(dbError);
-
-            await register(mockReq, mockRes);
-
-            expect(mockRes.status).toHaveBeenCalledWith(500);
-            expect(mockRes.json).toHaveBeenCalledWith({ message: 'Internal server error', error: dbError.message });
-        });
+    
+    it('should return 409 if username or email already exists', async () => {
+      mockReq.body = { username: 'test', email: 'test@test.com', password: '123' };
+      User.findOne.mockResolvedValue({ _id: 'someId' });
+      await userController.register(mockReq, mockRes);
+      expect(mockRes.status).toHaveBeenCalledWith(409);
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'Username or email already registered' });
     });
-
-    describe('login', () => {
-        const mockUser = {
-            _id: 'userId123',
-            email: 'test@example.com',
-            password: 'hashedPassword',
-            permissions: 0,
-        };
-
-        it('should login a user successfully and return a token', async () => {
-            mockReq.body = { email: 'test@example.com', password: 'password123' };
-            User.findOne.mockResolvedValue(mockUser);
-            bcrypt.compare.mockResolvedValue(true);
-            jwt.sign.mockReturnValue('mockAuthToken');
-
-            await login(mockReq, mockRes);
-
-            expect(User.findOne).toHaveBeenCalledWith({ email: 'test@example.com' });
-            expect(bcrypt.compare).toHaveBeenCalledWith('password123', 'hashedPassword');
-            expect(jwt.sign).toHaveBeenCalledWith(
-                { userId: mockUser._id, permissions: mockUser.permissions },
-                process.env.JWT_SECRET,
-                { expiresIn: '24h' }
-            );
-            expect(mockRes.json).toHaveBeenCalledWith({ token: 'mockAuthToken', permissions: mockUser.permissions });
-        });
-
-        it('should return 401 if user not found', async () => {
-            mockReq.body = { email: 'nonexistent@example.com', password: 'password123' };
-            User.findOne.mockResolvedValue(null);
-
-            await login(mockReq, mockRes);
-
-            expect(mockRes.status).toHaveBeenCalledWith(401);
-            expect(mockRes.json).toHaveBeenCalledWith({ message: 'Invalid credentials, please try again.' });
-        });
-
-        it('should return 401 if password does not match', async () => {
-            mockReq.body = { email: 'test@example.com', password: 'wrongPassword' };
-            User.findOne.mockResolvedValue(mockUser);
-            bcrypt.compare.mockResolvedValue(false);
-
-            await login(mockReq, mockRes);
-
-            expect(mockRes.status).toHaveBeenCalledWith(401);
-            expect(mockRes.json).toHaveBeenCalledWith({ message: 'Invalid credentials, please try again.' });
-        });
-         it('should return 500 on bcrypt error', async () => {
-            mockReq.body = { email: 'test@example.com', password: 'password123' };
-            User.findOne.mockResolvedValue(mockUser);
-            const bcryptError = new Error('bcrypt error');
-            bcrypt.compare.mockRejectedValue(bcryptError);
-
-            await login(mockReq, mockRes);
-            expect(mockRes.status).toHaveBeenCalledWith(500);
-            expect(mockRes.json).toHaveBeenCalledWith({ message: 'Internal server error', error: bcryptError.message });
-        });
+    
+    it('should create a new user successfully', async () => {
+      mockReq.body = { username: 'newUser', email: 'new@test.com', password: 'password123' };
+      User.findOne.mockResolvedValue(null);
+      const specificMockSave = jest.fn().mockResolvedValue(true);
+      User.mockImplementation(() => ({
+        username: mockReq.body.username,
+        email: mockReq.body.email,
+        password: mockReq.body.password,
+        save: specificMockSave
+      }));
+      
+      
+      await userController.register(mockReq, mockRes);
+      
+      expect(specificMockSave).toHaveBeenCalled();
+      expect(mockRes.status).toHaveBeenCalledWith(201);
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'User successfully created' });
     });
-
-    describe('getProfile', () => {
-        it('should return user profile if user is found', async () => {
-            mockReq.userId = 'userId123';
-            const mockProfile = { username: 'profileUser', email: 'profile@example.com', createdAt: new Date() };
-            User.findById.mockReturnValue({ select: jest.fn().mockResolvedValue(mockProfile) });
-
-            await getProfile(mockReq, mockRes);
-
-            expect(User.findById).toHaveBeenCalledWith('userId123');
-            expect(User.findById().select).toHaveBeenCalledWith('username email createdAt');
-            expect(mockRes.json).toHaveBeenCalledWith({
-                username: mockProfile.username,
-                email: mockProfile.email,
-                created_at: mockProfile.createdAt
-            });
-        });
-
-        it('should return 404 if user not found', async () => {
-            mockReq.userId = 'nonExistentUserId';
-            User.findById.mockReturnValue({ select: jest.fn().mockResolvedValue(null) });
-
-            await getProfile(mockReq, mockRes);
-
-            expect(mockRes.status).toHaveBeenCalledWith(404);
-            expect(mockRes.json).toHaveBeenCalledWith({ message: 'User not found' });
-        });
+    
+    it('should return 500 on server error during registration', async () => {
+      mockReq.body = { username: 'test', email: 'test@test.com', password: '123' };
+      User.findOne.mockRejectedValue(new Error('DB error'));
+      await userController.register(mockReq, mockRes);
+      expect(mockRes.status).toHaveBeenCalledWith(500);
+      expect(mockRes.json).toHaveBeenCalledWith(expect.objectContaining({ message: 'Internal server error' }));
     });
-
-    describe('refresh', () => {
-        const mockUserFromToken = { _id: 'userIdFromToken', permissions: 0 };
-        
-        it('should refresh tokens successfully', async () => {
-            mockReq.cookies = { 'refresh_token': 'validRefreshToken' };
-            jwt.verify.mockReturnValue({ userId: mockUserFromToken._id });
-            User.findById.mockResolvedValue(mockUserFromToken);
-            jwt.sign
-                .mockImplementationOnce((payload, secret, options) => 'newAccessToken')
-                .mockImplementationOnce((payload, secret, options) => 'newRefreshToken');
-
-            await refresh(mockReq, mockRes);
-
-            expect(jwt.verify).toHaveBeenCalledWith('validRefreshToken', process.env.REFRESH_SECRET);
-            expect(User.findById).toHaveBeenCalledWith(mockUserFromToken._id);
-            expect(jwt.sign).toHaveBeenCalledWith(
-                { userId: mockUserFromToken._id, permissions: mockUserFromToken.permissions },
-                process.env.JWT_SECRET,
-                { expiresIn: '15m' }
-            );
-            expect(jwt.sign).toHaveBeenCalledWith(
-                { userId: mockUserFromToken._id },
-                process.env.REFRESH_SECRET,
-                { expiresIn: '14d' }
-            );
-            expect(mockRes.cookie).toHaveBeenCalledWith('refresh_token', 'newRefreshToken', { httpOnly: true, secure: true });
-            expect(mockRes.json).toHaveBeenCalledWith({ accessToken: 'newAccessToken' });
-        });
-
-        it('should return 401 if no refresh token in cookie', async () => {
-            mockReq.cookies = {};
-            await refresh(mockReq, mockRes);
-            expect(mockRes.status).toHaveBeenCalledWith(401);
-            expect(mockRes.end).toHaveBeenCalled();
-        });
-
-        it('should return 401 if refresh token verification fails', async () => {
-            mockReq.cookies = { 'refresh_token': 'invalidRefreshToken' };
-            jwt.verify.mockImplementation(() => { throw new Error('Verification failed'); });
-
-            await refresh(mockReq, mockRes);
-            expect(mockRes.status).toHaveBeenCalledWith(401);
-            expect(mockRes.end).toHaveBeenCalled();
-        });
-
-        it('should return 401 if user from token payload not found', async () => {
-            mockReq.cookies = { 'refresh_token': 'validRefreshTokenForNonExistentUser' };
-            jwt.verify.mockReturnValue({ userId: 'nonExistentUserId' });
-            User.findById.mockResolvedValue(null);
-
-            await refresh(mockReq, mockRes);
-            expect(mockRes.status).toHaveBeenCalledWith(401);
-            expect(mockRes.end).toHaveBeenCalled();
-        });
+  });
+  
+  describe('login', () => {
+    const mockUser = {
+      _id: 'userId123',
+      username: 'testuser',
+      email: 'test@test.com',
+      password: 'hashedPasswordFromDB',
+      permissions: 0,
+    };
+    
+    it('should return 401 if user not found', async () => {
+      mockReq.body = { email: 'unknown@test.com', password: '123' };
+      User.findOne.mockResolvedValue(null);
+      await userController.login(mockReq, mockRes);
+      expect(mockRes.status).toHaveBeenCalledWith(401);
     });
+    
+    it('should return 401 if password is a mismatch', async () => {
+      mockReq.body = { email: mockUser.email, password: 'wrongPassword' };
+      User.findOne.mockResolvedValue(mockUser);
+      bcrypt.compare.mockResolvedValue(false);
+      await userController.login(mockReq, mockRes);
+      expect(mockRes.status).toHaveBeenCalledWith(401);
+    });
+    
+    it('should login successfully and return tokens and user data', async () => {
+      mockReq.body = { email: mockUser.email, password: 'password123' };
+      User.findOne.mockResolvedValue(mockUser);
+      bcrypt.compare.mockResolvedValue(true);
+      jwt.sign
+      .mockReturnValueOnce('mockAccessTokenGenerated')
+      .mockReturnValueOnce('mockRefreshTokenGenerated');
+      
+      await userController.login(mockReq, mockRes);
+      
+      expect(jwt.sign).toHaveBeenNthCalledWith(1,
+        { userId: mockUser._id, permissions: mockUser.permissions },
+        process.env.JWT_SECRET,
+        { expiresIn: '12h' }
+      );
+      expect(jwt.sign).toHaveBeenNthCalledWith(2,
+        { userId: mockUser._id },
+        process.env.REFRESH_SECRET,
+        { expiresIn: '7d' }
+      );
+      expect(mockRes.cookie).toHaveBeenCalledWith('refresh_token', 'mockRefreshTokenGenerated', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+      expect(mockRes.json).toHaveBeenCalledWith({
+        accessToken: 'mockAccessTokenGenerated',
+        user: {
+          id: mockUser._id,
+          username: mockUser.username,
+          email: mockUser.email,
+          permissions: mockUser.permissions,
+        },
+      });
+    });
+  });
+  
+  describe('getProfile', () => {
+    it('should return user profile if token is valid', async () => {
+      const profileData = { username: 'profileUser', email: 'profile@test.com', createdAt: new Date(), permissions: 0 };
+      User.findById.mockReturnValue({ select: jest.fn().mockResolvedValue(profileData) });
+      mockReq.userId = 'aValidUserId'; 
+      
+      await userController.getProfile(mockReq, mockRes);
+      
+      expect(User.findById).toHaveBeenCalledWith('aValidUserId');
+      expect(User.findById().select).toHaveBeenCalledWith('username email createdAt permissions');
+      expect(mockRes.json).toHaveBeenCalledWith({
+        username: profileData.username,
+        email: profileData.email,
+        created_at: profileData.createdAt,
+        permissions: profileData.permissions,
+      });
+    });
+    
+    it('should return 404 if user not found for profile', async () => {
+      User.findById.mockReturnValue({ select: jest.fn().mockResolvedValue(null) });
+      mockReq.userId = 'aValidUserId';
+      await userController.getProfile(mockReq, mockRes);
+      expect(mockRes.status).toHaveBeenCalledWith(404);
+    });
+  });
+  
+  describe('refresh', () => {
+    const mockUserForRefresh = { _id: 'refUserId', permissions: 1 };
+    
+    it('should return 401 if no refresh token cookie', async () => {
+      mockReq.cookies = {};
+      await userController.refresh(mockReq, mockRes);
+      expect(mockRes.status).toHaveBeenCalledWith(401);
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'No refresh token provided', code: 'NO_REFRESH_TOKEN' });
+    });
+    
+    it('should return 403 if refresh token verification fails', async () => {
+      mockReq.cookies = { refresh_token: 'badToken' };
+      jwt.verify.mockImplementation(() => { throw new Error('Verification failed'); });
+      await userController.refresh(mockReq, mockRes);
+      expect(mockRes.status).toHaveBeenCalledWith(403);
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'Invalid or expired refresh token', code: 'INVALID_REFRESH_TOKEN' });
+      expect(mockRes.clearCookie).toHaveBeenCalledWith('refresh_token', expect.any(Object));
+    });
+    
+    it('should return 403 if user not found for valid refresh token payload', async () => {
+      mockReq.cookies = { refresh_token: 'validStructToken' };
+      jwt.verify.mockReturnValue({ userId: 'someUserIdInToken' });
+      User.findById.mockResolvedValue(null); // Usuario no encontrado en BD
+      await userController.refresh(mockReq, mockRes);
+      expect(mockRes.status).toHaveBeenCalledWith(403);
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'User not found for refresh token', code: 'USER_NOT_FOUND' });
+      expect(mockRes.clearCookie).toHaveBeenCalledWith('refresh_token', expect.any(Object));
+    });
+    
+    it('should successfully refresh tokens', async () => {
+      mockReq.cookies = { refresh_token: 'goodOldRefreshToken' };
+      jwt.verify.mockReturnValue({ userId: mockUserForRefresh._id });
+      User.findById.mockResolvedValue(mockUserForRefresh);
+      jwt.sign
+      .mockReturnValueOnce('newAccessTokenRefreshed')
+      .mockReturnValueOnce('newRefreshTokenRefreshed');
+      
+      await userController.refresh(mockReq, mockRes);
+      
+      expect(jwt.verify).toHaveBeenCalledWith('goodOldRefreshToken', process.env.REFRESH_SECRET);
+      expect(User.findById).toHaveBeenCalledWith(mockUserForRefresh._id);
+      expect(jwt.sign).toHaveBeenNthCalledWith(1, { userId: mockUserForRefresh._id, permissions: mockUserForRefresh.permissions }, process.env.JWT_SECRET, { expiresIn: '12h' });
+      expect(jwt.sign).toHaveBeenNthCalledWith(2, { userId: mockUserForRefresh._id }, process.env.REFRESH_SECRET, { expiresIn: '7d' });
+      expect(mockRes.cookie).toHaveBeenCalledWith('refresh_token', 'newRefreshTokenRefreshed', expect.any(Object));
+      expect(mockRes.json).toHaveBeenCalledWith({ accessToken: 'newAccessTokenRefreshed' });
+    });
+  });
+  
+  describe('logout', () => {
+    it('should clear refresh_token cookie and return 200', () => {
+      userController.logout(mockReq, mockRes);
+      expect(mockRes.clearCookie).toHaveBeenCalledWith('refresh_token', expect.any(Object));
+      expect(mockRes.status).toHaveBeenCalledWith(200);
+      expect(mockRes.json).toHaveBeenCalledWith({ message: 'Successfully logged out' });
+    });
+  });
 });

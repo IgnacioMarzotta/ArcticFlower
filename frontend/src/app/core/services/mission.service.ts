@@ -2,10 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Mission } from '../models/mission.models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class MissionService {
-  private apiUrl = '/api/missions';
+  private apiUrl = `${environment.apiUrl}/missions`;
   
   constructor(private http: HttpClient) {}
   
@@ -18,14 +19,6 @@ export class MissionService {
     return this.http.get<Mission[]>(`${this.apiUrl}/daily`, {
       headers: this.getAuthHeaders()
     });
-  }
-  
-  completeMission(id: string): Observable<any> {
-    return this.http.post<any>(
-      `${this.apiUrl}/${id}/complete`,
-      {},
-      { headers: this.getAuthHeaders() }
-    );
   }
   
   handleEvent(id: string, event: any): Observable<{ completed: boolean; progress: { seen: string[] } }> {
