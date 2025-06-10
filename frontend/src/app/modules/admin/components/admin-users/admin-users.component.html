@@ -1,0 +1,60 @@
+<div class="user-management">
+  <h2>User Management</h2>
+
+  <div class="filter-controls">
+    <div class="control-group">
+      <label for="permissions-filter">Filter by role:</label>
+      <select id="permissions-filter" [(ngModel)]="filterPermissions" (ngModelChange)="onFilterChange()">
+        <option value="all">All</option>
+        <option value="1">Administrator</option>
+        <option value="0">Basic user</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <label for="search-input">Search by user or email.</label>
+      <input 
+        type="text" 
+        id="search-input"
+        placeholder="Search with user or email..."
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchChange()"
+      >
+    </div>
+  </div>
+
+  <div *ngIf="isLoading" class="loading-indicator">Loading users...</div>
+  
+  <table *ngIf="!isLoading && users.length > 0">
+    <thead>
+      <tr>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Permissions</th>
+        <th>Level</th>
+        <th>XP</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of users">
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.permissions === 1 ? 'Admin' : 'User' }}</td>
+        <td>{{ user.level }}</td>
+        <td>{{ user.xp }}</td>
+        <td>
+          <button (click)="changeUserPermissions(user, 1)" *ngIf="user.permissions === 0" title="Promote to admin">⬆️</button>
+          <button (click)="changeUserPermissions(user, 0)" *ngIf="user.permissions === 1" title="Demote to user">⬇️</button>
+          <button (click)="deleteUser(user)" title="Delete">🗑️</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <p *ngIf="!isLoading && users.length === 0">Found no users with current filters.</p>
+
+  <div *ngIf="!isLoading && totalPages > 1" class="pagination-controls">
+    <button (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1">&laquo; Previous</button>
+    <button *ngFor="let page of getPagesArray()" (click)="onPageChange(page)" [class.active]="page === currentPage">{{ page }}</button>
+    <button (click)="onPageChange(currentPage + 1)" [disabled]="currentPage === totalPages">Next &raquo;</button>
+  </div>
+</div>

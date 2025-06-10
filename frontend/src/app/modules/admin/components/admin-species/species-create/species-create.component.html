@@ -1,0 +1,51 @@
+<div class="edit-form-container">
+    <form [formGroup]="speciesForm" (ngSubmit)="onSubmit()">
+        <h2>Create new species</h2>
+        <a routerLink="/admin" class="back-link">&laquo; Back to list</a>
+        
+        <fieldset>
+            <legend>Required information (*)</legend>
+            <div class="form-grid">
+                <div class="form-field">
+                    <label>Scientific Name (*)</label>
+                    <input formControlName="scientific_name">
+                </div>
+                <div class="form-field">
+                    <label>Genus (*)</label>
+                    <input formControlName="genus">
+                </div>
+                <div class="form-field">
+                    <label>Taxon ID (*)</label>
+                    <input formControlName="taxon_id">
+                </div>
+                <div class="form-field">
+                    <label>IUCN Category (*)</label>
+                    <select formControlName="category">
+                        <option value="" disabled>Select a category</option>
+                        <option value="EX">Extinct (EX)</option>
+                        <option value="EW">Extinct in the Wild (EW)</option>
+                        <option value="CR">Critically Endangered (CR)</option>
+                    </select>
+                </div>
+            </div>
+        </fieldset>
+        
+        <fieldset formArrayName="locations">
+            <legend>Locations (minimum of 1 required) (*)</legend>
+            <div *ngFor="let location of locations.controls; let i=index" [formGroupName]="i" class="array-item">
+                <h4>Location {{ i + 1 }} <button type="button" (click)="removeLocation(i)" class="btn-remove">X</button></h4>
+                <div class="form-grid">
+                    <input formControlName="country" placeholder="Country Code (ej. CL) *">
+                    <input formControlName="continent" placeholder="Continent *">
+                    <input type="number" formControlName="lat" placeholder="Latitude *">
+                    <input type="number" formControlName="lng" placeholder="Longitude *">
+                </div>
+            </div>
+            <button type="button" (click)="addLocation()" class="btn-add">Add new location</button>
+        </fieldset>
+        
+        <div class="form-actions">
+            <button type="submit" [disabled]="speciesForm.invalid">Crear Species</button>
+        </div>
+    </form>
+</div>

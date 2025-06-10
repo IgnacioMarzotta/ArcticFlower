@@ -1,0 +1,22 @@
+<div class="admin-panel">
+  <header class="admin-header">
+    <h1>Admin panel</h1>
+    <nav class="admin-nav">
+      <button (click)="showSection('users')" [class.active]="currentSection === 'users'">Users</button>
+      <button (click)="showSection('species')" [class.active]="currentSection === 'species'">Species</button>
+      <button (click)="showSection('reports')" [class.active]="currentSection === 'reports'">Reports</button>
+      </nav>
+  </header>
+
+  <main class="admin-content">
+    <section *ngIf="currentSection === 'users'">
+      <app-admin-users></app-admin-users>
+    </section>
+    <section *ngIf="currentSection === 'species'">
+      <app-admin-species></app-admin-species>
+    </section>
+    <section *ngIf="currentSection === 'reports'">
+      <app-admin-reports></app-admin-reports>
+    </section>
+  </main>
+</div>

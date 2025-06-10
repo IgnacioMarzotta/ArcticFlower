@@ -1,0 +1,56 @@
+<div class="report-management">
+  <h2>Gestión de Reportes</h2>
+  
+  <div class="filter-controls">
+    <label for="status-filter">Filtrar por estado: </label>
+    <select id="status-filter" [(ngModel)]="filterStatus" (ngModelChange)="onFilterChange()">
+      <option value="all">Todos</option>
+      <option value="false">Pendientes</option>
+      <option value="true">Resueltos</option>
+    </select>
+  </div>
+  
+  <div *ngIf="!isLoading && totalPages > 1" class="pagination-controls">
+    <button (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1">
+      &laquo; Previous
+    </button>
+    
+    <button *ngFor="let page of getPagesArray()" (click)="onPageChange(page)" [class.active]="page === currentPage">
+      {{ page }}
+    </button>
+    
+    <button (click)="onPageChange(currentPage + 1)" [disabled]="currentPage === totalPages">
+      Next &raquo;
+    </button>
+  </div>
+  
+  <div *ngIf="isLoading" class="loading-indicator">Cargando reportes...</div>
+  
+  <table *ngIf="!isLoading && reports.length > 0">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Type</th>
+        <th>Message</th>
+        <th>Status</th>
+        <th>Creation Date</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let report of reports">
+        <td>{{ report.user || 'Guest' }}</td>
+        <td>{{ report.type }}</td>
+        <td>{{ report.message }} {{report.species}}</td>
+        <td>{{ report.resolved ? 'Resolved' : 'Pending' }}</td>
+        <td>{{ report.createdAt | date:'dd/MM/yyyy HH:mm' }}</td>
+        <td>
+          <button *ngIf="!report.resolved" (click)="updateReportStatus(report, true)" title="Mark as resolved">✅</button>
+          <button *ngIf="report.resolved" (click)="updateReportStatus(report, false)" title="Mark as pending">↩️</button>
+          <button (click)="deleteReport(report)" title="Eliminar">🗑️</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <p *ngIf="!isLoading && reports.length === 0">No se encontraron reportes.</p>
+</div>

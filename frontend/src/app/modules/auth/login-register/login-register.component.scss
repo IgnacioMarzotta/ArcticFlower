@@ -192,11 +192,11 @@ textarea {
     background: color.adjust(s.$primary-color, $lightness: -20%);
     color: white;
     transition:all .5s ease;
-
+    
     &:hover, &:focus {
         background: s.$primary-color;
     }
-
+    
     &:disabled {
         background: s.$secondary-color;
     }

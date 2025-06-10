@@ -28,13 +28,11 @@ export class LoginRegisterComponent implements OnInit {
     ) {}
     
     ngOnInit(): void {
-        // Inicializo modo según ruta opcional
         this.route.paramMap.subscribe(params => {
             const mode = params.get('mode');
             this.isLoginMode = (mode !== 'register');
         });
-
-        // Formularios reactivos
+        
         this.loginForm = this.fb.group({
             email: ['', [Validators.required, Validators.email]],
             password: ['', Validators.required]
@@ -85,7 +83,6 @@ export class LoginRegisterComponent implements OnInit {
         }
     }
     
-    /** Al perder foco, remueve sólo highlight si queda texto */
     @HostListener('focusout', ['$event.target'])
     onBlur(target: HTMLElement) {
         if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') return;
@@ -93,7 +90,6 @@ export class LoginRegisterComponent implements OnInit {
         this.renderer.removeClass(label, 'highlight');
     }
     
-    /** Al ganar foco, resalta si ya hay texto */
     @HostListener('focusin', ['$event.target'])
     onFocus(target: HTMLElement) {
         if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') return;
