@@ -1,0 +1,128 @@
+<div class="main-container">
+  <div class="edit-form-container">
+    <div *ngIf="isLoading" class="loading-indicator">Loading species data...</div>
+    
+    <form [formGroup]="speciesForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
+      <h2>Editing: {{ speciesForm.get('scientific_name')?.value }}</h2>
+      <a routerLink="/admin" class="back-link">&laquo; Back to list</a>
+      
+      <fieldset>
+        <legend>Main information</legend>
+        <div class="form-grid">
+          <div class="form-field">
+            <label>Scientific Name</label>
+            <input formControlName="scientific_name">
+          </div>
+          <div class="form-field">
+            <label>Common/Vernacular Name</label>
+            <input formControlName="common_name">
+          </div>
+        </div>
+      </fieldset>
+      
+      <fieldset formGroupName="description">
+        <legend>Description</legend>
+        <div class="form-field">
+          <label>Rationale</label>
+          <textarea formControlName="rationale" rows="4"></textarea>
+        </div>
+        <div class="form-field">
+          <label>Habitat</label>
+          <textarea formControlName="habitat" rows="4"></textarea>
+        </div>
+        <div class="form-field">
+          <label>Threats</label>
+          <textarea formControlName="threats" rows="4"></textarea>
+        </div>
+        <div class="form-field">
+          <label>Population</label>
+          <textarea formControlName="population" rows="4"></textarea>
+        </div>
+        <div class="form-field">
+          <label>Population trends</label>
+          <textarea formControlName="populationTrend"></textarea>
+        </div>
+        <div class="form-field">
+          <label>Geographic range</label>
+          <textarea formControlName="range" rows="4"></textarea>
+        </div>
+        <div class="form-field">
+          <label>Use & Trade</label>
+          <textarea formControlName="useTrade" rows="4"></textarea>
+        </div>
+        <div class="form-field">
+          <label>Conservation Actions</label>
+          <textarea formControlName="conservationActions" rows="4"></textarea>
+        </div>
+      </fieldset>
+      
+      <fieldset formArrayName="locations">
+        <legend>Locations</legend>
+        <div *ngFor="let location of locations.controls; let i=index" [formGroupName]="i" class="array-item">
+          <h4>Location {{ i + 1 }} <button type="button" (click)="removeLocation(i)" class="btn-remove">X</button></h4>
+          <div class="form-grid">
+            <input formControlName="country" placeholder="Country Code (ej. CL)">
+            <input formControlName="continent" placeholder="Continent">
+            <input type="number" formControlName="lat" placeholder="Latitude">
+            <input type="number" formControlName="lng" placeholder="Longitude">
+          </div>
+        </div>
+        <button type="button" (click)="addLocation()" class="btn-add">Add new location</button>
+      </fieldset>
+      
+      <fieldset formArrayName="media">
+        <legend>Media</legend>
+        <div *ngFor="let m of media.controls; let i=index" [formGroupName]="i" class="array-item">
+          <h4>Media {{ i + 1 }} <button type="button" (click)="removeMedia(i)" class="btn-remove">X</button></h4>
+          <div class="form-grid">
+            <div class="form-field">
+              <label>URL (Identifier)</label>
+              <input formControlName="identifier" placeholder="Resource main URL">
+            </div>
+            <div class="form-field">
+              <label>Title</label>
+              <input formControlName="title" placeholder="Media title">
+            </div>
+            <div class="form-field">
+              <label>Type</label>
+              <input formControlName="type" placeholder="Eg: StillImage, Sound">
+            </div>
+            <div class="form-field">
+              <label>Format</label>
+              <input formControlName="format" placeholder="Eg: image/jpeg">
+            </div>
+            <div class="form-field">
+              <label>Creator</label>
+              <input formControlName="creator">
+            </div>
+            <div class="form-field">
+              <label>Contributor</label>
+              <input formControlName="contributor">
+            </div>
+            <div class="form-field">
+              <label>Editor (Publisher)</label>
+              <input formControlName="publisher">
+            </div>
+            <div class="form-field">
+              <label>Rights Holder</label>
+              <input formControlName="rightsHolder">
+            </div>
+            <div class="form-field">
+              <label>License</label>
+              <input formControlName="license">
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Description</label>
+            <textarea formControlName="description" rows="2"></textarea>
+          </div>
+        </div>
+        <button type="button" (click)="addMedia()" class="btn-add">Add new Media</button>
+      </fieldset>
+      
+      <div class="form-actions">
+        <button type="submit" [disabled]="speciesForm.invalid">Save Changes</button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -1,4 +1,5 @@
 @use 'styles' as s;
+@use 'sass:color';
 
 *, *:before, *:after {
     box-sizing: border-box;
@@ -78,7 +79,7 @@ a {
         cursor:pointer;
         transition:.5s ease;
         &:hover {
-            background: darken(s.$button-color, $amount: 20);
+            background: color.adjust(s.$button-color, $lightness: -20%);
             color: white;
         }
     }
@@ -188,14 +189,14 @@ textarea {
     font-weight: 600;
     text-transform:uppercase;
     letter-spacing:.1em;
-    background: darken($color: s.$primary-color, $amount: 20);
+    background: color.adjust(s.$primary-color, $lightness: -20%);
     color: white;
     transition:all .5s ease;
-
+    
     &:hover, &:focus {
         background: s.$primary-color;
     }
-
+    
     &:disabled {
         background: s.$secondary-color;
     }

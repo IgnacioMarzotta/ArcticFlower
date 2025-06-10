@@ -16,6 +16,9 @@ import { Router } from '@angular/router';
 import { SpeciesPoint, ClusterPoint } from '../../core/models/map.models';
 import { Favorite } from '../../core/models/favorite.model';
 import { Mission } from '../../core/models/mission.models';
+import { UserQuizStatus, ActiveQuizData } from '../../core/models/quiz.models';
+
+import { QuizModalComponent } from '../../components/quiz-modal/quiz-modal.component';
 
 //Services 
 import { SpeciesService } from '../../core/services/species.service';
@@ -26,12 +29,13 @@ import { FavoriteService } from '../../core/services/favorite.service';
 import { MissionService } from '../../core/services/mission.service';
 import { MissionEventService } from '../../core/services/mission-event.service';
 import { MissionEngineService } from 'src/app/core/services/mission-engine.service';
+import { QuizService } from '../../core/services/quiz.service';
 
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
-  imports: [CommonModule, FormsModule, NgxSpinnerComponent],
+  imports: [CommonModule, FormsModule, NgxSpinnerComponent, QuizModalComponent],
   standalone: true,
 })
 
@@ -65,7 +69,7 @@ export class MapComponent implements AfterViewInit {
   //Media carrousel
   public showImageInfo: boolean = false;
   currentImageIndex = 0;
-  isImageLoading: boolean = true;
+  public isImageLoading: boolean = false;
   
   //Favorites system
   public isFavorited = false;
@@ -85,6 +89,12 @@ export class MapComponent implements AfterViewInit {
     timer: 3000,
     timerProgressBar: true,
   });
+
+  //Quiz system
+  public showQuizModal = false;
+  public activeQuizContent: ActiveQuizData | null = null;
+  public currentQuizAttemptNumber: number | undefined;
+  private quizCheckInProgress = false;
   
   constructor(
     private speciesService: SpeciesService,
@@ -98,15 +108,18 @@ export class MapComponent implements AfterViewInit {
     private cdr: ChangeDetectorRef,
     private spinner: NgxSpinnerService,
     private router: Router,
+    private quizService: QuizService,
   ) {}
   
   ngOnInit(): void {
+    this.spinner.show();
     this.setupSearch();
     
     this.isUser = this.authService.isAuthenticated()
 
     if (this.isUser) {
       console.log("USER IS LOGGED IN");
+      this.checkAndInitiateQuiz();
       this.initializeFavorites();
       this.loadDailyMissions();
       this.listenForMissionUpdates();
@@ -118,14 +131,15 @@ export class MapComponent implements AfterViewInit {
   
   ngAfterViewInit(): void {
     this.isMobile = window.innerWidth < 768;
-    this.spinner.show();
     this.initializeGlobe();
     this.addClouds();
     this.loadAllClusters();
     
     setTimeout(() => {
-      this.isLoading = false;
-      this.spinner.hide();
+      if (!this.showQuizModal) {
+        this.isLoading = false;
+        this.spinner.hide();
+      }
     }, 1500);
     
     if (this.isUser) {
@@ -226,10 +240,10 @@ export class MapComponent implements AfterViewInit {
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - this.daysToCheck);
     if (new Date(cluster.updatedAt) < oneWeekAgo) {
-      console.log("El cluster no ha sido actualizado en el plazo establecido. Se realizará una llamada a la API para actualizar datos.");
+      console.log("Cluster hasn't been updated recently, calling API for updated data.");
       this.clusterService.updateClusterStatusFromAPI(cluster).subscribe({
         next: resp => {
-          console.log("Cluster actualizado:", resp.cluster);
+          console.log("Cluster updated:", resp.cluster);
           cluster.updatedAt = new Date().toISOString(); //Se actualiza el cluster con la fecha actual unicamente en el front-end, para evitar que las actualizaciones se disparen mas de 1 vez.
           const idx = this.clusterPoints.findIndex(c => c.id === cluster.id);
           if (idx !== -1) {
@@ -238,14 +252,14 @@ export class MapComponent implements AfterViewInit {
           this.isLoading = false;
         },
         error: err => {
-          console.error('Error al obtener detalles de GBIF:', err);
+          console.error('Error getting updated cluster data from API: ', err);
           this.isLoading = false;
         }
       });
     }
     else {
       //No actualizar
-      console.log("El cluster ha sido actualizado recientemente. No es necesario realizar una llamada a la API externa.");
+      console.log("Cluster has been updated recently, skipping API call.");
       return;
     }
   }
@@ -256,7 +270,7 @@ export class MapComponent implements AfterViewInit {
     oneWeekAgo.setDate(oneWeekAgo.getDate() - this.daysToCheck);
     if (new Date(species.updatedAt) < oneWeekAgo) {
       //Actualizar
-      console.log("La especie no ha sido actualizada en el plazo establecido. Se realizará una llamada a la API para actualizar datos.");
+      console.log("Species hasn't been updated recently, calling API ");
       this.speciesService.updateSpeciesStatusFromAPI(species).subscribe({
         next: resp => {
           species.updatedAt = new Date().toISOString(); //Se actualiza la especie con la fecha actual unicamente en el front-end, para evitar que las actualizaciones se disparen mas de 1 vez.
@@ -353,15 +367,19 @@ export class MapComponent implements AfterViewInit {
   //Funcion principal para seleccionar una especie, que se encarga de cargar los detalles de la especie y navegar hacia el marcador correspondiente.
   public selectSpecies(species: SpeciesPoint): void {
     this.isLoading = true;
+    this.spinner.show();
     this.checkSpeciesUpdate(species);
     
-    this.speciesService.getSpeciesDetail(species.id).subscribe({
+    this.speciesService.getSpeciesById(species.id).subscribe({
       next: detail => {
         detail.id = detail._id;
         this.selectedSpecies = detail;
+        
+        this.isImageLoading = true;
+        this.currentImageIndex = 0;
+
         console.log(this.selectedSpecies);
         this.isFavorited = this.favoriteIds.has(species.id);
-        this.isLoading = false;
         const matchingLoc = detail.locations.find((loc: any) =>
           loc.country.toUpperCase() === this.selectedCluster?.country.toUpperCase()
         ) || detail.locations[0];
@@ -379,7 +397,8 @@ export class MapComponent implements AfterViewInit {
           }
         });
         this.showPanel = true;
-        console.log("Evento emitido.", lat, lng);
+        this.isLoading = false;
+        this.spinner.hide();
       },
       error: err => {
         console.error('Error al obtener el detalle de la especie:', err);
@@ -395,7 +414,7 @@ export class MapComponent implements AfterViewInit {
       return;
     }
     this.checkClusterUpdate(cluster);
-    console.log("Cluster seleccionado:", cluster);
+    //console.log("Cluster seleccionado:", cluster);
     this.expandedClusterId = cluster.id;
     this.selectedCluster = cluster;
     this.spinner.show();
@@ -427,38 +446,38 @@ export class MapComponent implements AfterViewInit {
   }
   
   //Sin uso actual, funcion encargada de traer TODAS las especies
-  private loadSpeciesData(): void {
-    let allSpecies: SpeciesPoint[] = [];
-    this.speciesService.getAllSpecies(1, 1000).subscribe({
-      next: (response) => {
-        const points: SpeciesPoint[] = [];
-        response.species.forEach((species: any) => {
-          if (species.locations && Array.isArray(species.locations)) {
-            species.locations.forEach((loc: { country: string; lat: number; lng: number; }) => {
-              points.push({
-                id: species._id,
-                lat: loc.lat,
-                lng: loc.lng,
-                name: species.common_name,
-                category: species.category,
-                size: 30,
-                color: this.getColorByCategory(species.category),
-                country: loc.country,
-                updatedAt: species.updatedAt,
-                taxon_id: species.taxon_id,
-              });
-            });
-          }
-        });
-        console.log('Puntos generados:', points);
-        allSpecies = points;
-        if (this.globeInstance) {
-          this.globeInstance.htmlElementsData(points);
-        }
-      },
-      error: err => console.error('Error al cargar especies:', err)
-    });
-  }
+  // private loadSpeciesData(): void {
+  //   let allSpecies: SpeciesPoint[] = [];
+  //   this.speciesService.getAllSpecies(1, 1000).subscribe({
+  //     next: (response) => {
+  //       const points: SpeciesPoint[] = [];
+  //       response.species.forEach((species: any) => {
+  //         if (species.locations && Array.isArray(species.locations)) {
+  //           species.locations.forEach((loc: { country: string; lat: number; lng: number; }) => {
+  //             points.push({
+  //               id: species._id,
+  //               lat: loc.lat,
+  //               lng: loc.lng,
+  //               name: species.common_name,
+  //               category: species.category,
+  //               size: 30,
+  //               color: this.getColorByCategory(species.category),
+  //               country: loc.country,
+  //               updatedAt: species.updatedAt,
+  //               taxon_id: species.taxon_id,
+  //             });
+  //           });
+  //         }
+  //       });
+  //       console.log('Puntos generados:', points);
+  //       allSpecies = points;
+  //       if (this.globeInstance) {
+  //         this.globeInstance.htmlElementsData(points);
+  //       }
+  //     },
+  //     error: err => console.error('Error al cargar especies:', err)
+  //   });
+  // }
   
   //Definicion de colores por categoria
   private getColorByCategory(category: string): string {
@@ -499,6 +518,7 @@ export class MapComponent implements AfterViewInit {
     this.expandedClusterId = null;
     this.expandedSpeciesMarkers = [];
     this.selectedCluster = null;
+    this.isImageLoading = false;
     this.updateGlobeMarkers();
   }
   
@@ -565,26 +585,63 @@ export class MapComponent implements AfterViewInit {
   //Funcion para mostrar la siguiente imagen en el carrusel
   nextImage(): void {
     if (this.selectedSpecies?.media && this.currentImageIndex < this.selectedSpecies.media.length - 1) {
-      this.currentImageIndex++;
+      this.isImageLoading = true;
+      setTimeout(() => {
+        this.currentImageIndex++;
+        this.cdr.detectChanges();
+        console.log('Siguiente medio:', this.currentImage.identifier, 'Tipo detectado:', this.currentMediaType);
+      });
     }
   }
   
   //Funcion para mostrar la imagen anterior en el carrusel
   prevImage(): void {
     if (this.currentImageIndex > 0) {
-      this.currentImageIndex--;
+      this.isImageLoading = true;
+      setTimeout(() => {
+        this.currentImageIndex--;
+        this.cdr.detectChanges();
+        console.log('Medio anterior:', this.currentImage.identifier, 'Tipo detectado:', this.currentMediaType);
+      });
     }
   }
+
   
-  //Funcion para mostrar la imagen actual en el carrusel
   get currentImage(): any {
     return this.selectedSpecies?.media?.[this.currentImageIndex];
   }
   
-  //Funcion para mostrar u ocultar la informacion de la imagen actual en el carrusel
+  get currentMediaType(): 'image' | 'document' | 'other' {
+    if (!this.currentImage || !this.currentImage.identifier) {
+      return 'other';
+    }
+    if (this.isImageUrl(this.currentImage.identifier)) {
+      return 'image';
+    }
+    if (this.isDocumentUrl(this.currentImage.identifier)) {
+      return 'document';
+    }  
+    return 'other';
+  }
+  
+  public isImageUrl(url: string): boolean {
+    if (!url) return false;
+    const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp'];
+    const path = url.split('?')[0];
+    return imageExtensions.some(ext => path.toLowerCase().endsWith(`.${ext}`));
+  }
+  
+  public isDocumentUrl(url: string): boolean {
+    if (!url) return false;
+    const docExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'];
+    const path = url.split('?')[0];
+    return docExtensions.some(ext => path.toLowerCase().endsWith(`.${ext}`));
+  }
+  
   toggleImageInfo(): void {
     this.showImageInfo = !this.showImageInfo;
   }
+
   
   /* Favorites */
 
@@ -667,7 +724,7 @@ export class MapComponent implements AfterViewInit {
     this.showFavoritesPanel = false;
   }
 
-  /* Missions */
+  /* Mission system */
 
   //Muestra u oculta el panel de misiones, cerrando el panel de favoritos en caso de estar abierto
   public toggleMissionsPanel(): void {
@@ -703,5 +760,78 @@ export class MapComponent implements AfterViewInit {
       },
       error: err => console.error('No se pudieron cargar misiones', err)
     });
+  }
+
+  /* Quiz system */
+
+  //Funcion que valida las condiciones para mostrar el cuestionario al usuario la primera vez que visita el mapa, o por segunda vez cuando ha transcurrido cierta cantidad de tiempo.
+  private checkAndInitiateQuiz(): void {
+    if (!this.isUser || this.quizCheckInProgress || this.showQuizModal) {
+      return;
+    }
+    this.quizCheckInProgress = true;
+
+    console.log("Llamando a quizService.getUserQuizStatus()");
+    this.quizService.getUserQuizStatus().subscribe({
+      next: (status: UserQuizStatus) => {
+        console.log('Estado del Cuestionario Recibido:', status);
+        if (status.status === 'PENDING_ATTEMPT_1' || status.status === 'PENDING_ATTEMPT_2') {
+          if (status.quizIdentifier && status.quizVersion !== undefined && status.attemptNumber) {
+            this.currentQuizAttemptNumber = status.attemptNumber;
+            this.quizService.getActiveQuiz().subscribe({
+              next: (quizData: ActiveQuizData) => {
+                console.log('Datos del Cuestionario Activo Recibidos:', quizData);
+                if (quizData && quizData.questions && quizData.questions.length > 0 &&
+                    quizData.quiz_identifier === status.quizIdentifier &&
+                    quizData.version === status.quizVersion) {
+                  
+                  this.activeQuizContent = quizData;
+                  this.showQuizModal = true;
+                  this.isLoading = false; 
+                  this.spinner.hide();
+                  this.cdr.detectChanges(); 
+                  console.log("Modal del cuestionario debería estar visible.");
+                } else {
+                  console.warn("Discrepancia en datos del cuestionario o no hay preguntas.", "Estado:", status, "QuizData:", quizData);
+                  this.quizCheckInProgress = false;
+                }
+              },
+              error: (err) => {
+                console.error('Error obteniendo datos del cuestionario activo:', err);
+                this.quizCheckInProgress = false;
+              }
+            });
+          } else {
+             console.warn("Estado del cuestionario recibido es inválido para iniciar un intento:", status);
+             this.quizCheckInProgress = false;
+          }
+        } else {
+          console.log('No se requiere cuestionario en este momento:', status.message);
+          this.quizCheckInProgress = false;
+          if(this.isLoading) {
+            this.spinner.hide();
+            this.isLoading = false;
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Error obteniendo estado del cuestionario:', err);
+        this.quizCheckInProgress = false;
+      }
+    });
+  }
+
+  //Maneja cuando el usuario cierre y envie el usuario
+  public handleQuizClosed(submittedSuccessfully: boolean): void {
+    console.log('Modal del cuestionario cerrado. Enviado exitosamente:', submittedSuccessfully);
+    this.showQuizModal = false;
+    this.activeQuizContent = null;
+    this.currentQuizAttemptNumber = undefined;
+    this.quizCheckInProgress = false;
+    this.cdr.detectChanges();
+
+    if (this.isUser) {
+        this.checkAndInitiateQuiz();
+    }
   }
 }

@@ -1,84 +1,152 @@
+// frontend\src\app\core\services\auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, throwError, of } from 'rxjs'; // Asegúrate de importar 'of'
+import { tap, catchError, switchMap, filter, take } from 'rxjs/operators'; // Asegúrate de importar filter y take
+import { Router } from '@angular/router';
+import { environment } from '../../../environments/environment';
 
-interface LoginResponse {
-  token: string;
+
+interface LoginApiResponse {
+  accessToken: string;
+  user: {
+    id: string;
+    username: string;
+    email: string;
+    permissions: number;
+  };
+}
+
+interface ProfileResponse {
+  username: string;
+  email: string;
+  created_at: string;
   permissions: number;
 }
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = '/api/auth';
-  private currentUserSubject = new BehaviorSubject<any>(null);
-
-  constructor(private http: HttpClient) {}
-
+  private apiUrl = `${environment.apiUrl}/auth`;
+  private currentUserSubject: BehaviorSubject<any | null>;
+  public currentUser: Observable<any | null>;
+  
+  private isRefreshingToken = false;
+  private tokenRefreshed$ = new BehaviorSubject<boolean | null>(null);
+  
+  
+  constructor(private http: HttpClient, private router: Router) {
+    const token = this.getAccessToken();
+    this.currentUserSubject = new BehaviorSubject<any | null>(token ? { tokenExists: true } : null);
+    this.currentUser = this.currentUserSubject.asObservable();
+  }
+  
+  public get currentUserValue(): any | null {
+    return this.currentUserSubject.value;
+  }
+  
   register(userData: { username: string; email: string; password: string }): Observable<any> {
     return this.http.post(`${this.apiUrl}/register`, userData);
   }
-
-  login(credentials: { email: string; password: string }): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials).pipe(
+  
+  login(credentials: { email: string; password: string }): Observable<LoginApiResponse> {
+    return this.http.post<LoginApiResponse>(`${this.apiUrl}/login`, credentials).pipe(
       tap(response => {
-        localStorage.setItem('auth_token', response.token);
-        this.currentUserSubject.next(response);
+        if (response.accessToken && response.user) {
+          localStorage.setItem('auth_token', response.accessToken);
+          this.currentUserSubject.next(response.user);
+        } else {
+          console.error('Login response missing accessToken or user data.');
+          this.logoutUserAndRedirect();
+        }
+      }),
+      catchError(error => {
+        this.currentUserSubject.next(null);
+        return throwError(() => error);
       })
     );
   }
-
-  get currentUser(): Observable<any> {
-    return this.currentUserSubject.asObservable();
+  
+  logout(): Observable<any> {
+    const obs = this.http.post(`${this.apiUrl}/logout`, {}, { withCredentials: true });
+    this.logoutUserAndRedirect();
+    return obs;
   }
-
-  isAuthenticated(): boolean {
-    if (localStorage.getItem('auth_token')) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  logout(): void {
+  
+  public logoutUserAndRedirect(navigateToLogin: boolean = true): void {
     localStorage.removeItem('auth_token');
     this.currentUserSubject.next(null);
+    if (navigateToLogin) {
+      this.router.navigate(['/auth/login']);
+    }
   }
-
-  getProfile(): Observable<{ username: string; email: string; created_at: string }> {
-    const token = localStorage.getItem('auth_token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.get<{ username: string; email: string; created_at: string }>(
-      `${this.apiUrl}/profile`,
-      { headers }
-    ).pipe(
+  
+  
+  getProfile(): Observable<ProfileResponse> {
+    return this.http.get<ProfileResponse>(`${this.apiUrl}/profile`).pipe(
       tap(profile => {
-        this.currentUserSubject.next(profile);
+        const existingUser = this.currentUserSubject.value || {};
+        const userId = existingUser.id || (this.currentUserSubject.value?.user?.id); 
+        this.currentUserSubject.next({ ...existingUser, ...profile, id: userId });
       })
     );
   }
-
+  
   getAccessToken(): string | null {
     return localStorage.getItem('auth_token');
   }
-
-  async refreshToken(): Promise<string> {
-
-    const resp = await firstValueFrom(
-      this.http.post<{ accessToken: string }>(
-        '/api/auth/refresh',
-        {},
-        { withCredentials: true }
-      )
-    );
-
-    if (!resp || !resp.accessToken) {
-      throw new Error('No se obtuvo accessToken en el refresh');
+  
+  attemptRefreshToken(): Observable<string> {
+    if (this.isRefreshingToken) {
+      return this.tokenRefreshed$.pipe(
+        filter(result => result !== null),
+        take(1),
+        switchMap(result => {
+          const newAccessToken = this.getAccessToken();
+          if (newAccessToken && result === true) {
+            return of(newAccessToken);
+          } else {
+            return throwError(() => new Error('Failed to get new token after refresh'));
+          }
+        })
+      );
     }
-
-    localStorage.setItem('auth_token', resp.accessToken);
-    return resp.accessToken;
+    
+    this.isRefreshingToken = true;
+    this.tokenRefreshed$.next(null);
+    
+    return this.http.post<{ accessToken: string }>(`${this.apiUrl}/refresh`,{},{ withCredentials: true }).pipe(
+      tap(response => {
+        if (!(response && response.accessToken)) {
+          throw new Error('No access token received from refresh');
+        }
+        localStorage.setItem('auth_token', response.accessToken);
+      }),
+      switchMap(response => {
+        this.isRefreshingToken = false;
+        this.tokenRefreshed$.next(true);
+        return of(response.accessToken);
+      }),
+      catchError(error => {
+        this.isRefreshingToken = false;
+        this.tokenRefreshed$.next(false);
+        this.logoutUserAndRedirect();
+        
+        let errorMessage = 'Refresh token failed or endpoint error';
+        if (error && error.message && error.message.includes('No access token received from refresh')) {
+          errorMessage = error.message;
+        } else if (error instanceof Response && error.status === 0) {
+          errorMessage = 'Network error during token refresh.';
+        }
+        
+        return throwError(() => new Error(errorMessage));
+      })
+    );
+  }
+  
+  isAuthenticated(): boolean {
+    return !!localStorage.getItem('auth_token');
   }
 }

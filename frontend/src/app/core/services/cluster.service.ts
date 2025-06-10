@@ -2,13 +2,14 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ClusterPoint } from '../models/map.models';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ClusterService {
 
-  private apiUrl = '/api/clusters';
+  private apiUrl = `${environment.apiUrl}/clusters`;
 
   constructor(private http: HttpClient) { }
 

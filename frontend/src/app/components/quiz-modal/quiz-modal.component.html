@@ -1,0 +1,77 @@
+<div class="quiz-modal-overlay">
+  <div class="quiz-modal-content" (click)="$event.stopPropagation()">
+    <h1>Before you continue</h1>
+    <h4>Please answer this brief quiz to test your knowledge!</h4>
+    
+    <ng-container *ngIf="currentQuestion && !quizFlowCompleted && !finalSubmissionSent">
+      <div class="quiz-header">
+        <h3>Question {{ currentQuestionIndex + 1 }} / {{ displayQuestions.length }}</h3>
+        <p class="question-text">{{ currentQuestion.text }}</p>
+      </div>
+
+      <div class="options-container">
+        <button
+          *ngFor="let option of currentQuestion.options; let i = index"
+          class="option-button"
+          [class.selected]="currentQuestion.user_selected_option_index === i"
+          [class.answered]="currentQuestion.answered"
+          [class.correct]="currentQuestion.answered && i === currentQuestion.correct_option_index"
+          [class.incorrect]="currentQuestion.answered && currentQuestion.user_selected_option_index === i && i !== currentQuestion.correct_option_index"
+          (click)="selectOption(i)"
+          [disabled]="currentQuestion.answered">
+          {{ option }}
+        </button>
+      </div>
+
+      <div class="actions-container">
+        <button 
+          *ngIf="!currentQuestion.answered"
+          class="action-button confirm-button"
+          (click)="confirmAnswer()"
+          [disabled]="currentQuestion.user_selected_option_index === undefined">
+          Confirm answer
+        </button>
+
+        <ng-container *ngIf="currentQuestion.answered && showFeedbackForCurrent">
+          <div class="feedback-section">
+            <div *ngIf="currentQuestion.user_was_correct !== undefined" 
+                 class="answer-feedback"
+                 [ngClass]="{'correct-answer': currentQuestion.user_was_correct, 'incorrect-answer': !currentQuestion.user_was_correct}">
+              <h4 *ngIf="currentQuestion.user_was_correct">¡Correct!</h4>
+              <h4 *ngIf="!currentQuestion.user_was_correct">Incorrect.</h4>
+            </div>
+            <div class="justification">
+              <h4>Justification:</h4>
+              <p [innerHTML]="currentQuestion.justification"></p>
+            </div>
+          </div>
+          <button class="action-button next-button" (click)="proceedToNext()">
+            {{ currentQuestionIndex < displayQuestions.length - 1 ? 'Next question' : 'View results' }}
+          </button>
+        </ng-container>
+      </div>
+    </ng-container>
+
+    <div *ngIf="isSubmittingQuiz && !finalSubmissionSent" class="loading-container">
+      <p>Sending your answers</p>
+    </div>
+    
+    <div *ngIf="errorSubmitting" class="error-container">
+        <h4>Error sending</h4>
+        <p>{{ errorSubmitting }}</p>
+        <button class="action-button" (click)="submitFullQuiz()">Retry</button>
+        <button class="action-button" (click)="closeModalAndEmit(false)">Close</button>
+    </div>
+
+    <ng-container *ngIf="finalSubmissionSent && submissionResult">
+      <div class="results-container">
+        <h2>Quiz complete!</h2>
+        <p>You correctly answered {{ submissionResult.score }} out of {{ submissionResult.total }} questions.</p>
+        <p *ngIf="attemptNumber === 1">Thank you for completing the first part. Keep exploring to learn even more.</p>
+        <p *ngIf="attemptNumber === 2">Excelent! We hope you learned a lot with ArcticFlower.</p>
+        <button class="action-button" (click)="closeModalAndEmit(true)">Let's go!</button>
+      </div>
+    </ng-container>
+
+  </div>
+</div>
