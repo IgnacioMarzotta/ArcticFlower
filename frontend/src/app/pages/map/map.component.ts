@@ -10,7 +10,8 @@ import * as THREE from 'three';
 import countries from 'world-countries';
 import 'flag-icons/css/flag-icons.min.css';
 import Swal from 'sweetalert2';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
 //Front-end models
 import { SpeciesPoint, ClusterPoint } from '../../core/models/map.models';
@@ -31,11 +32,26 @@ import { MissionEventService } from '../../core/services/mission-event.service';
 import { MissionEngineService } from 'src/app/core/services/mission-engine.service';
 import { QuizService } from '../../core/services/quiz.service';
 
+interface City {
+  city: string;
+  lat: string;
+  lng: string;
+  country: string;
+  population: string;
+  id: string;
+}
+
+interface LabelData {
+  lat: number;
+  lng: number;
+  city: string;
+}
+
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
-  imports: [CommonModule, FormsModule, NgxSpinnerComponent, QuizModalComponent],
+  imports: [CommonModule, FormsModule, NgxSpinnerComponent, QuizModalComponent, RouterModule],
   standalone: true,
 })
 
@@ -56,6 +72,8 @@ export class MapComponent implements AfterViewInit {
   private clusterPoints: ClusterPoint[] = [];
   private expandedClusterId: string | null = null;
   private expandedSpeciesMarkers: SpeciesPoint[] = [];
+  public descriptionExpandedState: { [key: string]: boolean } = {};
+  public descriptionTruncateLimit = 300;
   
   //Search system
   public searchTerm: string = "";
@@ -64,7 +82,7 @@ export class MapComponent implements AfterViewInit {
   private searchSubject = new Subject<string>();
   public searchLoading = false;
   private minSearchLength = 3;
-  public daysToCheck = 14;
+  private daysToCheck = 14;
   
   //Media carrousel
   public showImageInfo: boolean = false;
@@ -95,7 +113,9 @@ export class MapComponent implements AfterViewInit {
   public activeQuizContent: ActiveQuizData | null = null;
   public currentQuizAttemptNumber: number | undefined;
   private quizCheckInProgress = false;
-  
+
+  private citiesUrl = 'assets/capitals.json';
+
   constructor(
     private speciesService: SpeciesService,
     private clusterService: ClusterService,
@@ -109,6 +129,7 @@ export class MapComponent implements AfterViewInit {
     private spinner: NgxSpinnerService,
     private router: Router,
     private quizService: QuizService,
+    private http: HttpClient,
   ) {}
   
   ngOnInit(): void {
@@ -134,6 +155,7 @@ export class MapComponent implements AfterViewInit {
     this.initializeGlobe();
     this.addClouds();
     this.loadAllClusters();
+    this.loadAndDisplayAllCities(); 
     
     setTimeout(() => {
       if (!this.showQuizModal) {
@@ -154,81 +176,94 @@ export class MapComponent implements AfterViewInit {
     }
   }
 
+  ngOnDestroy(): void { }
+
   //Funcion principal para inicializar el globo, que se encarga de crear el globo y asignar los datos de los paises y marcadores.
   private initializeGlobe(): void {
     this.globeInstance = GLOBE.default({ animateIn: false })(this.globeContainer.nativeElement)
-    .globeImageUrl('../../../assets/img/globe/earth.jpg')
-    .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
-    .polygonsData(countries)
-    .polygonAltitude(0.1)
-    .polygonCapColor(() => 'rgba(200,200,200,0.3)')
-    .polygonSideColor(() => 'rgba(50,50,50,0.15)')
-    .polygonStrokeColor(() => '#111')
-    .polygonLabel(({ properties }: { properties: any }) => `<b>${properties.name.common}</b>`)
-    .htmlElementsData([])
-    .htmlElement((d: SpeciesPoint | ClusterPoint) => {
-      if ('count' in d) {
-        const markerDiv = document.createElement('div');
-        markerDiv.style.position = 'absolute';
-        markerDiv.style.transform = 'translate(-50%, -50%)';
-        markerDiv.style.width = `${d.size}px`;
-        markerDiv.style.height = `${d.size}px`;
-        markerDiv.style.border = '2px solid #fff';
-        markerDiv.style.borderRadius = '50%';
-        markerDiv.style.backgroundColor = d.color;
-        markerDiv.style.display = 'flex';
-        markerDiv.style.alignItems = 'center';
-        markerDiv.style.justifyContent = 'center';
-        markerDiv.style.cursor = 'pointer';
-        markerDiv.style.pointerEvents = 'auto'; 
-        markerDiv.style.zIndex = '9999';
-        
-        // Crea el elemento de la bandera usando flag-icons.
-        const flagElement = document.createElement('span');
-        flagElement.className = `fi fi-${d.country.toLowerCase()}`;
-        flagElement.style.fontSize = `${d.size}px`;
-        flagElement.style.width = '100%';
-        flagElement.style.borderRadius = '50%';
-        
-        // Badge de conteo
-        const countBadge = document.createElement('div');
-        countBadge.innerText = d.count.toString();
-        countBadge.style.position = 'absolute';
-        countBadge.style.bottom = '-10px';
-        countBadge.style.right = '40%';
-        countBadge.style.backgroundColor = 'rgba(0,0,0,0.7)';
-        countBadge.style.color = 'white';
-        countBadge.style.borderRadius = '50%';
-        countBadge.style.width = '20px';
-        countBadge.style.height = '20px';
-        countBadge.style.display = 'flex';
-        countBadge.style.alignItems = 'center';
-        countBadge.style.justifyContent = 'center';
-        countBadge.style.fontSize = '12px';
-        
-        markerDiv.appendChild(flagElement);
-        markerDiv.appendChild(countBadge);
-        
-        markerDiv.onclick = () => this.selectCluster(d as ClusterPoint);
-        return markerDiv;
-      } else {
-        // Si es una especie individual, se muestra el marcador SVG.
-        const el = document.createElement('div');
-        el.innerHTML = this.markerSvg;
-        el.style.position = 'absolute';
-        el.style.transform = 'translate(-50%, -50%)';
-        const size = d.size || 20;
-        el.style.width = `${size}px`;
-        el.style.height = `${size}px`;
-        el.style.color = d.color || 'black';
-        el.style.pointerEvents = 'auto';
-        el.style.cursor = 'pointer';
-        el.onclick = () => this.selectSpecies(d);
-        return el;
-      }
-    });
-    
-    //Zoom minimo y maximo:
+      .globeImageUrl('../../../assets/img/globe/earth.jpg')
+      .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
+      .polygonsData(countries)
+      .polygonAltitude(0.1)
+      .polygonCapColor(() => 'rgba(200,200,200,0.3)')
+      .polygonSideColor(() => 'rgba(50,50,50,0.15)')
+      .polygonStrokeColor(() => '#111')
+      .polygonLabel(({ properties }: { properties: any }) => `<b>${properties.name.common}</b>`)
+      .htmlElementsData([])
+      .htmlElement((d: SpeciesPoint | ClusterPoint) => {
+        if ('count' in d) { 
+          const markerSize = d.size;
+
+          const pinContainer = document.createElement('div');
+          pinContainer.style.position = 'relative';
+          pinContainer.style.width = `${markerSize}px`;
+          pinContainer.style.height = `${markerSize}px`;
+          pinContainer.style.cursor = 'pointer';
+          pinContainer.style.pointerEvents = 'auto';
+
+          const pinSvgElement = document.createElement('div');
+          pinSvgElement.innerHTML = this.markerSvg;
+          pinSvgElement.style.color = d.color; 
+          pinSvgElement.style.width = '100%';
+          pinSvgElement.style.height = '100%';
+
+          const flagElement = document.createElement('span');
+          flagElement.className = `fi fi-${d.country.toLowerCase()}`;
+          flagElement.style.position = 'absolute';
+          flagElement.style.top = '32%';
+          flagElement.style.left = '50%';
+          flagElement.style.transform = 'translate(-50%, -50%)';
+          flagElement.style.fontSize = `${markerSize * 0.52}px`;
+          flagElement.style.borderRadius = '50%';
+          flagElement.style.zIndex = '1';
+          
+          const countBadge = document.createElement('div');
+          countBadge.innerText = d.count.toString();
+          countBadge.style.position = 'absolute';
+          countBadge.style.bottom = `-${markerSize * 0.2}px`;
+          countBadge.style.left = '50%';
+          countBadge.style.transform = 'translateX(-50%)';
+          countBadge.style.color = 'white';
+          countBadge.style.background = 'rgba(0,0,0,0.7)';
+          countBadge.style.borderRadius = '20px';
+          countBadge.style.padding = `${markerSize * 0.02}px ${markerSize * 0.12}px`;
+          countBadge.style.fontSize = `${markerSize * 0.25}px`;
+          countBadge.style.fontWeight = 'bold';
+          countBadge.style.zIndex = '2';
+
+          pinContainer.appendChild(pinSvgElement);
+          pinContainer.appendChild(flagElement);
+          pinContainer.appendChild(countBadge);
+          
+          pinContainer.onclick = () => this.selectCluster(d as ClusterPoint);
+          
+          return pinContainer;
+
+        } else {
+          const el = document.createElement('div');
+          el.innerHTML = this.markerSvg;
+          el.style.position = 'absolute';
+          el.style.transform = 'translate(-50%, -50%)';
+          const size = d.size || 20;
+          el.style.width = `${size}px`;
+          el.style.height = `${size}px`;
+          el.style.color = d.color || 'black';
+          el.style.pointerEvents = 'auto';
+          el.style.cursor = 'pointer';
+          el.onclick = () => this.selectSpecies(d);
+          return el;
+        }
+      })
+      .labelsData([])
+      .labelText('city')
+      .labelLat('lat')
+      .labelLng('lng')
+      .labelSize(0.4)
+      .labelColor(() => 'rgb(255, 255, 255)')
+      .labelDotRadius(0.2)
+      .labelResolution(2)
+      .labelAltitude(0.005)
+      .labelsTransitionDuration(0);
     const controls = this.globeInstance.controls();
     const globeRadius = this.globeInstance.getGlobeRadius();
     controls.minDistance = globeRadius * 1.01;
@@ -289,6 +324,23 @@ export class MapComponent implements AfterViewInit {
     }
   }
   
+  //Funcion para cargar los tags de las capitales y mostrarlos en el mapa
+  private loadAndDisplayAllCities(): void {
+    console.log("Cargando todas las etiquetas de ciudades...");
+    this.http.get<City[]>(this.citiesUrl).subscribe({
+      next: (cities) => {
+        const labelsData: LabelData[] = cities.map(c => ({
+          lat: parseFloat(c.lat),
+          lng: parseFloat(c.lng),
+          city: c.city,
+        }));
+        this.globeInstance.labelsData(labelsData);
+        console.log(`Carga completa. Mostrando ${labelsData.length} etiquetas de ciudades.`);
+      },
+      error: (err) => console.error("Error al cargar el archivo de ciudades:", err)
+    });
+  }
+
   //Funcion para cargar las especies dentro de un cluster, que se encarga de obtener las especies desde la API y asignarlas a la variable expandedSpeciesMarkers.
   loadClusterSpecies(cluster: ClusterPoint): void {
     this.speciesService.getSpeciesByCountry(cluster.country).subscribe({
@@ -374,12 +426,10 @@ export class MapComponent implements AfterViewInit {
       next: detail => {
         detail.id = detail._id;
         this.selectedSpecies = detail;
-        
         this.isImageLoading = true;
         this.currentImageIndex = 0;
-
-        console.log(this.selectedSpecies);
         this.isFavorited = this.favoriteIds.has(species.id);
+        
         const matchingLoc = detail.locations.find((loc: any) =>
           loc.country.toUpperCase() === this.selectedCluster?.country.toUpperCase()
         ) || detail.locations[0];
@@ -393,7 +443,11 @@ export class MapComponent implements AfterViewInit {
             status: detail.category,
             speciesId: detail._id,
             lat,
-            lng
+            lng,
+            commonName: detail.common_name,
+            scientificName: detail.scientific_name,
+            clickedContinent: matchingLoc.continent,
+            kingdom: detail.kingdom
           }
         });
         this.showPanel = true;
@@ -606,6 +660,10 @@ export class MapComponent implements AfterViewInit {
     }
   }
 
+  //Funcion para colapsar y mostrar los primeros X caracteres de cada uno de los atributos de descripcion (rationale, habitats, etc) en caso de que sea muy largo.
+  public toggleDescription(fieldKey: string): void {
+    this.descriptionExpandedState[fieldKey] = !this.descriptionExpandedState[fieldKey];
+  }
   
   get currentImage(): any {
     return this.selectedSpecies?.media?.[this.currentImageIndex];
@@ -663,6 +721,35 @@ export class MapComponent implements AfterViewInit {
       });
   }
 
+  //Funcion que valida si el usuario intentando agregar a favoritos ha iniciado sesion. De no ser asi, muestra un modal para redirigir a login.
+  public handleFavoriteClick(event: MouseEvent): void {
+    if (!this.isUser) {
+      event.preventDefault();
+
+      Swal.fire({
+        title: 'Login Required',
+        text: 'Please log in or create an account to add species to your favorites.',
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'Login',
+        confirmButtonColor: '#3085d6',
+        cancelButtonText: 'Later',
+        customClass: {
+          popup: 'login-prompt-swal',
+          confirmButton: 'swal-confirm-button',
+          cancelButton: 'swal-cancel-button'
+        }
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.router.navigate(['/auth/login']);
+        }
+      });
+      
+    } else {
+      this.toggleFavorite();
+    }
+  }
+  
   //Verifica si la especie y el cluster son favoritos, y si lo son, los elimina de la lista de favoritos. De lo contrario, los agrega a la lista de favoritos.
   public toggleFavorite(): void {
     if (!this.selectedSpecies || !this.selectedCluster) return;
@@ -696,7 +783,13 @@ export class MapComponent implements AfterViewInit {
         this.favoriteIds.add(sid);
         this.favoriteList.push(normalized);
         this.favoriteClusters.set(sid, cid);
-
+        this.missionEvents.emit({
+          type: 'SPECIES_FAVORITED',
+          payload: {
+            speciesId: sid,
+            clusterId: cid
+          }
+        });
         this.Toast.fire({
           icon: 'info',
           title: 'Species added to favorites!'
@@ -704,7 +797,7 @@ export class MapComponent implements AfterViewInit {
       });
     }
   }
-  
+
   //Muestra u oculta el panel de favoritos.
   public toggleFavoritesPanel(): void {
     if (!this.showFavoritesPanel && this.showMissionsPanel) {
@@ -834,4 +927,5 @@ export class MapComponent implements AfterViewInit {
         this.checkAndInitiateQuiz();
     }
   }
+
 }

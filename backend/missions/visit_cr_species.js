@@ -6,7 +6,7 @@ const Cluster = require('../models/Cluster');
 
 module.exports = {
   type: 'visit_cr_species',
-  rewardXP: 10,
+  rewardXP: 20,
 
   async generateParams() {
     const species = await getRandomSpeciesByCategory('CR');

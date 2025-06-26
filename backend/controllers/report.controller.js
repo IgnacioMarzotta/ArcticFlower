@@ -1,6 +1,7 @@
 const Report = require('../models/Report');
 
 
+//Funcion encargada de crear un reporte
 exports.createReport = async (req, res) => {
   try {
     const { message, type, species } = req.body;
@@ -22,6 +23,7 @@ exports.createReport = async (req, res) => {
 };
 
 
+//Funcion para obtener los reportes generados por un usuario para mostrarlos en su perfil
 exports.getReportsByUser = async (req, res) => {
   try {
     const userId = req.userId;
@@ -36,6 +38,7 @@ exports.getReportsByUser = async (req, res) => {
 };
 
 
+//Funcion para obtener todos los reportes para el panel de adminsitrador
 exports.getAllReports = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -70,6 +73,7 @@ exports.getAllReports = async (req, res) => {
 };
 
 
+//Funcion para actualizar el Status del reporte
 exports.updateReportStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -98,6 +102,7 @@ exports.updateReportStatus = async (req, res) => {
 };
 
 
+//Funcion para eliminar un reporte
 exports.deleteReport = async (req, res) => {
   try {
     const { id } = req.params;

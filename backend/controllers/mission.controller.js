@@ -5,7 +5,7 @@ const templates = require('../missions');
 const User = require('../models/User');
 
 
-exports.assignMissionsToUser = async (userId, count = 2) => {
+exports.assignMissionsToUser = async (userId, count) => {
   const defs = await Mission.find().lean();
   const today = new Date(); today.setHours(0, 0, 0, 0);
   
@@ -17,8 +17,7 @@ exports.assignMissionsToUser = async (userId, count = 2) => {
   
   const instances = [];
   const defsToProcess = Array.isArray(pickedDefs) ? pickedDefs : [pickedDefs];
-  
-  
+    
   for (const def of defsToProcess) {
     if (!def || !def.type || !templates[def.type]) {
       console.error(`[mission.controller - assignMissionsToUser] Invalid mission definition or template: `, def);
@@ -26,13 +25,13 @@ exports.assignMissionsToUser = async (userId, count = 2) => {
     }
     const tpl = templates[def.type];
     let params;
-    try { // <--- AÑADIR TRY
+    try {
       params = tpl.generateParams
       ? await tpl.generateParams(def.params)
       : { ...(def.params || {}) };
-    } catch (genError) { // <--- AÑADIR CATCH
+    } catch (genError) {
       console.error(`[mission.controller - assignMissionsToUser] Error generating params for mission type ${def.type} (ID: ${def._id}):`, genError.message);
-      continue; // Saltar a la siguiente definición de misión si esta falla
+      continue;
     }
     
     let description = '';
@@ -70,13 +69,26 @@ exports.getDailyMissions = async (req, res) => {
     }).lean();
     
     if (missions.length === 0) {
-      console.log(`[mission.controller - getDailyMissions] No daily missions for user ${userId}, attempting to assign new.`);
+      console.log(`[mission.controller - getDailyMissions] No daily missions for user ${userId}, generating new ones.`);
       
       try {
-        const assignedMissions = await exports.assignMissionsToUser(userId, 2);
+        const cleanupResult = await UserMission.deleteMany({
+          userId: userId,
+          date: { $lt: todayStart }
+        });
+        
+        if (cleanupResult.deletedCount > 0) {
+          console.log(`[mission.controller - getDailyMissions] Cleaned up ${cleanupResult.deletedCount} old missions for user ${userId}.`);
+        }
+      } catch (cleanupError) {
+        console.error(`[mission.controller - getDailyMissions] Error during old mission cleanup for user ${userId}:`, cleanupError);
+      }
+      
+      try {
+        const assignedMissions = await exports.assignMissionsToUser(userId, 3);
         
         if (assignedMissions.length === 0) {
-          console.warn(`[mission.controller - getDailyMissions] No new missions were assigned to user ${userId}. This could be due to no available mission definitions or errors during parameter generation for all candidates.`);
+          console.warn(`[mission.controller - getDailyMissions] No new missions were assigned to user ${userId}.`);
         }
         
         missions = await UserMission.find({
@@ -157,8 +169,23 @@ exports.handleEvent = async (req, res) => {
       console.log("[mission.controller - handleEvent] Mission complete, updating.");
       userMission.completed = true;
       
-      if (userMission.missionId.rewardXP && userMission.missionId.rewardXP > 0) {
-        await User.findByIdAndUpdate(req.userId, { $inc: { xp: userMission.missionId.rewardXP } });
+      const rewardXP = userMission.missionId.rewardXP;
+      if (rewardXP && rewardXP > 0) {
+        const user = await User.findById(req.userId);
+        if (user) {
+          const oldLevel = user.level;
+          user.xp += rewardXP;
+          const newLevel = 1 + Math.floor(user.xp / 300);
+
+          if (newLevel > oldLevel) {
+            user.level = newLevel;
+            console.log(`[mission.controller - handleEvent] User ${user.username} has leveled up to level ${newLevel}!`);
+            //A "level up" event could be triggered here in the future for a front-end response to the user.
+          }
+          await user.save();
+        } else {
+          console.error(`[mission.controller - handleEvent] Could not find user with ID ${req.userId} to award XP.`);
+        }
       }
     }
     

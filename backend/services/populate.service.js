@@ -122,6 +122,7 @@ exports.getUniqueLocations = async (gbifIds) => {
   });
 };
 
+//
 function isValidCoordinate(lat, lng) {
   return typeof lat === 'number' && typeof lng === 'number' &&
   !isNaN(lat) && !isNaN(lng) &&

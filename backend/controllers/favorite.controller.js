@@ -47,7 +47,7 @@ exports.removeFavorite = async (req, res) => {
     } catch (err) {
       res.status(500).json({ message: 'Error al eliminar favorito', error: err.message });
     }
-  };
+};
 
 // Listar favoritos de un usuario
 exports.getFavoritesByUser = async (req, res) => {

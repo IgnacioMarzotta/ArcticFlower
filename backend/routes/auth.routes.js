@@ -5,7 +5,9 @@ const {
     login,
     getProfile,
     refresh,
-    logout
+    logout,
+    checkUsername,
+    checkEmail
 } = require('../controllers/user.controller');
 const verifyToken = require('../middlewares/jwt');
 
@@ -14,5 +16,7 @@ router.post('/login', login);
 router.post('/logout', logout);
 router.get('/profile', verifyToken, getProfile);
 router.post('/refresh', refresh);
+router.get('/check-username/:username', checkUsername);
+router.get('/check-email/:email', checkEmail);
 
 module.exports = router;

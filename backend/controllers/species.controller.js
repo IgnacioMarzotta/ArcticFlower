@@ -1,5 +1,5 @@
 const Species = require('../models/Species');
-const clusterController = require('./cluster.controller');
+//const clusterController = require('./cluster.controller');
 // const { getGbifIdsForSpecies,
 //   getUniqueLocations,
 //   getUniqueReferences,

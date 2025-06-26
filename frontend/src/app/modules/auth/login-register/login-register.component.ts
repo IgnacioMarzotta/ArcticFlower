@@ -1,7 +1,9 @@
 import { Component, OnInit, Renderer2, ElementRef, HostListener } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl, AsyncValidatorFn, FormBuilder, FormGroup, ValidationErrors, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
+import { Observable, timer, of } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -17,6 +19,9 @@ export class LoginRegisterComponent implements OnInit {
     loginForm!: FormGroup;
     registerForm!: FormGroup;
     errorMessage: string | null = null;
+    loginPasswordVisible: boolean = false;
+    registerPasswordVisible: boolean = false;
+    confirmPasswordVisible: boolean = false;
     
     constructor(
         private fb: FormBuilder,
@@ -39,14 +44,30 @@ export class LoginRegisterComponent implements OnInit {
         });
         
         this.registerForm = this.fb.group({
-            username: ['', [Validators.required, Validators.maxLength(32)]],
-            email: ['', [Validators.required, Validators.email]],
-            password: ['', [Validators.required, Validators.minLength(6)]]
+            username: [
+                '',
+                [ Validators.required, Validators.maxLength(32), Validators.minLength(8) ],
+                [ this.usernameAvailabilityValidator() ]
+            ],
+            email: [
+                '', 
+                [ Validators.required, Validators.email ], 
+                [ this.emailAvailabilityValidator() ]
+            ],
+            password: ['', [
+                Validators.required,
+                Validators.minLength(8),
+                Validators.pattern('^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).*$')
+            ]],
+            confirmPassword: ['', Validators.required]
+        }, {
+            validators: this.passwordsMatchValidator
         });
     }
     
     setMode(isLogin: boolean) {
         this.isLoginMode = isLogin;
+        this.errorMessage = null;
     }
     
     onSubmit(): void {
@@ -56,14 +77,17 @@ export class LoginRegisterComponent implements OnInit {
             this.authService.login(this.loginForm.value).subscribe({
                 next: () => this.router.navigate(['/']),
                 error: err =>
-                    (this.errorMessage = err.error?.message || 'Error en login')
+                    (this.errorMessage = err.error?.message || 'Invalid email or password.')
             });
         } else {
             if (this.registerForm.invalid) return;
             this.authService.register(this.registerForm.value).subscribe({
-                next: () => (this.isLoginMode = true),
+                next: () => {
+                    this.isLoginMode = true;
+                    this.loginForm.get('email')?.setValue(this.registerForm.get('email')?.value);
+                },
                 error: err =>
-                    (this.errorMessage = err.error?.message || 'Error en registro')
+                    (this.errorMessage = err.error?.message || 'Registration failed. The email may already be in use.')
             });
         }
     }
@@ -99,4 +123,64 @@ export class LoginRegisterComponent implements OnInit {
             this.renderer.addClass(label, 'highlight');
         }
     }
+
+    usernameAvailabilityValidator(): AsyncValidatorFn {
+        return (control: AbstractControl): Observable<ValidationErrors | null> => {
+            return timer(500).pipe(
+                switchMap(() => {
+                    if (!control.value) {
+                        return of(null);
+                    }
+                    return this.authService.checkUsernameAvailability(control.value).pipe(
+                        map(res => (res.isTaken ? { usernameTaken: true } : null))
+                    );
+                })
+            );
+        };
+    }
+
+    emailAvailabilityValidator(): AsyncValidatorFn {
+        return (control: AbstractControl): Observable<ValidationErrors | null> => {
+            return timer(500).pipe(
+                switchMap(() => {
+                    if (!control.value || control.hasError('email')) {
+                        return of(null);
+                    }
+                    return this.authService.checkEmailAvailability(control.value).pipe(
+                        map(res => (res.isTaken ? { emailTaken: true } : null))
+                    );
+                })
+            );
+        };
+    }
+
+  private passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
+    const password = control.get('password');
+    const confirmPassword = control.get('confirmPassword');
+
+    if (!password || !confirmPassword) {
+      return null;
+    }
+
+    if (confirmPassword.errors && confirmPassword.errors['passwordsMismatch']) {
+      if (password.value === confirmPassword.value) {
+        delete confirmPassword.errors['passwordsMismatch'];
+        if (Object.keys(confirmPassword.errors).length === 0) {
+          confirmPassword.setErrors(null);
+        } else {
+          confirmPassword.setErrors(confirmPassword.errors);
+        }
+      }
+    }
+
+    if (password.value !== confirmPassword.value) {
+      confirmPassword.setErrors({ ...confirmPassword.errors, passwordsMismatch: true });
+    }
+    return null;
+  }
+
+    get regUsername() { return this.registerForm.get('username'); }
+    get regEmail() { return this.registerForm.get('email'); }
+    get regPassword() { return this.registerForm.get('password'); }
+    get regConfirmPassword() { return this.registerForm.get('confirmPassword'); }
 }
