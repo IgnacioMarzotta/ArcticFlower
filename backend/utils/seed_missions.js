@@ -1,4 +1,3 @@
-
 const mongoose = require('mongoose');
 const fs       = require('fs');
 const path     = require('path');
@@ -11,7 +10,6 @@ async function seed() {
   await mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true });
   console.log('✅ Conectado a MongoDB');
 
-  // Ruta de tu carpeta de plantillas
   const missionsDir = path.join(__dirname, '..', 'missions');
   const files = fs.readdirSync(missionsDir)
                   .filter(f => f !== 'index.js' && f.endsWith('.js'));
@@ -25,20 +23,17 @@ async function seed() {
       continue;
     }
 
-    // Valor por defecto si no define rewardXP en la plantilla
     const rewardXP = typeof tpl.rewardXP === 'number' ? tpl.rewardXP : 0;
 
-    // ¿Ya existe?
     const exists = await Mission.findOne({ type: tpl.type });
     if (exists) {
       console.log(`⚠ Misión “${tpl.type}” ya existe, omitiendo.`);
       continue;
     }
 
-    // Crea el documento
     await Mission.create({
       type:     tpl.type,
-      params:   tpl.defaultParams || {},  // opcional: la plantilla puede exportar defaultParams
+      params:   tpl.defaultParams || {},
       rewardXP
     });
     console.log(`✅ Misión “${tpl.type}” creada con rewardXP=${rewardXP}.`);

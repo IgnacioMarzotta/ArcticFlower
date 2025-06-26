@@ -103,6 +103,13 @@
       font-size: 1rem;
       cursor: pointer;
       transition: background-color 0.3s ease;
+
+      img{
+        width: 24px;
+        height: 16px;
+        top: 10px;
+        filter: invert(1);
+      }
       
       &:hover {
         background-color: #71a330;
@@ -424,9 +431,13 @@
       left: 0;
       top: -80px;
       
-      button {
+      a {
         width: 33%;
         height: 100px;
+
+        button {
+          width: 100%;
+        }
       }
       
       .content{
@@ -508,6 +519,17 @@
     }
     
   }
+
+  .about-trigger {
+    font-size: 0.8rem;
+    padding: 8px 12px;
+  }
+
+  .modal-content {
+    width: 95%;
+    padding: 1.5rem;
+    max-height: 90vh;
+  }
   
 }
 
@@ -552,5 +574,95 @@
       bottom: -700px;
       left: 25%;
     }
+  }
+}
+
+.about-trigger {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+  transition: all 0.3s ease;
+
+  img {
+    width: 20px;
+    height: 20px;
+    filter: invert(1);
+  }
+
+  &:hover {
+    background-color: s.$primary-color;
+    border-color: s.$primary-color;
+    transform: translateY(-2px);
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+  position: relative;
+  background: #1c1c1c;
+  padding: 2rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 90%;
+  max-width: 700px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 5px 25px rgba(0,0,0,0.5);
+
+  h2 {
+    color: s.$primary-color;
+    margin-top: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 0.5rem;
+    font-family: "LemonMilk";
+  }
+
+  p {
+    font-family: 'Roboto', sans-serif;
+    line-height: 1.6;
+    color: #e0e0e0;
+  }
+}
+
+.modal-close-button {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  opacity: 0.7;
+  transition: opacity 0.3s ease;
+
+  &:hover {
+    opacity: 1;
   }
 }

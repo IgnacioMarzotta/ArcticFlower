@@ -15,7 +15,7 @@ export interface SpeciesPoint {
   order?: string;
   family?: string;
   genus?: string;
-  locations?: { country: string; lat: number; lng: number }[];
+  locations?: { country: string; lat: number; lng: number, continent: string }[];
   media?: SpeciesMedia[];
   taxon_id: string;
   createdAt?: string;

@@ -1,22 +1,22 @@
 module.exports = {
   type: 'add_species_to_fav',
-  rewardXP: 20,
+
+  rewardXP: 10,
 
   async generateParams() {
     return {
+      targetCount: 1
     };
   },
 
   async getDescription(params) {
-    return `Add a species to favorites.`;
+    return `Add ${params.targetCount} species to your favorites`;
   },
 
   async onEvent(event, params) {
-    if (event.type !== 'ADD_TO_FAVORITES') return false;
-
-    const {  } = event.payload;
-    const {  } = params;
-
-    return true;
+    if (event.type === 'SPECIES_FAVORITED') {
+      return true;
+    }
+    return false;
   }
 };

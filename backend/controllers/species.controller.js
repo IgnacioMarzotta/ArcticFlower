@@ -1,12 +1,12 @@
 const Species = require('../models/Species');
-const clusterController = require('./cluster.controller');
-const { getGbifIdsForSpecies,
-  getUniqueLocations,
-  getUniqueReferences,
-  getMediaForSpecies,
-  getCommonNameForSpecies,
-  getDescriptionForSpecies
-} = require('../services/populate.service');
+//const clusterController = require('./cluster.controller');
+// const { getGbifIdsForSpecies,
+//   getUniqueLocations,
+//   getUniqueReferences,
+//   getMediaForSpecies,
+//   getCommonNameForSpecies,
+//   getDescriptionForSpecies
+// } = require('../services/populate.service');
 
 const {
   getGbifSpeciesVernacularName,
@@ -25,115 +25,148 @@ const sanitizeHtml = require('sanitize-html');
 /**
 * Funcion deprecada, utilizada en la creacion de la base de datos de produccion con el dataset original. Centraliza toda la logica de creacion de especie, consultando las distintas bases de datos utilizadas para obtener todos los datos de las especies originales, como media, description, locations y mas.
 */
-exports.populateSpecies = async (req, res) => {
-  try {
-    const requiredFields = {
-      taxon_id: 'Taxon ID es requerido',
-      scientific_name: 'Nombre científico es requerido',
-      category: 'Categoría IUCN es requerida'
-    };
+// exports.populateSpecies = async (req, res) => {
+//   try {
+//     const requiredFields = {
+//       taxon_id: 'Taxon ID es requerido',
+//       scientific_name: 'Nombre científico es requerido',
+//       category: 'Categoría IUCN es requerida'
+//     };
     
-    const missingFields = Object.entries(requiredFields)
-    .filter(([field]) => !req.body[field])
-    .map(([_, message]) => message);
+//     const missingFields = Object.entries(requiredFields)
+//     .filter(([field]) => !req.body[field])
+//     .map(([_, message]) => message);
     
-    if (missingFields.length > 0) {
-      return res.status(400).json({
-        error: 'Campos requeridos faltantes',
-        details: missingFields
-      });
-    }
+//     if (missingFields.length > 0) {
+//       return res.status(400).json({
+//         error: 'Campos requeridos faltantes',
+//         details: missingFields
+//       });
+//     }
     
-    // Establecer valores por defecto
-    const defaultTaxonomy = {
-      kingdom: 'Unknown',
-      phylum: 'Unknown',
-      class: 'Unknown',
-      order: 'Unknown',
-      family: 'Unknown',
-      genus: 'Unknown'
-    };
+//     // Establecer valores por defecto
+//     const defaultTaxonomy = {
+//       kingdom: 'Unknown',
+//       phylum: 'Unknown',
+//       class: 'Unknown',
+//       order: 'Unknown',
+//       family: 'Unknown',
+//       genus: 'Unknown'
+//     };
     
-    // Obtener datos de GBIF
-    const taxonId = req.body.taxon_id.toString().trim();
-    const gbifIds = await getGbifIdsForSpecies(taxonId);
+//     // Obtener datos de GBIF
+//     const taxonId = req.body.taxon_id.toString().trim();
+//     const gbifIds = await getGbifIdsForSpecies(taxonId);
     
-    const [locations, references, media, common_name, description] = await Promise.all([
-      getUniqueLocations(gbifIds),
-      getUniqueReferences(gbifIds),
-      getMediaForSpecies(gbifIds),
-      getCommonNameForSpecies(gbifIds),
-      getDescriptionForSpecies(req.body.scientific_name),
-    ]);
+//     const [locations, references, media, common_name, description] = await Promise.all([
+//       getUniqueLocations(gbifIds),
+//       getUniqueReferences(gbifIds),
+//       getMediaForSpecies(gbifIds),
+//       getCommonNameForSpecies(gbifIds),
+//       getDescriptionForSpecies(req.body.scientific_name),
+//     ]);
     
-    // Crear especie con valores por defecto
-    const newSpecies = await Species.create({
-      ...req.body,
-      ...defaultTaxonomy,
-      kingdom: req.body.kingdom || defaultTaxonomy.kingdom,
-      phylum: req.body.phylum || defaultTaxonomy.phylum,
-      class: req.body.class || defaultTaxonomy.class,
-      order: req.body.order || defaultTaxonomy.order,
-      family: req.body.family || defaultTaxonomy.family,
-      genus: req.body.genus || defaultTaxonomy.genus,
-      gbifIds: gbifIds.length > 0 ? gbifIds : [],
-      locations,
-      references,
-      media,
-      common_name,
-      description,
-    });
+//     // Crear especie con valores por defecto
+//     const newSpecies = await Species.create({
+//       ...req.body,
+//       ...defaultTaxonomy,
+//       kingdom: req.body.kingdom || defaultTaxonomy.kingdom,
+//       phylum: req.body.phylum || defaultTaxonomy.phylum,
+//       class: req.body.class || defaultTaxonomy.class,
+//       order: req.body.order || defaultTaxonomy.order,
+//       family: req.body.family || defaultTaxonomy.family,
+//       genus: req.body.genus || defaultTaxonomy.genus,
+//       gbifIds: gbifIds.length > 0 ? gbifIds : [],
+//       locations,
+//       references,
+//       media,
+//       common_name,
+//       description,
+//     });
     
-    const isValidLocation = locations.every(loc => 
-      /^[A-Z]{2}$/.test(loc.country) && 
-      ['Africa', 'Asia', 'Europe', 'North America', 'South America', 'Oceania', 'Antarctica'].includes(loc.continent)
-    );
+//     const isValidLocation = locations.every(loc => 
+//       /^[A-Z]{2}$/.test(loc.country) && 
+//       ['Africa', 'Asia', 'Europe', 'North America', 'South America', 'Oceania', 'Antarctica'].includes(loc.continent)
+//     );
     
-    if (!isValidLocation) {
-      throw new Error('Formato de ubicación inválido');
-    }
+//     if (!isValidLocation) {
+//       throw new Error('Formato de ubicación inválido');
+//     }
     
-    await clusterController.updateClusterForSpecies(newSpecies);
+//     await clusterController.updateClusterForSpecies(newSpecies);
     
-    res.status(201).json(newSpecies);
+//     res.status(201).json(newSpecies);
     
-  } catch (error) {
-    console.error('[ERROR] Detalles:', {
-      message: error.message,
-      body: req.body,
-      stack: error.stack
-    });
+//   } catch (error) {
+//     console.error('[ERROR] Detalles:', {
+//       message: error.message,
+//       body: req.body,
+//       stack: error.stack
+//     });
     
-    const errorDetails = error.code === 11000
-    ? [{ message: 'Taxon ID ya existe en la base de datos' }]
-    : error.errors 
-    ? Object.values(error.errors).map(e => ({ field: e.path, message: e.message }))
-    : [{ message: error.message }];
+//     const errorDetails = error.code === 11000
+//     ? [{ message: 'Taxon ID ya existe en la base de datos' }]
+//     : error.errors 
+//     ? Object.values(error.errors).map(e => ({ field: e.path, message: e.message }))
+//     : [{ message: error.message }];
     
-    res.status(400).json({ 
-      error: 'Error al crear especie',
-      details: errorDetails 
-    });
-  }
-};
+//     res.status(400).json({ 
+//       error: 'Error al crear especie',
+//       details: errorDetails 
+//     });
+//   }
+// };
 
 
 /**
-* Funcion general sin uso actual, se encarga de obtener y devolver todas las especies de la base de datos, paginadas y ordenadas por fecha de creacion.
+* Funcion utilizada en el panel de administrador que devuelve una lista de especies paginada siguiendo los filtros establecidos por el adminsitrador (nombre y categoria)
 */
 exports.getAllSpecies = async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    // Parámetros de paginación
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
     
-    const species = await Species.find()
-    .select('_id common_name category locations')
-    .skip(skip)
-    .limit(limit)
-    .sort({ createdAt: -1 });
-    
-    const total = await Species.countDocuments();
+    // Parámetros de filtro
+    const { search, category } = req.query;
+
+    // Construcción de la consulta dinámica
+    const query = {};
+
+    // 1. Filtro de búsqueda por nombre científico o común
+    if (search && search.trim().length >= 3) {
+      const searchRegex = new RegExp(search.trim(), 'i'); // 'i' para case-insensitive
+      query.$or = [
+        { scientific_name: searchRegex },
+        { common_name: searchRegex }
+      ];
+    } else {
+      // Si la búsqueda es obligatoria y no cumple el mínimo, no devolvemos nada.
+      // Coincide con la lógica del frontend.
+      return res.json({
+        total: 0,
+        page: 1,
+        totalPages: 0,
+        species: []
+      });
+    }
+
+    // 2. Filtro por categoría IUCN
+    if (category && category !== 'all') {
+      query.category = category;
+    }
+
+    // Realizar la consulta y el conteo con los filtros aplicados
+    const speciesPromise = Species.find(query)
+      .select('_id common_name scientific_name category') // Campos para la tabla
+      .sort({ scientific_name: 1 }) // Ordenar alfabéticamente
+      .skip(skip)
+      .limit(limit);
+
+    const countPromise = Species.countDocuments(query);
+
+    const [species, total] = await Promise.all([speciesPromise, countPromise]);
     
     res.json({
       total,
@@ -141,6 +174,7 @@ exports.getAllSpecies = async (req, res) => {
       totalPages: Math.ceil(total / limit),
       species
     });
+
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener especies' });
   }
@@ -303,6 +337,58 @@ exports.createSpecies = async (req, res) => {
   } catch (error) {
     console.error('[species.controller - createSpecies] Error:', error);
     return res.status(500).json({ error: error.message });
+  }
+};
+
+
+/**
+* Funcion utilizada por el panel de administracion para eliminar una especie.
+*/
+exports.deleteSpecies = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deletedSpecies = await Species.findByIdAndDelete(id);
+
+    if (!deletedSpecies) {
+      return res.status(404).json({ error: 'Especie no encontrada.' });
+    }
+
+    res.status(200).json({ message: `Especie '${deletedSpecies.scientific_name}' eliminada exitosamente.` });
+
+  } catch (error) {
+    console.error("[species.controller - deleteSpecies] Error:", error);
+    res.status(500).json({ error: 'Error eliminando la especie' });
+  }
+};
+
+
+/**
+* Funcion utilizada por el panel de administracion para editar una especie.
+*/
+exports.editSpecies = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updateData = req.body;
+
+    delete updateData.taxon_id;
+    delete updateData._id;
+
+    const updatedSpecies = await Species.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedSpecies) {
+      return res.status(404).json({ error: 'Especie no encontrada.' });
+    }
+
+    res.json(updatedSpecies);
+
+  } catch (error) {
+    console.error("[species.controller - editSpecies] Error:", error);
+    res.status(400).json({ error: 'Error al actualizar la especie', details: error.message });
   }
 };
 
@@ -517,6 +603,31 @@ async function validateSpeciesDescription(id) {
   const assessmentDetail = await getIucnSpeciesAssessmentById(firstAssessment.assessment_id);
   const doc = assessmentDetail.documentation || {};
   
+  // 4.5.1-Extraer el objeto 'taxon' de la respuesta
+  const iucnTaxonomy = assessmentDetail?.taxon;
+  let taxonChanged = false;
+  if (iucnTaxonomy) {
+    console.log("   [species.controller - validateSpeciesDescription] Validating taxonomy data.");
+    // 4.5.2-Definir el mapeo de campos entre la API de IUCN y el modelo
+    const taxonomyMapping = {
+      kingdom_name: 'kingdom',
+      phylum_name: 'phylum',
+      class_name: 'class',
+      order_name: 'order',
+      family_name: 'family'
+    };
+
+    // 4.5.3-Iterar sobre el mapeo y actualizar la especie si es necesario
+    for (const [apiField, modelField] of Object.entries(taxonomyMapping)) {
+      const apiValue = iucnTaxonomy[apiField];
+      // Solo actualizar si la API da un valor y es diferente del actual (o si el actual es 'Unknown')
+      if (apiValue && (species[modelField] === 'Unknown' || species[modelField] !== toTitleCase(apiValue))) {
+        species[modelField] = toTitleCase(apiValue);
+        taxonChanged = true;
+      }
+    }
+  }
+
   //4.6-Defino los campos que voy a reemplazar
   const mapping = {
     rationale: 'rationale',
@@ -555,4 +666,11 @@ function cleanText(input = '') {
   let cleaned = sanitizeHtml(input, { allowedTags: [], allowedAttributes: {} });
   cleaned = cleaned.replace(/\s+/g, ' ').trim();
   return cleaned;
+}
+
+
+//Funcion encargada de estandarizar atributos para que sean en minuscula e inicien en mayuscula.
+function toTitleCase(str) {
+  if (!str || typeof str !== 'string') return '';
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }

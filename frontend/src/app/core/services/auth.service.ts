@@ -1,29 +1,10 @@
-// frontend\src\app\core\services\auth.service.ts
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, throwError, of } from 'rxjs'; // Asegúrate de importar 'of'
-import { tap, catchError, switchMap, filter, take } from 'rxjs/operators'; // Asegúrate de importar filter y take
+import { BehaviorSubject, Observable, throwError, of } from 'rxjs';
+import { tap, catchError, switchMap, filter, take } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-
-
-interface LoginApiResponse {
-  accessToken: string;
-  user: {
-    id: string;
-    username: string;
-    email: string;
-    permissions: number;
-  };
-}
-
-interface ProfileResponse {
-  username: string;
-  email: string;
-  created_at: string;
-  permissions: number;
-}
-
+import { LoginApiResponse, ProfileResponse } from '../models/auth.models';
 
 @Injectable({
   providedIn: 'root'
@@ -82,7 +63,6 @@ export class AuthService {
       this.router.navigate(['/auth/login']);
     }
   }
-  
   
   getProfile(): Observable<ProfileResponse> {
     return this.http.get<ProfileResponse>(`${this.apiUrl}/profile`).pipe(
@@ -148,5 +128,13 @@ export class AuthService {
   
   isAuthenticated(): boolean {
     return !!localStorage.getItem('auth_token');
+  }
+
+  checkUsernameAvailability(username: string): Observable<{ isTaken: boolean }> {
+    return this.http.get<{ isTaken: boolean }>(`${this.apiUrl}/check-username/${username}`);
+  }
+
+  checkEmailAvailability(email: string): Observable<{ isTaken: boolean }> {
+    return this.http.get<{ isTaken: boolean }>(`${this.apiUrl}/check-email/${email}`);
   }
 }

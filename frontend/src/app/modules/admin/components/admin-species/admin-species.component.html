@@ -1,0 +1,68 @@
+<div class="species-management">
+  <div class="header-actions">
+    <h2>Species Management</h2>
+    <a [routerLink]="['/admin/species/create']" class="btn-create">Create new species</a>
+  </div>
+  
+  <div class="filter-controls">
+    <div class="control-group search-group">
+      <label for="search-input">Search by name</label>
+      <input 
+      type="text" 
+      id="search-input"
+      placeholder="Buscar por nombre común o científico..."
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="onSearchChange()"
+      >
+    </div>
+    <div class="control-group">
+      <label for="category-filter">Filter by category:</label>
+      <select id="category-filter" [(ngModel)]="filterCategory" (ngModelChange)="onFilterChange()">
+        <option value="all">All</option>
+        <option value="EX">Extinct (EX)</option>
+        <option value="EW">Extinct in the Wild (EW)</option>
+        <option value="CR">Critically Endangered (CR)</option>
+      </select>
+    </div>
+  </div>
+  
+  <div class="results-container">
+    <div *ngIf="!hasSearched" class="initial-message">
+      <p>Please input at least 3 characters to search.</p>
+    </div>
+    
+    <div *ngIf="isLoading" class="loading-indicator">Loading species...</div>
+    
+    <table *ngIf="hasSearched && !isLoading && speciesList.length > 0">
+      <thead>
+        <tr>
+          <th>Scientific Name</th>
+          <th>Common Name</th>
+          <th>IUCN Category</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let species of speciesList">
+          <td>{{ species.scientific_name }}</td>
+          <td>{{ species.common_name || 'N/A' }}</td>
+          <td>{{ species.category }}</td>
+          <td>
+            <a [routerLink]="['/admin/species/edit', species._id]" class="action-btn" title="Edit">✏️</a>
+            <button (click)="deleteSpecies(species._id, species.scientific_name)" class="action-btn" title="Delete">🗑️</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <p *ngIf="hasSearched && !isLoading && speciesList.length === 0">
+      No species found with current filters.
+    </p>
+  </div>
+  
+  <div *ngIf="!isLoading && totalPages > 1" class="pagination-controls">
+    <button (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1">&laquo; Previous</button>
+    <button *ngFor="let page of getPagesArray()" (click)="onPageChange(page)" [class.active]="page === currentPage">{{ page }}</button>
+    <button (click)="onPageChange(currentPage + 1)" [disabled]="currentPage === totalPages">Next &raquo;</button>
+  </div>
+</div>

@@ -16,7 +16,6 @@ export class InfoIconComponent {
   @Input() tooltip = 'Información';
   showModal = false;
   
-  // Campos del formulario
   message = '';
   type: Report['type'] = 'feedback';
   speciesId: string | null = null;
@@ -25,7 +24,6 @@ export class InfoIconComponent {
   constructor(private reportService: ReportService) {}
   
   ngOnInit() {
-    // si alguien dispara un openReport, abrimos modal con ese speciesId
     this.reportService.openReport$.subscribe(id => {
       this.speciesId = id ?? null;
       this.showModal = true;

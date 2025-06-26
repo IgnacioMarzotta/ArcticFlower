@@ -78,6 +78,16 @@
           }
         }
       }
+
+      .login-btn {
+        width: 64px;
+        height: 32px;
+        background-color: s.$button-color;
+        border: none;
+        border-radius: 8px;
+        margin-left: 35%;
+        cursor: pointer;
+      }
     }
   }
 }
@@ -151,6 +161,16 @@
       }
     }
     
+    .login-btn {
+      width: 64px;
+      height: 32px;
+      background-color: s.$button-color;
+      border: none;
+      border-radius: 8px;
+      margin-left: 35%;
+      cursor: pointer;
+    }
+
     .close-favorites {
       margin-top: 8px;
       background: transparent;
@@ -305,6 +325,11 @@
             object-fit: cover;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             cursor: pointer;
+            transition: opacity 0.3s ease-in-out;
+
+            &.hidden {
+              opacity: 0;
+            }
           }
           
           .nav-arrow {
@@ -357,6 +382,56 @@
             font-size: 0.9em;
             z-index: 3;
           }
+          
+          .media-placeholder {
+            width: 100%;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #1c1c1c;
+            
+            .fallback-image {
+              max-height: 128px;
+              opacity: 0.5;
+            }
+            
+            .document-button {
+              display: inline-flex;
+              align-items: center;
+              gap: 8px;
+              padding: 12px 24px;
+              border-radius: 6px;
+              background-color: s.$primary-color;
+              color: s.$primary-background;
+              font-family: "Roboto", sans-serif;
+              font-weight: bold;
+              text-decoration: none;
+              border: none;
+              cursor: pointer;
+              transition: transform 0.2s ease, box-shadow 0.2s ease;
+              
+              .icon {
+                width: 20px;
+                height: 20px;
+                filter: invert(1);
+              }
+              
+              &:hover {
+                transform: scale(1.05);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+              }
+            }
+          }
+          
+          .gallery-spinner {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+          }
+
         }
       }
     }
@@ -369,53 +444,53 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 10px;
-      }
-      
-      .title-col {
-        flex: 1;
-        padding-right: 10px;
-      }
-      
-      .fav-col {
-        flex: 0 0 auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+
+        .title-col {
+          flex: 1;
+          padding-right: 10px;
+        }
         
-        #heart-container {
-          width: 42px;
-          height: 42px;
-          position: relative;
+        .fav-col {
+          flex: 0 0 auto;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           
-          #fav-heart {  
-            position: absolute;  background:url('../../../assets/img/icons/heart_animation.png');
-            background-position: 0px;
-            background-repeat: no-repeat;
-            height: 100px;
-            width: 100px;
-            top: -40px;
-            left: -40px;
-            pointer-events: none;
-          }
-          
-          #toggle {
-            opacity: 0;
-            transform: scale(3);
-            position: absolute;
-            cursor: pointer;
-            &:checked + #fav-heart {
-              animation: heart-animate 0.8s steps(28) forwards;
+          #heart-container {
+            width: 42px;
+            height: 42px;
+            position: relative;
+            
+            #fav-heart {  
+              position: absolute;  background:url('../../../assets/img/icons/heart_animation.png');
+              background-position: 0px;
+              background-repeat: no-repeat;
+              height: 100px;
+              width: 100px;
+              top: -40px;
+              left: -40px;
+              pointer-events: none;
             }
-          }
-          
-          @keyframes heart-animate {
-            100% { 
-              background-position: -2800px;
+            
+            #toggle {
+              opacity: 0;
+              transform: scale(3);
+              position: absolute;
+              cursor: pointer;
+              &:checked + #fav-heart {
+                animation: heart-animate 0.8s steps(28) forwards;
+              }
+            }
+            
+            @keyframes heart-animate {
+              100% { 
+                background-position: -2800px;
+              }
             }
           }
         }
       }
-
+      
       .tree {
         position: relative;
         margin-top: 20px;
@@ -502,7 +577,7 @@
           }
         }
       }
-
+      
       .visit-button {
         display: inline-flex;
         height: 50px;
@@ -519,43 +594,43 @@
         position: relative;
         overflow: hidden;
         cursor: pointer;
-
+        
         a {
           position: relative;
           left: 0;
           transition: all .35s ease-Out;
         }
-
+        
         &#iucn {
           margin-right: 8px;
-
+          
           span {
             color: red;
             margin-left: 4px;
             font-weight: bold;
           }
-
+          
           img {
             width: 50px;
             height: auto;
           }
         }
         
-
+        
         &#gbif {
-
+          
           span {
             color: green;
             margin-left: 4px;
             font-weight: bold;
           }
-
+          
           img {
             width: 90px;
             height: auto;
           }
         }
-
+        
         #logo-container {
           width: 100%;
           height: 100%;
@@ -569,20 +644,55 @@
           transition: all .35s ease-Out;
           bottom: 0;
         }
-
+        
         &:hover {
-
+          
           #logo-container {
             left: 0;
           }
-
+          
           a {
             left: 150px;
           }
-
+          
         }
       }
+      
+      .flags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+        
+        .flag {
+          font-size: 1.5rem;
+          line-height: 1;
+        }
+      }
+      
+      #description {
+        text-align: justify;
 
+        .description-field {
+          margin-bottom: 15px;
+
+          h4 {
+            margin-bottom: 10px;
+            color: s.$primary-color;
+          }
+
+          .show-more-btn{
+            background-color: transparent;
+            border: none;
+            color: s.$button-color;
+
+            &:hover {
+              cursor: pointer;
+            }
+          }
+        }
+      }
+      
       .report-species-btn {
         background: s.$button-color;
         color: black;
@@ -605,22 +715,33 @@
           height: 16px;
         }
       }
-      
-      #description {
-        text-align: justify;
+
+      #references {
+
+          summary {
+              display: flex;
+              align-items: center;
+              cursor: pointer;
+              list-style: none;
+
+              &::before {
+                  content: '▶';
+                  margin-right: 0.5rem;
+                  font-size: 0.8em;
+                  color: #a0a0a0;
+              }
+
+              h3 {
+                  margin: 0;
+              }
+          }
+
+          &[open] > summary::before {
+              content: '▼';
+          }
+
       }
-      
-      .flags-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        align-items: center;
-        
-        .flag {
-          font-size: 1.5rem;
-          line-height: 1;
-        }
-      }
+
     }
   }
 }
