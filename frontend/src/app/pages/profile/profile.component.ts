@@ -24,6 +24,7 @@ export class ProfileComponent implements OnInit {
   favorites: Favorite[] = [];
   reports: Report[] = [];
   missions: Mission[] = [];
+  xpPerLevel = 300;
   
   constructor(
     private authService: AuthService,
@@ -74,4 +75,16 @@ export class ProfileComponent implements OnInit {
       error: err => console.error('No se pudieron cargar misiones', err)
     });
   }
+  
+  getCurrentLevelXP(): number {
+    if (!this.userData || this.userData.xp === undefined) {
+      return 0;
+    }
+    return this.userData.xp % this.xpPerLevel;
+  }
+  
+  getProgressPercentage(): number {
+    return (this.getCurrentLevelXP() / this.xpPerLevel) * 100;
+  }
+
 }

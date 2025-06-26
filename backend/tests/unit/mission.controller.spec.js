@@ -39,10 +39,11 @@ describe('Mission Controller - Unit Tests', () => {
     });
     
     describe('assignMissionsToUser', () => {
-        it('should assign up to 2 missions to a user successfully', async () => {
+        it('should assign up to 3 missions to a user successfully', async () => {
             const mockMissionDefs = [
                 { _id: 'missionDef1', type: 'visit_cr_species', params: { p1: 'v1' }, rewardXP: 10 },
                 { _id: 'missionDef2', type: 'another_mission_type', params: { p2: 'v2' }, rewardXP: 20 },
+                { _id: 'missionDef3', type: 'another_mission_type2', params: { p2: 'v3' }, rewardXP: 30 }
             ];
             Mission.find.mockReturnValue({
                 lean: jest.fn().mockResolvedValue(mockMissionDefs)
@@ -52,10 +53,12 @@ describe('Mission Controller - Unit Tests', () => {
             missionTemplates.visit_cr_species.getDescription.mockResolvedValue('Visit a CR species in CL');
             missionTemplates.another_mission_type.generateParams.mockResolvedValue({ city: 'NY', targetCount: 1});
             missionTemplates.another_mission_type.getDescription.mockResolvedValue('Visit another type in NY');
-            
+            missionTemplates.another_mission_type2.generateParams.mockResolvedValue({ city: 'WA', targetCount: 1});
+            missionTemplates.another_mission_type2.getDescription.mockResolvedValue('Visit another type in WA');
+
             UserMission.insertMany.mockResolvedValue([{ _id: 'um1' }, { _id: 'um2' }]);
             
-            const assignedMissions = await missionController.assignMissionsToUser('testUserId', 2);
+            const assignedMissions = await missionController.assignMissionsToUser('testUserId', 3);
             
             
             expect(Mission.find).toHaveBeenCalledTimes(1);
@@ -69,10 +72,10 @@ describe('Mission Controller - Unit Tests', () => {
                 });
             }
 
-            expect(assignedMissions.length).toBeLessThanOrEqual(2);
+            expect(assignedMissions.length).toBeLessThanOrEqual(3);
         });
         
-        it('should assign default 2 missions if count is not provided', async () => {
+        it('should assign default 3 missions if count is not provided', async () => {
             const mockMissionDefs = [
                 { _id: 'm1', type: 'visit_cr_species' }, { _id: 'm2', type: 'another_mission_type'}, { _id: 'm3', type: 'another_mission_type'}
             ];
@@ -83,14 +86,16 @@ describe('Mission Controller - Unit Tests', () => {
             missionTemplates.visit_cr_species.getDescription.mockResolvedValue('Desc AR');
             missionTemplates.another_mission_type.generateParams.mockResolvedValue({ city: 'LA', targetCount: 1 });
             missionTemplates.another_mission_type.getDescription.mockResolvedValue('Desc LA');
-            
+            missionTemplates.another_mission_type.generateParams.mockResolvedValue({ city: 'BA', targetCount: 1 });
+            missionTemplates.another_mission_type.getDescription.mockResolvedValue('Desc BA');
+
             UserMission.insertMany.mockImplementation(docs => Promise.resolve(docs.map((d, i) => ({...d, _id: `um${i}`}))));
             
             const assignedMissions = await missionController.assignMissionsToUser('testUserId');
             
             expect(Mission.find).toHaveBeenCalledTimes(1);
             expect(UserMission.insertMany).toHaveBeenCalledTimes(1);
-            expect(UserMission.insertMany.mock.calls[0][0].length).toBe(2);
+            expect(UserMission.insertMany.mock.calls[0][0].length).toBe(3);
             expect(assignedMissions.length).toBe(2);
         });
         
@@ -99,7 +104,7 @@ describe('Mission Controller - Unit Tests', () => {
             Mission.find.mockReturnValue({
                 lean: jest.fn().mockResolvedValue([]) 
             });
-            const assignedMissions = await missionController.assignMissionsToUser('testUserId', 2);
+            const assignedMissions = await missionController.assignMissionsToUser('testUserId', 3);
             expect(Mission.find).toHaveBeenCalledTimes(1);
             expect(Mission.find().lean).toHaveBeenCalledTimes(1);
             expect(UserMission.insertMany).not.toHaveBeenCalled();
@@ -112,6 +117,7 @@ describe('Mission Controller - Unit Tests', () => {
                 { _id: 'invalidDef1', type: 'non_existent_type' },
                 null,
                 { _id: 'validDef2', type: 'another_mission_type' },
+                { _id: 'validDef3', type: 'another_mission_type' },
             ];
             Mission.find.mockReturnValue({
                 lean: jest.fn().mockResolvedValue(mockMissionDefs)
@@ -128,7 +134,7 @@ describe('Mission Controller - Unit Tests', () => {
             expect(UserMission.insertMany).toHaveBeenCalledTimes(1);
             expect(UserMission.insertMany.mock.calls[0][0].length).toBe(2);
             expect(assignedMissions.length).toBe(2);
-            expect(assignedMissions.map(m => m.missionId)).toEqual(expect.arrayContaining(['validDef1', 'validDef2']));
+            expect(assignedMissions.map(m => m.missionId)).toEqual(expect.arrayContaining(['validDef1', 'validDef2', "validDef3"]));
         });
         
         

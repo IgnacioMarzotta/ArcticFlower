@@ -2,6 +2,7 @@ const UserQuizAttempt = require('../models/UserQuizAttempt');
 const quizFileService = require('../services/quizFile.service.js');
 
 
+//Funcion para obtener los detalles del cuestionario desde el utils\questions.json
 async function getCurrentQuizData() {
     const quizData = await quizFileService.getQuizData('questions.json');
     if (!quizData || !quizData.questions || !quizData.quiz_identifier || quizData.version === undefined) {
@@ -12,6 +13,7 @@ async function getCurrentQuizData() {
 }
 
 
+//Funcion para obtener el cuestionario actual que debe mostrarse al usuario
 exports.getActiveQuizForUser = async (req, res, next) => {
     try {
         const currentQuiz = await getCurrentQuizData();
@@ -29,6 +31,7 @@ exports.getActiveQuizForUser = async (req, res, next) => {
 };
 
 
+//
 exports.getUserQuizStatus = async (req, res, next) => {
     const userId = req.userId;
     
@@ -91,6 +94,7 @@ exports.getUserQuizStatus = async (req, res, next) => {
 };
 
 
+//
 exports.submitUserAttempt = async (req, res, next) => {
     const userId = req.userId;
     const { quizIdentifier, quizVersion, attemptNumber, answers } = req.body;

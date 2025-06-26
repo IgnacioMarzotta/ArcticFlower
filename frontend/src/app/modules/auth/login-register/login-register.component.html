@@ -28,24 +28,72 @@
                 <div id="signup" [class.active-tab]="!isLoginMode">
                     <h1>Create your account</h1>
                     <form *ngIf="!isLoginMode" [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+                        
                         <div class="field-wrap">
-                            <label [class.active]="registerForm.get('username')?.value" [class.highlight]="registerForm.get('username')?.touched">
+                            <label [class.active]="regUsername?.value" [class.highlight]="regUsername?.touched">
                                 Username<span class="req">*</span>
                             </label>
                             <input type="text" formControlName="username" required autocomplete="off"/>
-                        </div>
-                        <div class="field-wrap">
-                            <label [class.active]="registerForm.get('email')?.value" [class.highlight]="registerForm.get('email')?.touched">
-                                Email Address<span class="req">*</span>
-                            </label>
-                            <input type="email" formControlName="email" required autocomplete="off"/>
+                            
+                            <div *ngIf="regUsername?.invalid && (regUsername?.dirty || regUsername?.touched)" class="error-feedback">
+                                <div *ngIf="regUsername?.errors?.['required']">Username is required.</div>
+                                <div *ngIf="regUsername?.errors?.['maxlength']">Username cannot exceed 32 characters.</div>
+                                <div *ngIf="regUsername?.errors?.['minlength']">Username must be at least 8 characters long.</div>
+                                <div *ngIf="regUsername?.errors?.['usernameTaken']">This username is already taken.</div>
+                            </div>
+
+                            <div *ngIf="regUsername?.pending" class="loading-indicator">Checking availability...</div>
                         </div>
                         
                         <div class="field-wrap">
-                            <label [class.active]="registerForm.get('password')?.value" [class.highlight]="registerForm.get('password')?.touched">
+                            <label [class.active]="regEmail?.value" [class.highlight]="regEmail?.touched">
+                                Email Address<span class="req">*</span>
+                            </label>
+                            <input type="email" formControlName="email" required autocomplete="off"/>
+                            <div *ngIf="regEmail?.invalid && (regEmail?.dirty || regEmail?.touched)" class="error-feedback">
+                                <div *ngIf="regEmail?.errors?.['required']">Email is required.</div>
+                                <div *ngIf="regEmail?.errors?.['email']">Please enter a valid email address.</div>
+                                <div *ngIf="regEmail?.errors?.['emailTaken']">This email is already registered.</div>
+                            </div>
+                            <div *ngIf="regEmail?.pending" class="loading-indicator">Checking availability...</div>
+                        </div>
+                        
+                        <div class="field-wrap">
+                            <label [class.active]="regPassword?.value" [class.highlight]="regPassword?.touched">
                                 Set A Password<span class="req">*</span>
                             </label>
-                            <input type="password" formControlName="password" required autocomplete="off"/>
+                            <input [type]="registerPasswordVisible ? 'text' : 'password'" formControlName="password" required autocomplete="off"/>
+                            
+                            <button type="button" class="password-toggle-btn" 
+                                (mousedown)="registerPasswordVisible = true" 
+                                (mouseup)="registerPasswordVisible = false"
+                                (mouseleave)="registerPasswordVisible = false">
+                                👁
+                            </button>
+                            <div *ngIf="regPassword?.invalid && (regPassword?.dirty || regPassword?.touched)" class="error-feedback">
+                                <div *ngIf="regPassword?.errors?.['required']">Password is required.</div>
+                                <div *ngIf="regPassword?.errors?.['minlength']">Password must be at least 8 characters long.</div>
+                                <div *ngIf="regPassword?.errors?.['pattern']">Must contain an uppercase, a lowercase, and a number.</div>
+                            </div>
+                        </div>
+
+                        <div class="field-wrap">
+                            <label [class.active]="regConfirmPassword?.value" [class.highlight]="regConfirmPassword?.touched">
+                                Confirm Password<span class="req">*</span>
+                            </label>
+                            <input [type]="confirmPasswordVisible ? 'text' : 'password'" formControlName="confirmPassword" required autocomplete="off"/>
+                            
+                            <button type="button" class="password-toggle-btn" 
+                                    (mousedown)="confirmPasswordVisible = true" 
+                                    (mouseup)="confirmPasswordVisible = false"
+                                    (mouseleave)="confirmPasswordVisible = false">
+                                👁
+                            </button>
+
+                            <div *ngIf="regConfirmPassword?.invalid && (regConfirmPassword?.dirty || regConfirmPassword?.touched)" class="error-feedback">
+                                <div *ngIf="regConfirmPassword?.errors?.['required']">Please confirm your password.</div>
+                                <div *ngIf="regConfirmPassword?.errors?.['passwordsMismatch']">Passwords do not match.</div>
+                            </div>
                         </div>
                         
                         <div *ngIf="errorMessage" class="error-message">

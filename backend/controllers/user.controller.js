@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 
+//Funcion para crear un usuario desde el formulario de registro
 exports.register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
@@ -27,6 +28,7 @@ exports.register = async (req, res) => {
 };
 
 
+//Funcion encargada del login, devuelve los datos del usuario junto a un auth_token
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -75,9 +77,10 @@ exports.login = async (req, res) => {
 };
 
 
+//Funcion encargada de obtener los datos del usuario para generar su perfil
 exports.getProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select('username email createdAt permissions');
+    const user = await User.findById(req.userId).select('username email createdAt permissions xp level');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
@@ -85,7 +88,9 @@ exports.getProfile = async (req, res) => {
       username: user.username,
       email: user.email,
       created_at: user.createdAt,
-      permissions: user.permissions
+      permissions: user.permissions,
+      xp: user.xp,
+      level: user.level
     });
   } catch (error) {
     console.error("GetProfile error:", error);
@@ -94,6 +99,7 @@ exports.getProfile = async (req, res) => {
 };
 
 
+//Funcion encargada de refrescar el token de autenticacion segun el refresh_token
 exports.refresh = async (req, res) => {
   const oldRefreshToken = req.cookies['refresh_token'];
   if (!oldRefreshToken) {
@@ -138,6 +144,7 @@ exports.refresh = async (req, res) => {
 };
 
 
+//Funcion encargada de cerrar la sesion del usuario
 exports.logout = (req, res) => {
   res.clearCookie('refresh_token', {
     httpOnly: true,
@@ -148,6 +155,7 @@ exports.logout = (req, res) => {
 };
 
 
+//Funcion encargada de obtener los usuarios paginados para el panel de administracion
 exports.getAllUsersForAdmin = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -194,6 +202,7 @@ exports.getAllUsersForAdmin = async (req, res) => {
 };
 
 
+//Funcion encargada de modificar los permisos de un usuario por un administrador desde el panel de administracion
 exports.updateUserPermissions = async (req, res) => {
   try {
     const { id: targetUserId } = req.params;
@@ -227,6 +236,7 @@ exports.updateUserPermissions = async (req, res) => {
 };
 
 
+//Funcion para eliminar usuarios desde el panel de administracion
 exports.deleteUser = async (req, res) => {
   try {
     const { id: targetUserId } = req.params;
@@ -253,5 +263,29 @@ exports.deleteUser = async (req, res) => {
   } catch (error) {
     console.error("[user.controller - deleteUser] Error:", error);
     res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
+
+
+//Funcion encargada de validar la unicidad del nombre de usuario
+exports.checkUsername = async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username });
+    res.json({ isTaken: !!user });
+  } catch (error) {
+    console.error("[user.controller] CheckUsername error:", error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+
+//Funcion encargada de validar la unicidad del correo electronico
+exports.checkEmail = async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.params.email });
+    res.json({ isTaken: !!user });
+  } catch (error) {
+    console.error("[user.controller] CheckEmail error:", error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };

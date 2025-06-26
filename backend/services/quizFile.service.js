@@ -1,18 +1,18 @@
 const fs = require('fs').promises;
 const path = require('path');
 
-const DEFAULT_QUESTIONS_FILENAME = 'questions.json';
-const QUESTIONS_DIR_PATH = path.join(__dirname, '..', 'utils');
+const questionsFile = 'questions.json';
+const questionsPath = path.join(__dirname, '..', 'utils');
 
 let quizDataCache = {
 };
-const CACHE_DURATION_MS = 5 * 60 * 1000;
+const cacheDuration = 5 * 60 * 1000;
 
-async function getQuizData(filename = DEFAULT_QUESTIONS_FILENAME) {
-    const filePath = path.join(QUESTIONS_DIR_PATH, filename);
+async function getQuizData(filename = questionsFile) {
+    const filePath = path.join(questionsPath, filename);
     const now = Date.now();
 
-    if (quizDataCache[filename] && (now - quizDataCache[filename].timestamp < CACHE_DURATION_MS)) {
+    if (quizDataCache[filename] && (now - quizDataCache[filename].timestamp < cacheDuration)) {
         return quizDataCache[filename].data;
     }
 

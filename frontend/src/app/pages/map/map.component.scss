@@ -78,6 +78,16 @@
           }
         }
       }
+
+      .login-btn {
+        width: 64px;
+        height: 32px;
+        background-color: s.$button-color;
+        border: none;
+        border-radius: 8px;
+        margin-left: 35%;
+        cursor: pointer;
+      }
     }
   }
 }
@@ -151,6 +161,16 @@
       }
     }
     
+    .login-btn {
+      width: 64px;
+      height: 32px;
+      background-color: s.$button-color;
+      border: none;
+      border-radius: 8px;
+      margin-left: 35%;
+      cursor: pointer;
+    }
+
     .close-favorites {
       margin-top: 8px;
       background: transparent;
@@ -424,48 +444,48 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 10px;
-      }
-      
-      .title-col {
-        flex: 1;
-        padding-right: 10px;
-      }
-      
-      .fav-col {
-        flex: 0 0 auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+
+        .title-col {
+          flex: 1;
+          padding-right: 10px;
+        }
         
-        #heart-container {
-          width: 42px;
-          height: 42px;
-          position: relative;
+        .fav-col {
+          flex: 0 0 auto;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           
-          #fav-heart {  
-            position: absolute;  background:url('../../../assets/img/icons/heart_animation.png');
-            background-position: 0px;
-            background-repeat: no-repeat;
-            height: 100px;
-            width: 100px;
-            top: -40px;
-            left: -40px;
-            pointer-events: none;
-          }
-          
-          #toggle {
-            opacity: 0;
-            transform: scale(3);
-            position: absolute;
-            cursor: pointer;
-            &:checked + #fav-heart {
-              animation: heart-animate 0.8s steps(28) forwards;
+          #heart-container {
+            width: 42px;
+            height: 42px;
+            position: relative;
+            
+            #fav-heart {  
+              position: absolute;  background:url('../../../assets/img/icons/heart_animation.png');
+              background-position: 0px;
+              background-repeat: no-repeat;
+              height: 100px;
+              width: 100px;
+              top: -40px;
+              left: -40px;
+              pointer-events: none;
             }
-          }
-          
-          @keyframes heart-animate {
-            100% { 
-              background-position: -2800px;
+            
+            #toggle {
+              opacity: 0;
+              transform: scale(3);
+              position: absolute;
+              cursor: pointer;
+              &:checked + #fav-heart {
+                animation: heart-animate 0.8s steps(28) forwards;
+              }
+            }
+            
+            @keyframes heart-animate {
+              100% { 
+                background-position: -2800px;
+              }
             }
           }
         }
@@ -638,6 +658,41 @@
         }
       }
       
+      .flags-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+        
+        .flag {
+          font-size: 1.5rem;
+          line-height: 1;
+        }
+      }
+      
+      #description {
+        text-align: justify;
+
+        .description-field {
+          margin-bottom: 15px;
+
+          h4 {
+            margin-bottom: 10px;
+            color: s.$primary-color;
+          }
+
+          .show-more-btn{
+            background-color: transparent;
+            border: none;
+            color: s.$button-color;
+
+            &:hover {
+              cursor: pointer;
+            }
+          }
+        }
+      }
+      
       .report-species-btn {
         background: s.$button-color;
         color: black;
@@ -660,22 +715,33 @@
           height: 16px;
         }
       }
-      
-      #description {
-        text-align: justify;
+
+      #references {
+
+          summary {
+              display: flex;
+              align-items: center;
+              cursor: pointer;
+              list-style: none;
+
+              &::before {
+                  content: '▶';
+                  margin-right: 0.5rem;
+                  font-size: 0.8em;
+                  color: #a0a0a0;
+              }
+
+              h3 {
+                  margin: 0;
+              }
+          }
+
+          &[open] > summary::before {
+              content: '▼';
+          }
+
       }
-      
-      .flags-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        align-items: center;
-        
-        .flag {
-          font-size: 1.5rem;
-          line-height: 1;
-        }
-      }
+
     }
   }
 }

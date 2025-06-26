@@ -1,5 +1,5 @@
 <div class="main">
-  <div class="video-banner">
+  <div class="video-banner" aria-hidden="true" tabindex="-1">
     <video preload="auto" autoplay loop muted>
       <source src="assets/video/banner_video.mp4" type="video/mp4">
       Sorry, your browser does not support HTML5 video.
@@ -10,7 +10,7 @@
   <div class="content">
     
     <div class="title-container">
-      <h1>
+      <h1 role="status" aria-live="polite" aria-label="The climate is changing, and nature is paying the price.">
         <ngx-typed-js [strings]="[
           'The climate is getting warmer',
           'The climate is getting colder',
@@ -19,25 +19,31 @@
           'The climate is suffocating',
           'The climate is destabilizing',
           'The climate is collapsing',
-          'The climate is changing.']"
+          'The climate is changing...']"
           [typeSpeed]="90">
           <span class="typing"></span>
         </ngx-typed-js>
       </h1>
-      <h3> And nature is paying the price.</h3>
+      <h3 aria-hidden="true"> And nature is paying the price.</h3>
     </div>
 
     <section class="button-panel">
-      <button>Donate to IUCN</button>
-      <button routerLink="/map">Learn about our planet</button>
-      <button>Donate to GBIF</button>
+      <a href="https://www.iucnredlist.org/support/donate" target="_blank" aria-label="Donate to IUCN (opens in new tab).">
+        <button><img src="../../../assets/img/icons/external-link.svg" alt="">Donate to IUCN</button>
+      </a>
+      <a routerLink="/map">
+        <button>Learn about our planet <br> <img src="../../../assets/img/icons/map-black.png" alt=""></button>
+      </a>
+      <a href="https://www.gbif.org/become-member" target="_blank" aria-label="Donate to GBIF (opens in new tab).">
+        <button><img src="../../../assets/img/icons/external-link.svg" alt="">Donate to GBIF</button>
+      </a>
     </section>
 
     <div class="main-container">
 
       <section class="graph-row" style="padding-bottom: 80px;">
 
-        <div class="chart-container">
+        <div class="chart-container" role="group" aria-label="Line graph showing the cumulative percentage of extinct species from 1500 to 2018, showing a dramatic increase since 1900.">
             <h2>Extinctions since 1500.</h2>
             <p>Cumulative % of species based on background rate of 0.1-2 extinctions per million species per year.</p>
             <ngx-charts-line-chart
@@ -70,27 +76,27 @@
           </p>
 
           <button class="source-btn">
-            <a href="https://datazone.birdlife.org/articles/many-bird-species-have-already-gone-extinct" target="_blank">
+            <a href="https://datazone.birdlife.org/articles/many-bird-species-have-already-gone-extinct" target="_blank" aria-label="Source: Birdlife article on extinct bird species (opens in new tab).">
               <img src="../../../assets/img/icons/external-link.svg" alt="">Source
             </a>
           </button>
           <button class="source-btn">
-            <a href="https://datazone.birdlife.org/articles/one-in-eight-of-all-bird-species-is-threatened-with-global-extinction" target="_blank">
+            <a href="https://datazone.birdlife.org/articles/one-in-eight-of-all-bird-species-is-threatened-with-global-extinction" target="_blank" aria-label="Source: Birdlife article on threatened bird species (opens in a new tab).">
               <img src="../../../assets/img/icons/external-link.svg" alt="">Source
             </a>
           </button>
           <button class="source-btn">
-            <a href="https://invasives.org.au/blog/invasive-species-greatest-threats-australias-endemic-terrestrial-mammals" target="_blank">
+            <a href="https://invasives.org.au/blog/invasive-species-greatest-threats-australias-endemic-terrestrial-mammals" target="_blank" aria-label="Source: Australian government's article on invasive species and the greatest threats to Australia's endemic terrestrial mammals (opens in a new tab).">
               <img src="../../../assets/img/icons/external-link.svg" alt="">Source
             </a>
           </button>
           <button class="source-btn">
-            <a href="https://www.nature.com/articles/s41586-023-06578-4" target="_blank">
+            <a href="https://www.nature.com/articles/s41586-023-06578-4" target="_blank" aria-label="Source: Nature.com's article on the ongoing declines for the world's amphibians in the face of emerging threats (opens in a new tab).">
               <img src="../../../assets/img/icons/external-link.svg" alt="">Source
             </a>
           </button>
           <button class="source-btn">
-            <a href="https://www.nature.com/articles/s41586-022-04664-7" target="_blank">
+            <a href="https://www.nature.com/articles/s41586-022-04664-7" target="_blank" aria-label="Source: A global reptile assessment highlights shared conservation needs of tetrapods, by Nature.com (opens in a new tab).">
               <img src="../../../assets/img/icons/external-link.svg" alt="">Source
             </a>
           </button>
@@ -101,7 +107,7 @@
 
       <section class="graph-row">
 
-        <div class="chart-container">
+        <div class="chart-container" aria-label="Line chart: Global trend in vertebrate populations since 1970.">
             <h2>Living Planet Index</h2>
             <p>Global trend in vertebrate populations since 1970.</p>
             <ngx-charts-line-chart
@@ -118,6 +124,8 @@
               [legend]="true"
               [legendPosition]="legendPosition">
             </ngx-charts-line-chart>
+            <br><br><br>
+            <h6 style="font-weight: lighter;">Data sources: World Wildlife Fund and Zoological Society of London (2024) - processed by Our World in Data</h6>
         </div>
 
         <div class="description">
@@ -131,27 +139,27 @@
             </p>
 
             <button class="source-btn">
-              <a href="https://cadenaser.com/nacional/2024/10/10/alerta-medioambiental-el-73-de-las-poblaciones-de-vertebrados-han-desaparecido-desde-1970-cadena-ser/" target="_blank">
+              <a href="https://cadenaser.com/nacional/2024/10/10/alerta-medioambiental-el-73-de-las-poblaciones-de-vertebrados-han-desaparecido-desde-1970-cadena-ser/" target="_blank" aria-label="Source: Spanish article titled 'Environmental alert: 73% of vertebrate populations have disappeared since 1970' by CadenaSer (opens in a new tab).">
                 <img src="../../../assets/img/icons/external-link.svg" alt="">Source
               </a>
             </button>
             <button class="source-btn">
-              <a href="https://ourworldindata.org/living-planet-index-region" target="_blank">
+              <a href="https://ourworldindata.org/living-planet-index-region" target="_blank" aria-label="Source: How does the Living Planet Index vary by region? by ourworldindata (opens in a new tab).">
                 <img src="../../../assets/img/icons/external-link.svg" alt="">Source
               </a>
             </button>
             <button class="source-btn">
-              <a href="https://ourworldindata.org/grapher/living-planet-index-by-region" target="_blank">
+              <a href="https://ourworldindata.org/grapher/living-planet-index-by-region" target="_blank" aria-label="Source: OurWorldInData's visualization of the LivingPlanetIndex (opens in a new tab).">
                 <img src="../../../assets/img/icons/external-link.svg" alt="">Source
               </a>
             </button>
             <button class="source-btn">
-              <a href="https://www.theguardian.com/environment/2024/oct/10/collapsing-wildlife-populations-points-no-return-living-planet-report-wwf-zsl-warns" target="_blank">
+              <a href="https://www.theguardian.com/environment/2024/oct/10/collapsing-wildlife-populations-points-no-return-living-planet-report-wwf-zsl-warns" target="_blank" aria-label="Source: The Guardian's article on collapsing wildlife populations near ‘points of no return’ (opens in new tab).">
                 <img src="../../../assets/img/icons/external-link.svg" alt="">Source
               </a>
             </button>
             <button class="source-btn">
-              <a href="https://files.worldwildlife.org/wwfcmsprod/files/Publication/file/5gc2qerb1v_2024_living_planet_report_a_system_in_peril.pdf" target="_blank">
+              <a href="https://files.worldwildlife.org/wwfcmsprod/files/Publication/file/5gc2qerb1v_2024_living_planet_report_a_system_in_peril.pdf" target="_blank" aria-label="Source: Living Planet Report by The World Wildlife Foundation (opens in new tab).">
                 <img src="../../../assets/img/icons/external-link.svg" alt="">Source
               </a>
             </button>
@@ -162,7 +170,7 @@
 
       <section class="graph-row">
 
-        <div class="chart-container">
+        <div class="chart-container" aria-label="Pie chart showing the distribution of almost 18.000 endangered species, according to the IUCN.">
             <h2>Almost 18,000 Species Are Endangered</h2>
             <p>Preliminary number of <b>animal</b> species on the IUCN Red List in 2024, by class</p>
             <ngx-charts-advanced-pie-chart
@@ -184,22 +192,22 @@
             This graph reveals that the threat of extinction is not limited to the best-known vertebrates, but profoundly affects less visiblebut ecologically crucial groups, such as mollusks and insects. The high number of endangered species within these groups underscoresthe urgent need to expand conservation efforts beyond iconic species, also addressing those that play fundamental roles inecosystems, such as pollination and nutrient recycling.
           </p>
           <button class="source-btn">
-            <a href="https://www.statista.com/chart/17122/number-of-threatened-species-red-list/" target="_blank">
+            <a href="https://www.statista.com/chart/17122/number-of-threatened-species-red-list/" target="_blank" aria-label="Source: Statista's visual representation of 'Almost 18,000 Species Are Engangered' (opens in new tab).">
               <img src="../../../assets/img/icons/external-link.svg" alt="">Source
             </a>
           </button>
           <button class="source-btn">
-            <a href="https://www.iucnredlist.org/resources/threat-classification-scheme" target="_blank">
+            <a href="https://www.iucnredlist.org/resources/threat-classification-scheme" target="_blank" aria-label="Source: IUCN Red List's Threat classification criteria for endangered species (opens in new tab).">
               <img src="../../../assets/img/icons/external-link.svg" alt="">Source
             </a>
           </button>
           <button class="source-btn">
-            <a href="https://www.iucnredlist.org/resources/classification-schemes" target="_blank">
+            <a href="https://www.iucnredlist.org/resources/classification-schemes" target="_blank" aria-label="IUCN Red List's Classification Schemes for species (opens in new tab).">
               <img src="../../../assets/img/icons/external-link.svg" alt="">Source
             </a>
           </button>
           <button class="source-btn">
-            <a href="https://nc.iucnredlist.org/redlist/content/attachment_files/2025-1_RL_Table_1a.pdf" target="_blank">
+            <a href="https://nc.iucnredlist.org/redlist/content/attachment_files/2025-1_RL_Table_1a.pdf" target="_blank" aria-label="Source: IUCN Red List's latest species endangerment assessment chart (opens in new tab).">
               <img src="../../../assets/img/icons/external-link.svg" alt="">Source
             </a>
           </button>
@@ -231,37 +239,27 @@
         </div>
 
         <button class="source-btn">
-          <a href="https://www.worldwildlife.org/descubre-wwf/historias/que-es-la-sexta-extincion-masiva-y-que-podemos-hacer-al-respecto" target="_blank">
+          <a href="https://www.worldwildlife.org/descubre-wwf/historias/que-es-la-sexta-extincion-masiva-y-que-podemos-hacer-al-respecto" target="_blank" aria-label="Source: Spanish article from the World Wildlife Foundation, 'What is the sixth mass extinction event and what can we do about it?'(opens in new tab).">
             <img src="../../../assets/img/icons/external-link.svg" alt="">Source
           </a>
         </button>
         <button class="source-btn">
-          <a href="https://www.biodiversidad.gob.mx/biodiversidad/porque.html" target="_blank">
+          <a href="https://www.biodiversidad.gob.mx/biodiversidad/porque.html" target="_blank" aria-label="Source: Spanish article from the Mexican Government: Why are we losing biodiversity? (opens in new tab).">
             <img src="../../../assets/img/icons/external-link.svg" alt="">Source
           </a>
         </button>
         <button class="source-btn">
-          <a href="https://www.biodiversidad.gob.mx/especies/extincion" target="_blank">
+          <a href="https://www.biodiversidad.gob.mx/especies/extincion" target="_blank" aria-label="Source: Spanish article by the Mexican Government: 'Extinction' (opens in new tab).">
             <img src="../../../assets/img/icons/external-link.svg" alt="">Source
           </a>
         </button>
         <button class="source-btn">
-          <a href="https://www.lineaverdeponferrada.org/lv/noticiasDestacadas.asp" target="_blank">
+          <a href="https://sentientmedia.org/es/humanos-destruyendo-ecosistemas-como-medir-nuestro-impacto-en-el-medio-ambiente/" target="_blank" aria-label="Source: Spanish article from SentientMedia.org: 'Humans destroying ecosystems: how to measure our impact in nature (opens in new tab).">
             <img src="../../../assets/img/icons/external-link.svg" alt="">Source
           </a>
         </button>
         <button class="source-btn">
-          <a href="https://sentientmedia.org/es/humanos-destruyendo-ecosistemas-como-medir-nuestro-impacto-en-el-medio-ambiente/" target="_blank">
-            <img src="../../../assets/img/icons/external-link.svg" alt="">Source
-          </a>
-        </button>
-        <button class="source-btn">
-          <a href="https://www.anthesisgroup.com/co/art%C3%ADculos/por-que-la-crisis-de-la-biodiversidad-es-una-crisis-empresarial" target="_blank">
-            <img src="../../../assets/img/icons/external-link.svg" alt="">Source
-          </a>
-        </button>
-        <button class="source-btn">
-          <a href="https://es.wikipedia.org/wiki/Disminuci%C3%B3n_de_polinizadores" target="_blank">
+          <a href="https://www.anthesisgroup.com/co/art%C3%ADculos/por-que-la-crisis-de-la-biodiversidad-es-una-crisis-empresarial" target="_blank" aria-label="Source: Spanish article from the Anthesis Groups: 'Why the biodiversity crisis is a business crisis ' (opens in a new tab). ">
             <img src="../../../assets/img/icons/external-link.svg" alt="">Source
           </a>
         </button>
@@ -290,32 +288,32 @@
         </div>
 
         <button class="source-btn">
-          <a href="https://www.iberdrola.com/sostenibilidad/obsolescencia-programada" target="_blank">
+          <a href="https://www.iberdrola.com/sostenibilidad/obsolescencia-programada" target="_blank" aria-label="Source: Spanish article from Iberdola: 'Programmed obsolescence and it's consequences on the enviroment' (opens in new tab).">
             <img src="../../../assets/img/icons/external-link.svg" alt="">Source
           </a>
         </button>
         <button class="source-btn">
-          <a href="https://blog.colegiosdelreal.mx/hubfs/RealMUN%202024/Middle%20School/UNEA%201%20Topico%20A%20MS.pdf" target="_blank">
+          <a href="https://blog.colegiosdelreal.mx/hubfs/RealMUN%202024/Middle%20School/UNEA%201%20Topico%20A%20MS.pdf" target="_blank" aria-label="Source: United Nations' article on the environmental impact of fast-fashion (opens in new tab).">
             <img src="../../../assets/img/icons/external-link.svg" alt="">Source
           </a>
         </button>
         <button class="source-btn">
-          <a href="https://elpais.com/planeta-futuro/2024-11-27/por-que-depositar-ropa-usada-en-un-contenedor-de-reciclaje-no-permite-tener-la-conciencia-tranquila.html" target="_blank">
+          <a href="https://elpais.com/planeta-futuro/2024-11-27/por-que-depositar-ropa-usada-en-un-contenedor-de-reciclaje-no-permite-tener-la-conciencia-tranquila.html" target="_blank" aria-label="Source: Spanish article from Planeta Futuro: 'Why disposing of fast-fashion clothing on a recycling bin shouldn't let your conscience clean' (opens in new tab).">
             <img src="../../../assets/img/icons/external-link.svg" alt="">Source
           </a>
         </button>
         <button class="source-btn">
-          <a href="https://www.greenpeace.org/mexico/blog/9514/fast-fashion/" target="_blank">
+          <a href="https://www.greenpeace.org/mexico/blog/9514/fast-fashion/" target="_blank" aria-label="Source: Spanish article from Greenpeace on fast-fashion's massive impact on the environment (opens in new tab).">
             <img src="../../../assets/img/icons/external-link.svg" alt="">Source
           </a>
         </button>
         <button class="source-btn">
-          <a href="https://elpais.com/chile/2025-05-23/una-segunda-vida-a-la-ropa-desechada-en-el-desierto-de-atacama-en-chile-el-vertedero-textil-mas-grande-del-mundo.html" target="_blank">
+          <a href="https://elpais.com/chile/2025-05-23/una-segunda-vida-a-la-ropa-desechada-en-el-desierto-de-atacama-en-chile-el-vertedero-textil-mas-grande-del-mundo.html" target="_blank" aria-label="Source: Chile's ELPAIS newspaper article on how the Atacama desert has become the largest clothing landfill on Earth (opens in new tab).">
             <img src="../../../assets/img/icons/external-link.svg" alt="">Source
           </a>
         </button>
         <button class="source-btn">
-          <a href="https://es.wikipedia.org/wiki/Vertedero_de_ropa_usada_en_el_Desierto_de_Atacama" target="_blank">
+          <a href="https://es.wikipedia.org/wiki/Vertedero_de_ropa_usada_en_el_Desierto_de_Atacama" target="_blank" aria-label="Source: Wikipedia arcticle on the Atacama Desert's huge clothing landfill (opens in new tab).">
             <img src="../../../assets/img/icons/external-link.svg" alt="">Source
           </a>
         </button>
@@ -358,10 +356,15 @@
 
           <div class="gallery-cards">
             <div class="gallery-card" *ngFor="let item of pagedItems">
-              <a href="{{item.url}}" target="_blank"><img [src]="item.img" [alt]="item.text" /></a>
+              <a href="{{item.url}}" target="_blank">
+                <img [src]="item.img" 
+                     [alt]="item.text" 
+                     loading="lazy" 
+                     [attr.aria-label]="'Get involved with ' + item.text + ' (opens in a new tab)'"/>
+              </a>
               <p>{{ item.text }}</p>
               <div class="button-wrapper">
-                <a href="{{item.url}}" target="_blank">
+                <a href="{{item.url}}" target="_blank"  aria-hidden="true" tabindex="-1">
                   <button class="neon-pulse">
                     <span>Get involved</span>
                   </button>
@@ -371,9 +374,9 @@
           </div>
 
           <div class="pagination">
-            <button (click)="prevPage()" [disabled]="currentPage === 1">‹ Prev</button>
-            <span>{{ currentPage }} / {{ totalPages }}</span>
-            <button (click)="nextPage()" [disabled]="currentPage === totalPages">Next ›</button>
+            <button (click)="prevPage()" [disabled]="currentPage === 1" aria-label="Previous page of organizations you can support.">‹ Prev</button>
+            <span aria-live="polite" aria-atomic="true">{{ currentPage }} / {{ totalPages }}</span>
+            <button (click)="nextPage()" [disabled]="currentPage === totalPages" aria-label="Next page of organizations you can support.">Next ›</button>
           </div>
 
         </div>
@@ -385,5 +388,33 @@
       <h1>It is our responsibility to forge a future where wildlife flourishes and future generations inherit a truly vibrant and balanced planet. After all, it's <br><span style="color: green;">our blue marble.</span></h1>
     </div>
 
+    <div class="about-trigger" (click)="openAboutModal()" role="button" tabindex="0" aria-label="About the project">
+      <img src="../../../assets/img/icons/info-black.png" alt="Information icon">
+      <span>About the project</span>
+    </div>
+    
   </div>
+
+
 </div>
+
+  <div class="modal-overlay" *ngIf="showAboutModal" (click)="closeAboutModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button class="modal-close-button" (click)="closeAboutModal()" aria-label="Close modal">&times;</button>
+      
+      <h2>About ArcticFlower</h2>
+      <p>
+        ArcticFlower is a non-profit interactive educational platform dedicated to raising awareness about the global extinction crisis and the importance of biodiversity conservation. Through immersive and data-driven experiences, it aims to foster action and participation in conservation initiatives.
+      </p>
+
+      <h2>Acknowledgements</h2>
+      <p>
+        This project would not have been possible without the mountains of research and data recorded and stored by IUCN and GBIF on this crisis. Their work is invaluable, and is the stepping stone towards learning about the crisis and solving it. Truly thankful for the work you do, with all researchers who dedicate their careers to studying and fighting to solve this colossal challenge. ❤️
+      </p>
+      
+      <h2>Technology</h2>
+      <p>
+        Built with passion using Angular for the frontend, Node.js with Express for the backend, and MongoDB for the database. The interactive globe is powered by the incredible globe.gl library, maintained by vasturiano on GitHub.
+      </p>
+    </div>
+  </div>

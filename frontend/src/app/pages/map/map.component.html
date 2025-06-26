@@ -1,13 +1,17 @@
 <div class="search-container">
-  <input type="text" placeholder="Search by country, territory or species" [(ngModel)]="searchTerm" (input)="onSearchInput(searchTerm)"/>
+  <input type="text" placeholder="Search by country, territory or species" [(ngModel)]="searchTerm" (input)="onSearchInput(searchTerm)" aria-label="Search by country, territory or species"/>
   
-  <div class="search-results" *ngIf="searchTerm.trim().length > 0">
+  <div class="search-results" *ngIf="searchTerm.trim().length > 0" aria-live="polite" aria-atomic="true">
     <!-- Resultados de paises -->
     <div class="result-section" *ngIf="filteredClusters.length > 0">
       <h4>Countries/Territories:</h4>
       <ul>
-        <li *ngFor="let cluster of filteredClusters" 
-        (click)="selectCluster(cluster)">
+        <li *ngFor="let cluster of filteredClusters"
+          (click)="selectCluster(cluster)"
+          role="button"
+          tabindex="0"
+          (keydown.enter)="selectCluster(cluster)"
+          [attr.aria-label]="'Select country ' + cluster.name + '. Contains ' + cluster.count + ' species.'">
         <span class="fi fi-{{cluster.country | lowercase}}"></span>
         {{ cluster.name }} <span class="species-count">({{ cluster.count }} species)</span>
       </li>
@@ -31,8 +35,8 @@
   </div>
   
   <!-- Estados de carga -->
-  <div *ngIf="searchLoading" class="loading">Searching species...</div>
-  <div *ngIf="!searchLoading && filteredClusters.length === 0 && filteredSpecies.length === 0" class="no-results">
+  <div *ngIf="searchLoading" class="loading" role="status">Searching species...</div>
+  <div *ngIf="!searchLoading && filteredClusters.length === 0 && filteredSpecies.length === 0" class="no-results" role="status">
     Found no results for "{{ searchTerm }}"
   </div>
 </div>
@@ -45,11 +49,15 @@ bdColor="rgba(0, 0, 0, 0.8)" size="small" type="ball-spin-fade" color="#ffffff">
 
 <div class="missions-container">
   
-  <button class="missions-btn" (click)="toggleMissionsPanel()">
+  <button class="missions-btn" 
+    (click)="toggleMissionsPanel()"
+    aria-label="Toggle daily quests panel"
+    [attr.aria-expanded]="showMissionsPanel"
+    aria-controls="missions-panel-content">
     <img src="../../../assets/img/icons/crown-yellow.png" alt="">
   </button>
   
-  <div class="missions-panel" *ngIf="showMissionsPanel">
+  <div class="missions-panel" *ngIf="showMissionsPanel" id="missions-panel-content" role="region" aria-labelledby="missions-title">
     <aside>
       
       <div *ngIf="!isUser">
@@ -57,8 +65,8 @@ bdColor="rgba(0, 0, 0, 0.8)" size="small" type="ball-spin-fade" color="#ffffff">
           <img src="../../../assets/img/icons/crown-yellow.png" alt="" class="quest-img">
           Daily quests
         </h3>
-        <p>Please log-in to view your daily missions.</p>
-        <button routerLink="/auth/login">LOGIN</button>
+        <p>Please log-in or register to view your daily missions.</p>
+        <button routerLink="/auth/login" class="login-btn">LOG-IN</button>
       </div>
       
       <div *ngIf="isUser">
@@ -69,7 +77,7 @@ bdColor="rgba(0, 0, 0, 0.8)" size="small" type="ball-spin-fade" color="#ffffff">
         <div *ngIf="missions.length === 0">No daily quests for today!</div>
         <ul *ngIf="missions.length > 0">
           <li *ngFor="let m of missions">
-            <img src="../../../assets/img/icons/crown-yellow.png" alt="" *ngIf="!m.completed">
+            <img src="../../../assets/img/icons/clock-yellow.png" alt="" *ngIf="!m.completed">
             <img src="../../../assets/img/icons/check-yellow.png" alt="" *ngIf="m.completed">
             <strong>{{ m.missionId.type }}</strong>
             {{ m.description }}: {{ m.progress?.seen?.length || 0 }} / {{ m.params.targetCount }}
@@ -85,19 +93,23 @@ bdColor="rgba(0, 0, 0, 0.8)" size="small" type="ball-spin-fade" color="#ffffff">
 
 <div class="favorites-container">
   
-  <button class="favorites-btn" (click)="toggleFavoritesPanel()">
+  <button class="favorites-btn" 
+    (click)="toggleFavoritesPanel()"
+    aria-label="Toggle favorites panel"
+    [attr.aria-expanded]="showFavoritesPanel"
+    aria-controls="favorites-panel-content">
     <img src="../../../assets/img/icons/heart-yellow.png" alt="">
   </button>
   
-  <div class="favorites-panel" *ngIf="showFavoritesPanel">
+  <div class="favorites-panel" *ngIf="showFavoritesPanel" id="favorites-panel-content" role="region" aria-labelledby="favorites-title">
     
     <div *ngIf="!isUser">
       <h3>
         <img src="../../../assets/img/icons/heart-yellow.png" alt="" class="fav-img">
         Favorites
       </h3>
-      <p>Log-in or create an account to add species to favorites.</p>
-      <button routerLink="/auth/login">LOGIN</button>
+      <p>Please log-in or register to view or add favorites.</p>
+      <button routerLink="/auth/login" class="login-btn">LOG-IN</button>
     </div>
     
     <div *ngIf="isUser">
@@ -129,14 +141,14 @@ bdColor="rgba(0, 0, 0, 0.8)" size="small" type="ball-spin-fade" color="#ffffff">
 (quizClosed)="handleQuizClosed($event)">
 </app-quiz-modal>
 
-<div class="side-panel" *ngIf="selectedCluster" [class.open]="showPanel">
+<div class="side-panel" *ngIf="selectedCluster" [class.open]="showPanel" role="region" aria-labelledby="species-panel-title">
   
   <div class="species-header">
-    <div class="close-button" (click)="clearCurrentSelection()"><img src="../../../assets/img/icons/chevron-left.svg" alt=""></div>
+    <div class="close-button" (click)="clearCurrentSelection()" aria-label="Close species panel and return to globe"><img src="../../../assets/img/icons/chevron-left.svg" alt=""></div>
     
     <div class="country-info">
       <span class="fi fi-{{selectedCluster.country | lowercase}}"></span>
-      <h2>{{ selectedCluster.name }} ( {{ selectedCluster.count }} )</h2>
+      <h2 id="species-panel-title">{{ selectedCluster.name }} ( {{ selectedCluster.count }} )</h2>
     </div>
   </div>
   
@@ -189,142 +201,247 @@ bdColor="rgba(0, 0, 0, 0.8)" size="small" type="ball-spin-fade" color="#ffffff">
             </div>
           </ng-container>
           
-        </ng-container>
+          </ng-container>
         
-        <div class="nav-arrow left" (click)="prevImage(); $event.stopPropagation()">‹</div>
-        <div class="nav-arrow right" (click)="nextImage(); $event.stopPropagation()">›</div>
-        <div class="image-info-popper" *ngIf="showImageInfo" (click)="toggleImageInfo()"></div>
-        <div class="image-counter">{{ currentImageIndex + 1 }} / {{ selectedSpecies.media?.length }}</div>
-      </div>
-      
-      <div class="image-wrapper" *ngIf="!selectedSpecies?.media?.length">
-        <img src="../../../assets/img/icons/no-media.png" class="main-image"/>
+          <div class="nav-arrow left" (click)="prevImage(); $event.stopPropagation()" aria-label="Previous image">‹</div>
+          <div class="nav-arrow right" (click)="nextImage(); $event.stopPropagation()" aria-label="Next image">›</div>
+          <div class="image-info-popper" *ngIf="showImageInfo" (click)="toggleImageInfo()">
+            <p *ngIf="currentImage?.title"><strong>Title:</strong> {{ currentImage?.title }}</p>
+            <p *ngIf="currentImage?.description"><strong>Description:</strong> {{ currentImage?.description }}</p>
+            <p *ngIf="currentImage?.creator"><strong>Creator:</strong> {{ currentImage?.creator }}</p>
+            <p *ngIf="currentImage?.contributor"><strong>Contributor:</strong> {{ currentImage?.contributor }}</p>
+            <p *ngIf="currentImage?.publisher"><strong>Publisher:</strong> {{ currentImage?.publisher }}</p>
+            <p *ngIf="currentImage?.rightsHolder"><strong>Rights Holder:</strong> {{ currentImage?.rightsHolder }}</p>
+            <p *ngIf="currentImage?.license"><strong>License:</strong> {{ currentImage?.license }}</p>
+          </div>
+          <div class="image-counter" role="status" aria-live="polite" aria-atomic="true">{{ currentImageIndex + 1 }} / {{ selectedSpecies.media?.length }}</div>
+        </div>
+        
+        <div class="image-wrapper" *ngIf="!selectedSpecies?.media?.length">
+          <img src="../../../assets/img/icons/no-media.png" class="main-image"/>
+        </div>
       </div>
     </div>
-  </div>
   
-  <div class="species-data">
-    
-    <div class="title-fav-container">
+    <div class="species-data">
       
-      <div class="title-col">
-        <ng-container *ngIf="selectedSpecies.common_name !== 'Unknown'; else sciOnly">
-          <h3>{{ selectedSpecies.common_name }}</h3>
-          <i>{{ selectedSpecies.scientific_name }}</i>
-        </ng-container>
-        <ng-template #sciOnly>
-          <h3>{{ selectedSpecies.scientific_name }}</h3>
-        </ng-template>
+      <div class="title-fav-container">
+        
+        <div class="title-col">
+          <ng-container *ngIf="selectedSpecies.common_name !== 'Unknown'; else sciOnly">
+            <h3>{{ selectedSpecies.common_name }}</h3>
+            <i>{{ selectedSpecies.scientific_name }}</i>
+          </ng-container>
+          <ng-template #sciOnly>
+            <h3>{{ selectedSpecies.scientific_name }}</h3>
+          </ng-template>
+        </div>
+        
+        <div class="fav-col">
+          <div id="heart-container" *ngIf="selectedSpecies">
+            <input type="checkbox"
+                  class="heart-toggle"
+                  id="toggle"
+                  [checked]="isFavorited"
+                  [attr.aria-checked]="isFavorited"
+                  [attr.aria-label]="isFavorited ? 'Remove ' + selectedSpecies.common_name + ' from favorites' : 'Add ' + selectedSpecies.common_name + ' to favorites'"
+                  (click)="handleFavoriteClick($event)"/>
+            <div id="fav-heart"></div>
+          </div>
+        </div>
+        
       </div>
       
-      <div class="fav-col">
-        <div id="heart-container" *ngIf="selectedSpecies">
-          <input type="checkbox" class="heart-toggle" id="toggle" [checked]="isFavorited" (change)="toggleFavorite()"/>
-          <div id="fav-heart"></div>
+      <img src="../../../assets/img/species_status/CRITICALLY_ENDANGERED.png"
+       alt="Conservation status: Critically endangered." 
+       *ngIf="selectedSpecies.category=='CR'" 
+       style="width: 360px;"
+       href="https://www.iucnredlist.org/search/stats?redListCategory=cr"
+       target="_blank"
+       >
+      <img src="../../../assets/img/species_status/EXTINCT_IN_THE_WILD.png"
+       alt="Conservation status: Extinct in the wild." 
+       *ngIf="selectedSpecies.category=='EW'" 
+       style="width: 360px;"
+       href="https://www.iucnredlist.org/search/stats?redListCategory=ew"
+       target="_blank"
+       >
+      <img src="../../../assets/img/species_status/EXTINCT.png"
+       alt="Conservation status: Extinct." 
+       *ngIf="selectedSpecies.category=='EX'" 
+       style="width: 360px;"
+       href="https://www.iucnredlist.org/search/stats?redListCategory=ex"
+       target="_blank"
+       >
+    
+      <hr>
+
+      <h3>Hierarchy</h3>
+      
+      <div class="tree">
+        <ul>
+          <li><details><summary> {{ selectedSpecies.kingdom }} <span> -  Kingdom</span></summary>
+            <ul>
+              <li><details><summary> {{ selectedSpecies.phylum }} <span> -  Phylum</span></summary>
+                <ul>
+                  <li><details><summary> {{ selectedSpecies.class }} <span> -  Class</span></summary>
+                    <ul>
+                      <li><details><summary> {{ selectedSpecies.order }} <span> - Order</span></summary>
+                        <ul>
+                          <li><details><summary> {{ selectedSpecies.family }} <span> - Family</span></summary>
+                            <ul>
+                              <li>  {{ selectedSpecies.genus }} <span> - Genus</span></li>
+                            </ul>
+                          </details></li>
+                        </ul>
+                      </details></li>
+                    </ul>
+                  </details></li>
+                </ul>
+              </details></li>
+            </ul>
+          </details></li>
+        </ul>
+      </div>
+      
+      <a [href]="'https://www.iucnredlist.org/search?query=' + selectedSpecies.scientific_name + '&searchType=species'" target="_blank" class="visit-button" id="iucn" [attr.aria-label]="'View ' + selectedSpecies.scientific_name + ' on the IUCN Red List website (opens in a new tab)'">
+        <div id="logo-container">
+          <img src="../../../assets/img/logos/iucn.png" alt="" />
+        </div>
+        View on <span> IUCN</span>
+      </a>
+      
+      <a [href]="'https://www.gbif.org/species/'+selectedSpecies.taxon_id" target="_blank" class="visit-button" id="gbif" [attr.aria-label]="'View ' + selectedSpecies.scientific_name + ' on the GBIF website (opens in a new tab)'">
+        <div id="logo-container">
+          <img src="../../../assets/img/logos/gbif.png" alt="" />
+        </div>
+        View on <span> GBIF</span>
+      </a>
+      
+      <hr>
+
+      <h3>Present in:</h3>
+      <div class="flags-container">
+        <span *ngFor="let location of selectedSpecies.locations" class="fi fi-{{location.country | lowercase}} flag"></span>
+      </div>
+
+      <hr>
+      
+      <div id="description" *ngIf="selectedSpecies.description">
+        <h3>Description</h3>
+
+        <!-- RATIONALE -->
+        <div *ngIf="selectedSpecies.description.rationale as text" class="description-field">
+          <h4>Rationale:</h4>
+          <div>
+            <span *ngIf="text.length <= descriptionTruncateLimit || descriptionExpandedState['rationale']">{{ text }}</span>
+            <span *ngIf="text.length > descriptionTruncateLimit && !descriptionExpandedState['rationale']">{{ text | slice:0:descriptionTruncateLimit }}...</span>
+            <button *ngIf="text.length > descriptionTruncateLimit" (click)="toggleDescription('rationale')" class="show-more-btn">
+              {{ descriptionExpandedState['rationale'] ? 'Show Less' : 'Show More' }}
+            </button>
+          </div>
+        </div>
+        
+        <!-- HABITATS -->
+        <div *ngIf="selectedSpecies.description.habitat as text" class="description-field">
+          <h4>Habitat:</h4>
+          <div>
+            <span *ngIf="text.length <= descriptionTruncateLimit || descriptionExpandedState['habitat']">{{ text }}</span>
+            <span *ngIf="text.length > descriptionTruncateLimit && !descriptionExpandedState['habitat']">{{ text | slice:0:descriptionTruncateLimit }}...</span>
+            <button *ngIf="text.length > descriptionTruncateLimit" (click)="toggleDescription('habitat')" class="show-more-btn">
+              {{ descriptionExpandedState['habitat'] ? 'Show Less' : 'Show More' }}
+            </button>
+          </div>
+        </div>
+        
+        <!-- THREATS -->
+        <div *ngIf="selectedSpecies.description.threats as text" class="description-field">
+          <h4>Threats:</h4>
+          <div>
+            <span *ngIf="text.length <= descriptionTruncateLimit || descriptionExpandedState['threats']">{{ text }}</span>
+            <span *ngIf="text.length > descriptionTruncateLimit && !descriptionExpandedState['threats']">{{ text | slice:0:descriptionTruncateLimit }}...</span>
+            <button *ngIf="text.length > descriptionTruncateLimit" (click)="toggleDescription('threats')" class="show-more-btn">
+              {{ descriptionExpandedState['threats'] ? 'Show Less' : 'Show More' }}
+            </button>
+          </div>
+        </div>
+        
+        <!-- POPULATION -->
+        <div *ngIf="selectedSpecies.description.population as text" class="description-field">
+          <h4>Population:</h4>
+          <div>
+            <span *ngIf="text.length <= descriptionTruncateLimit || descriptionExpandedState['population']">{{ text }}</span>
+            <span *ngIf="text.length > descriptionTruncateLimit && !descriptionExpandedState['population']">{{ text | slice:0:descriptionTruncateLimit }}...</span>
+            <button *ngIf="text.length > descriptionTruncateLimit" (click)="toggleDescription('population')" class="show-more-btn">
+              {{ descriptionExpandedState['population'] ? 'Show Less' : 'Show More' }}
+            </button>
+          </div>
+        </div>
+        
+        <!-- POPULATION TRENDS -->
+        <div *ngIf="selectedSpecies.description.populationTrend as text" class="description-field">
+          <h4>Population Trend:</h4>
+          <div>
+            <span *ngIf="text.length <= descriptionTruncateLimit || descriptionExpandedState['populationTrend']">{{ text }}</span>
+            <span *ngIf="text.length > descriptionTruncateLimit && !descriptionExpandedState['populationTrend']">{{ text | slice:0:descriptionTruncateLimit }}...</span>
+            <button *ngIf="text.length > descriptionTruncateLimit" (click)="toggleDescription('populationTrend')" class="show-more-btn">
+              {{ descriptionExpandedState['populationTrend'] ? 'Show Less' : 'Show More' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- RANGE -->
+        <div *ngIf="selectedSpecies.description.range as text" class="description-field">
+          <h4>Range:</h4>
+          <div>
+            <span *ngIf="text.length <= descriptionTruncateLimit || descriptionExpandedState['range']">{{ text }}</span>
+            <span *ngIf="text.length > descriptionTruncateLimit && !descriptionExpandedState['range']">{{ text | slice:0:descriptionTruncateLimit }}...</span>
+            <button *ngIf="text.length > descriptionTruncateLimit" (click)="toggleDescription('range')" class="show-more-btn">
+              {{ descriptionExpandedState['range'] ? 'Show Less' : 'Show More' }}
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="selectedSpecies.description.useTrade as text" class="description-field">
+          <h4>Use & Trade:</h4>
+          <div>
+            <span *ngIf="text.length <= descriptionTruncateLimit || descriptionExpandedState['useTrade']">{{ text }}</span>
+            <span *ngIf="text.length > descriptionTruncateLimit && !descriptionExpandedState['useTrade']">{{ text | slice:0:descriptionTruncateLimit }}...</span>
+            <button *ngIf="text.length > descriptionTruncateLimit" (click)="toggleDescription('useTrade')" class="show-more-btn">
+              {{ descriptionExpandedState['useTrade'] ? 'Show Less' : 'Show More' }}
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="selectedSpecies.description.conservationActions as text" class="description-field">
+          <h4>Conservation Actions:</h4>
+          <div>
+            <span *ngIf="text.length <= descriptionTruncateLimit || descriptionExpandedState['conservationActions']">{{ text }}</span>
+            <span *ngIf="text.length > descriptionTruncateLimit && !descriptionExpandedState['conservationActions']">{{ text | slice:0:descriptionTruncateLimit }}...</span>
+            <button *ngIf="text.length > descriptionTruncateLimit" (click)="toggleDescription('conservationActions')" class="show-more-btn">
+              {{ descriptionExpandedState['conservationActions'] ? 'Show Less' : 'Show More' }}
+            </button>
+          </div>
         </div>
       </div>
       
+      <hr>
+      
+      <button class="report-species-btn" (click)="openSpeciesReport()">
+        <img src="../../../assets/img/icons/info-black.png" alt="">
+        Report an issue with this species
+      </button>
+      
+      <p><strong>GBIF Taxon ID:</strong> {{ selectedSpecies.taxon_id }}</p>
+    
+      <details id="references">
+        <summary><h3>References:</h3></summary>
+        <ul>
+          <li *ngFor="let reference of selectedSpecies.references">{{reference}}</li>
+        </ul>
+      </details>
+      
     </div>
-    
-    <img src="../../../assets/img/species_status/CRITICALLY_ENDANGERED.png" *ngIf="selectedSpecies.category=='CR'" alt="" style="width: 360px;">
-    <img src="../../../assets/img/species_status/EXTINCT_IN_THE_WILD.png" *ngIf="selectedSpecies.category=='EW'" alt="" style="width: 360px;">
-    <img src="../../../assets/img/species_status/EXTINCT.png" *ngIf="selectedSpecies.category=='EX'" alt="" style="width: 360px;">
-    
-    <hr>
-    <h3>Hierarchy</h3>
-    
-    <div class="tree">
-      <ul>
-        <li><details><summary> {{ selectedSpecies.kingdom }} <span> -  Kingdom</span></summary>
-          <ul>
-            <li><details><summary> {{ selectedSpecies.phylum }} <span> -  Phylum</span></summary>
-              <ul>
-                <li><details><summary> {{ selectedSpecies.class }} <span> -  Class</span></summary>
-                  <ul>
-                    <li><details><summary> {{ selectedSpecies.order }} <span> - Order</span></summary>
-                      <ul>
-                        <li><details><summary> {{ selectedSpecies.family }} <span> - Family</span></summary>
-                          <ul>
-                            <li>  {{ selectedSpecies.genus }} <span> - Genus</span></li>
-                          </ul>
-                        </details></li>
-                      </ul>
-                    </details></li>
-                  </ul>
-                </details></li>
-              </ul>
-            </details></li>
-          </ul>
-        </details></li>
-      </ul>
-    </div>
-    
-    <a [href]="'https://www.iucnredlist.org/search?query=' + selectedSpecies.scientific_name + '&searchType=species'" target="_blank" class="visit-button" id="iucn">
-      <div id="logo-container">
-        <img src="../../../assets/img/logos/iucn.png" alt="" />
-      </div>
-      View on <span> IUCN</span>
-    </a>
-    
-    <a [href]="'https://www.gbif.org/species/'+selectedSpecies.taxon_id" target="_blank" class="visit-button" id="gbif">
-      <div id="logo-container">
-        <img src="../../../assets/img/logos/gbif.png" alt="" />
-      </div>
-      View on <span> GBIF</span>
-    </a>
-    
-    <hr>
-    
-    <div id="description" *ngIf="selectedSpecies.description">
-      <h3>Description</h3>
-      <p *ngIf="selectedSpecies.description.rationale">
-        <strong>Rationale:</strong> {{ selectedSpecies.description.rationale }}
-      </p>
-      <p *ngIf="selectedSpecies.description.habitat">
-        <strong>Habitat:</strong> {{ selectedSpecies.description.habitat }}
-      </p>
-      <p *ngIf="selectedSpecies.description.threats">
-        <strong>Threats:</strong> {{ selectedSpecies.description.threats }}
-      </p>
-      <p *ngIf="selectedSpecies.description.population">
-        <strong>Population:</strong> {{ selectedSpecies.description.population }}
-      </p>
-      <p *ngIf="selectedSpecies.description.populationTrend">
-        <strong>Population Trend:</strong> {{ selectedSpecies.description.populationTrend }}
-      </p>
-      <p *ngIf="selectedSpecies.description.range">
-        <strong>Range:</strong> {{ selectedSpecies.description.range }}
-      </p>
-      <p *ngIf="selectedSpecies.description.useTrade">
-        <strong>Use & Trade:</strong> {{ selectedSpecies.description.useTrade }}
-      </p>
-      <p *ngIf="selectedSpecies.description.conservationActions">
-        <strong>Conservation Actions:</strong> {{ selectedSpecies.description.conservationActions }}
-      </p>
-    </div>
-    
-    <hr>
-    
-    <button class="report-species-btn" (click)="openSpeciesReport()">
-      <img src="../../../assets/img/icons/info-black.png" alt="">
-      Report an issue with this species
-    </button>
-    
-    <p><strong>Taxon_id:</strong> {{ selectedSpecies.taxon_id }}</p>
-    
-    <h4>Present in:</h4>
-    <div class="flags-container">
-      <span *ngFor="let location of selectedSpecies.locations" class="fi fi-{{location.country | lowercase}} flag"></span>
-    </div>
-    
-    <hr>
-    
-    <h3>References:</h3>
-    <ul>
-      <li *ngFor="let reference of selectedSpecies.references">{{reference}}</li>
-    </ul>
-    
+
   </div>
-  
-</div>
 </div>
