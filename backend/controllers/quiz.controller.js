@@ -33,14 +33,12 @@ exports.getActiveQuizForUser = async (req, res, next) => {
 
 //
 exports.getUserQuizStatus = async (req, res, next) => {
-    const userId = req.userId;
-    
     try {
         const currentQuiz = await getCurrentQuizData();
         const { quiz_identifier, version: currentVersion, minTimeBetweenAttemptsMinutes } = currentQuiz;
         
         const attempt1 = await UserQuizAttempt.findOne({
-            user: userId,
+            userId: req.userId,
             quiz_identifier: quiz_identifier,
             attempt_number: 1
         });
@@ -56,7 +54,7 @@ exports.getUserQuizStatus = async (req, res, next) => {
         }
         
         const attempt2 = await UserQuizAttempt.findOne({
-            user: userId,
+            userId: req.userId,
             quiz_identifier: quiz_identifier,
             attempt_number: 2
         });
@@ -122,7 +120,7 @@ exports.submitUserAttempt = async (req, res, next) => {
         for (const userAnswer of answers) {
             const questionDef = allQuestionDefinitions.find(q => q.question_id === userAnswer.question_id);
             if (!questionDef) {
-                console.warn(`Definición no encontrada para question_id: ${userAnswer.question_id} en el intento del usuario ${userId}`);
+                console.warn(`Definición no encontrada para question_id: ${userAnswer.question_id} en el intento del usuario ${req.userId}`);
                 return res.status(400).json({ message: `ID de pregunta inválido: ${userAnswer.question_id}` });
             }
             const isCorrect = parseInt(userAnswer.selected_option_index) === questionDef.correct_option_index;
@@ -137,7 +135,7 @@ exports.submitUserAttempt = async (req, res, next) => {
         }
         
         const newAttemptData = {
-            user: userId,
+            userId: req.userId,
             quiz_identifier: currentQuizData.quiz_identifier,
             quiz_version_at_attempt: currentQuizData.version,
             attempt_number: parseInt(attemptNumber),
@@ -158,15 +156,16 @@ exports.submitUserAttempt = async (req, res, next) => {
                 totalQuestions: savedAttempt.total_questions_at_attempt
             });
         } catch (error) {
+            console.log(error);
             if (error.code === 11000) {
-                return res.status(409).json({ message: 'Este intento de cuestionario ya ha sido enviado.' });
+                return res.status(409).json({ message: 'This quiz attempt has already been sent.' });
             }
             next(error);
         }
         
     } catch (error) {
         if (error.code === 11000) {
-            return res.status(409).json({ message: 'Este intento de cuestionario ya ha sido enviado.' });
+            return res.status(409).json({ message: 'This quiz attempt has already been sent.' });
         }
         next(error);
     }
