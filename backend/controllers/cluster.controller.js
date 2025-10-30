@@ -1,7 +1,7 @@
 const Species = require('../models/Species');
 const Cluster = require('../models/Cluster');
 const { getCountryCoordinates } = require('../services/geo.service');
-const { getOccurrencesByCountryBatch } = require('../services/populate.service');
+//const { getOccurrencesByCountryBatch } = require('../services/populate.service');
 const { getGbifCountryData } = require('../services/gbif.service');
 const speciesController = require('./species.controller');
 
@@ -21,30 +21,30 @@ const categoryRanking = {
 /**
 * Funcion deprecada utilizada en la generacin inicial de los clusters y especies. Calcula cuantos occurrences estan asociados a una especie desde la base de datos occurrences.db obtenida de GBIF.
 */
-exports.updateAllClusterOccurrences = async (req, res) => {
-  try {
-    // 1. Traer todos los clusters y sus country codes
-    const clusters = await Cluster.find().select('country');
-    const countryCodes = clusters.map(c => c.country);
+// exports.updateAllClusterOccurrences = async (req, res) => {
+//   try {
+//     // 1. Traer todos los clusters y sus country codes
+//     const clusters = await Cluster.find().select('country');
+//     const countryCodes = clusters.map(c => c.country);
     
-    // 2. Obtener todos los conteos de ocurrencias
-    const counts = await getOccurrencesByCountryBatch(countryCodes);
+//     // 2. Obtener todos los conteos de ocurrencias
+//     const counts = await getOccurrencesByCountryBatch(countryCodes);
     
-    // 3. Actualizar en MongoDB
-    const updates = clusters.map(c => 
-      Cluster.updateOne(
-        { country: c.country },
-        { $set: { occurrences: counts[c.country] || 0 } }
-      )
-    );
-    await Promise.all(updates);
+//     // 3. Actualizar en MongoDB
+//     const updates = clusters.map(c => 
+//       Cluster.updateOne(
+//         { country: c.country },
+//         { $set: { occurrences: counts[c.country] || 0 } }
+//       )
+//     );
+//     await Promise.all(updates);
     
-    res.json({ message: 'Clusters actualizados con occurrences', counts });
-  } catch (err) {
-    console.error('Error actualizando occurrences:', err);
-    res.status(500).json({ error: 'No se pudo actualizar occurrences' });
-  }
-};
+//     res.json({ message: 'Clusters actualizados con occurrences', counts });
+//   } catch (err) {
+//     console.error('Error actualizando occurrences:', err);
+//     res.status(500).json({ error: 'No se pudo actualizar occurrences' });
+//   }
+// };
 
 
 /**

@@ -24,7 +24,7 @@ En este contexto nace ArcticFlower, un proyecto sin fines de lucro diseñado par
 
 * Participación comunitaria: ArcticFlower facilitará la participación comunitaria mediante funciones de reporte de avistamientos de especies, comentarios y contribuciones de contenido por parte de los usuarios, fomentando así la colaboración y el compromiso con la conservación.
 
-* Actualizaciones y notificaciones: El software proporcionará actualizaciones periódicas sobre el estado de conservación de las especies, noticias relevantes sobre la biodiversidad y notificaciones sobre eventos y oportunidades de participación en actividades de conservación.
+* Actualizaciones con datos externos: El software actualiza los detalles de especies y paises desde fuentes cientificas confiables como IUCN y GBIF
 
 <h2>Esquema de componentes: </h2>
 
@@ -33,3 +33,23 @@ En este contexto nace ArcticFlower, un proyecto sin fines de lucro diseñado par
 <h2>Boceto: </h2>
 
 ![Boceto de front-end](image-2.png)
+
+
+<h2>Instrucciones: </h2>
+El proyecto ha sido creado y funciona con:
+    Angular CLI 19.1.5
+    Node.js 22.13.1
+    npm 10.9.2
+
+Para ejecutar back-end de node:
+```
+cd backend
+npm update
+npm run dev
+```
+
+Para ejecutar front-end de Angular:
+```
+cd frontend
+npm update
+ng serve
