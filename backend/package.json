@@ -5,7 +5,8 @@
   "scripts": {
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
-    "dev": "node utils/ascii.js && node server.js"
+    "dev": "node utils/ascii.js && node server.js",
+    "start": "node utils/ascii.js && node server.js"
   },
   "keywords": [],
   "author": "",

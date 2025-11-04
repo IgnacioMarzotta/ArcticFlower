@@ -16,7 +16,6 @@ const UserQuizAttemptSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-
     quiz_version_at_attempt: {
         type: Number,
         required: true
