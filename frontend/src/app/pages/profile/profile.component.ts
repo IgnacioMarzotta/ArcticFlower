@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../core/services/auth.service';
 import { FavoriteService } from '../../core/services/favorite.service';
 import { ReportService } from '../../core/services/report.service';
-import { MissionService } from 'src/app/core/services/mission.service';
+import { MissionService } from '../../core/services/mission.service';
 
 import { Favorite } from '../../core/models/favorite.model';
 import { Mission } from '../../core/models/mission.models';

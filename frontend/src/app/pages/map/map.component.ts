@@ -8,7 +8,6 @@ import { Subject, of } from 'rxjs';
 import * as GLOBE from 'globe.gl';
 import * as THREE from 'three';
 import countries from 'world-countries';
-import 'flag-icons/css/flag-icons.min.css';
 import Swal from 'sweetalert2';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
@@ -25,11 +24,11 @@ import { QuizModalComponent } from '../../components/quiz-modal/quiz-modal.compo
 import { SpeciesService } from '../../core/services/species.service';
 import { ClusterService } from '../../core/services/cluster.service';
 import { AuthService } from '../../core/services/auth.service';
-import { ReportService } from 'src/app/core/services/report.service';
+import { ReportService } from '../../core/services/report.service';
 import { FavoriteService } from '../../core/services/favorite.service';
 import { MissionService } from '../../core/services/mission.service';
 import { MissionEventService } from '../../core/services/mission-event.service';
-import { MissionEngineService } from 'src/app/core/services/mission-engine.service';
+import { MissionEngineService } from '../../core/services/mission-engine.service';
 import { QuizService } from '../../core/services/quiz.service';
 
 interface City {

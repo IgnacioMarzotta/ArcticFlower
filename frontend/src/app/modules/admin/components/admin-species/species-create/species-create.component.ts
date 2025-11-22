@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { SpeciesService } from 'src/app/core/services/species.service';
+import { SpeciesService } from '../../../../../core/services/species.service';
 import Swal from 'sweetalert2';
 
 @Component({

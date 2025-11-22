@@ -22,7 +22,7 @@
     "esModuleInterop": true,
     "useDefineForClassFields": false,
     "moduleResolution": "bundler",
-    "ignoreDeprecations": "6.0"
+    "ignoreDeprecations": "5.0"
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
