@@ -52,7 +52,7 @@ exports.getAllReports = async (req, res) => {
       query.resolved = resolved === 'true';
     }
 
-    const reportsPromise = Report.find(query).populate('user', 'email').sort({ createdAt: -1 }).skip(skip).limit(limit);
+    const reportsPromise = Report.find(query).populate('userId', 'email').sort({ createdAt: -1 }).skip(skip).limit(limit);
       
     const countPromise = Report.countDocuments(query);
 

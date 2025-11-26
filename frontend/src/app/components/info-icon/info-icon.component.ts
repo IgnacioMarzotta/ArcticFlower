@@ -2,14 +2,15 @@ import { Component, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import Swal from 'sweetalert2';
-import { ReportService } from 'src/app/core/services/report.service';
-import { Report } from 'src/app/core/models/report.model';
+import { ReportService } from '../../core/services/report.service';
+import { Report } from '../../core/models/report.model';
 
 
 @Component({
   selector: 'app-info-icon',
   templateUrl: './info-icon.component.html',
   styleUrls: ['./info-icon.component.scss'],
+  standalone: true,
   imports: [CommonModule, FormsModule],
 })
 export class InfoIconComponent {

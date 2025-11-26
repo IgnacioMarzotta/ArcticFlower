@@ -7,7 +7,7 @@ const AnswerSchema = new mongoose.Schema({
 }, { _id: false });
 
 const UserQuizAttemptSchema = new mongoose.Schema({
-    user: {
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
@@ -16,7 +16,6 @@ const UserQuizAttemptSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-
     quiz_version_at_attempt: {
         type: Number,
         required: true
