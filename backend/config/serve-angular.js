@@ -2,7 +2,7 @@ const path = require('path');
 const express = require('express');
 
 function serveAngular(app) {
-  const distPath = path.join(__dirname, '../../frontend/dist/frontend');
+  const distPath = path.join(__dirname, '../../frontend/dist/frontend/browser');
 
   app.use(express.static(distPath));
 
