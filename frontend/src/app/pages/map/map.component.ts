@@ -139,7 +139,7 @@ export class MapComponent implements AfterViewInit {
 
     if (this.isUser) {
       console.log("USER IS LOGGED IN");
-      this.checkAndInitiateQuiz();
+      //this.checkAndInitiateQuiz();
       this.initializeFavorites();
       this.loadDailyMissions();
       this.listenForMissionUpdates();
