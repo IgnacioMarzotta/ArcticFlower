@@ -125,6 +125,55 @@ export class AuthService {
       })
     );
   }
+
+  startGoogleAuth() {
+    const googleUrl = `${this.apiUrl}/google`;
+    
+    const width = 500;
+    const height = 600;
+    const left = (window.innerWidth - width) / 2;
+    const top = (window.innerHeight - height) / 2;
+    
+    const popup = window.open(
+      googleUrl,
+      'GoogleAuthPopup',
+      `width=${width},height=${height},top=${top},left=${left}`
+    );
+    
+    if (!popup) {
+      console.error("Popup blocked by browser");
+      return;
+    }
+    
+    const listener = (event: MessageEvent) => {
+      if (
+        event.origin !== environment.frontendUrl &&
+        event.origin !== environment.apiHost
+      ) {
+        console.warn("Mensaje descartado por ORIGIN:", event.origin);
+        return;
+      }
+      
+      const { accessToken } = event.data;
+    
+      if (accessToken) {
+        localStorage.setItem('auth_token', accessToken);
+        popup.close();
+        window.removeEventListener('message', listener);
+        this.getProfile().subscribe({
+          next: (profile) => {
+            this.currentUserSubject.next(profile);
+            this.router.navigate(['/']);
+          },
+          error: (err) => {
+            console.error("Error loading profile after Google login", err);
+            this.logoutUserAndRedirect();
+          }
+        });
+      }
+    };
+    window.addEventListener('message', listener);
+  }
   
   isAuthenticated(): boolean {
     return !!localStorage.getItem('auth_token');

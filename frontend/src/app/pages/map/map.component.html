@@ -141,10 +141,11 @@ bdColor="rgba(0, 0, 0, 0.8)" size="small" type="ball-spin-fade" color="#ffffff">
 (quizClosed)="handleQuizClosed($event)">
 </app-quiz-modal>
 
-<div class="side-panel" *ngIf="selectedCluster" [class.open]="showPanel" role="region" aria-labelledby="species-panel-title">
+<div class="side-panel" *ngIf="selectedCluster" [class.open]="showPanel" role="region" aria-labelledby="species-panel-title"  [ngClass]="{'mobile-panel-top': selectedSpecies, 'mobile-panel-bottom': !selectedSpecies}">
   
   <div class="species-header">
-    <div class="close-button" (click)="clearCurrentSelection()" aria-label="Close species panel and return to globe"><img src="../../../assets/img/icons/chevron-left.svg" alt=""></div>
+    <div class="close-button" *ngIf="!selectedSpecies" (click)="clearCurrentSelection()" aria-label="Close species panel and return to globe"><img src="../../../assets/img/icons/chevron-left.svg" alt=""></div>
+    <div class="close-button" *ngIf="selectedSpecies" (click)="selectedSpecies = null" aria-label="Close current species and return to country"><img src="../../../assets/img/icons/chevron-left.svg" alt=""></div>
     
     <div class="country-info">
       <span class="fi fi-{{selectedCluster.country | lowercase}}"></span>

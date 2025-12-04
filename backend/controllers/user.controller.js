@@ -1,6 +1,16 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { OAuth2Client } = require('google-auth-library');
+const { google } = require('googleapis');
+
+
+//Definicion del Google Client con las variables de entorno proporcionadas por Google.
+const googleClient = new OAuth2Client({
+  clientId: process.env.GOOGLE_CLIENT_ID,
+  clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+  redirectUri: process.env.NODE_ENV === 'production' ? process.env.GOOGLE_REDIRECT_URI_PROD : process.env.GOOGLE_REDIRECT_URI_DEV
+});
 
 
 //Funcion para crear un usuario desde el formulario de registro
@@ -263,6 +273,77 @@ exports.deleteUser = async (req, res) => {
   } catch (error) {
     console.error("[user.controller - deleteUser] Error:", error);
     res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+};
+
+
+//Funcion encargada de generar los parametros para el popup de inicio de sesion de Google Omniauth
+exports.startGoogleAuth = async (req, res) => {
+  const url = googleClient.generateAuthUrl({
+    access_type: 'offline',
+    prompt: 'consent',
+    scope: [
+      'email',
+      'profile',
+      'openid'
+    ]
+  });
+
+  res.redirect(url);
+};
+
+
+//Funcion encargada de recibir la respuesta desde Google. Si el usuario existe, inicia sesion (y si es de una cuenta existente, asocia el google_id con la cuenta), y si no existe, crea el usuario con el email y username de Google. Luego crea el token de jwt, inicia sesion y redirige a home.
+exports.googleCallback = async (req, res) => {
+
+  try {
+    const { code } = req.query;
+
+    if (!code) {
+      return res.status(400).send("Missing authorization code");
+    }
+
+    const { tokens } = await googleClient.getToken(code);
+    googleClient.setCredentials(tokens);
+
+    const oauth2 = google.oauth2({
+      auth: googleClient,
+      version: 'v2'
+    });
+
+    const { data: googleUser } = await oauth2.userinfo.get();
+
+    const user = await User.findOneAndUpdate(
+      { email: googleUser.email },
+      {
+        email: googleUser.email,
+        username: googleUser.name.replace(/\s+/g, ''),
+        google_id: googleUser.id
+      },
+      { upsert: true, new: true }
+    );
+
+    const accessToken = jwt.sign(
+      { userId: user._id, permissions: user.permissions },
+      process.env.JWT_SECRET,
+      { expiresIn: '12h' }
+    );
+
+    const frontendUrl = process.env.NODE_ENV === 'production' ? process.env.OAUTH_FRONTEND_URI_PROD : process.env.OAUTH_FRONTEND_URI_DEV
+
+    return res.send(`
+      <script>
+        window.opener.postMessage(
+          { accessToken: "${accessToken}" },
+          "${frontendUrl}"
+        );
+        window.close();
+      </script>
+    `);
+
+  } catch (err) {
+    console.error('Google Callback Error', err);
+    return res.status(500).send("Google authentication failed");
   }
 };
 

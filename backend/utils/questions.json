@@ -14,7 +14,7 @@
         "Climate change reduces the extinction of species."
       ],
       "correct_option_index": 2,
-      "justification": "The most recent scientific reports show that global warming is already causing the disappearance of local populations. For example, local extinctions linked to heat waves have been detected in almost half of the species studied. Furthermore, it is noted that the risk of extinction increases as temperatures rise. Therefore, option (c) is correct: climate change is accelerating species loss. The other statements are incorrect because they contradict these findings (it is not that it 'does not affect' or 'reduces' extinctions, and it is not the only cause of extinction)."
+      "justification": "The most recent scientific reports show that global warming is already causing the disappearance of local populations. For example, local extinctions linked to heat waves have been detected in almost half of the species studied. Furthermore, it is noted that the risk of extinction increases as temperatures rise. Climate change is accelerating species loss. The other statements are incorrect because they contradict these findings (it is not that it 'does not affect' or 'reduces' extinctions, and it is not the only cause of extinction)."
     },
     {
       "question_id": "q2_percentage_by_2100",
@@ -26,7 +26,7 @@
         "~80%"
       ],
       "correct_option_index": 2,
-      "justification": "Combining hundreds of studies, researchers have concluded that a 4-5°C warming would put a very high fraction of species at risk. In particular, it is estimated that around 30% of species could face extinction risk under this extreme scenario. In contrast, with just +1.5°C of warming, the figure would be much lower (~1.8%). Therefore, answer (c) is correct. The other options (2%, 10%, 80%) do not match current scientific results."
+      "justification": "Combining hundreds of studies, researchers have concluded that a 4-5°C warming would put a very high fraction of species at risk. In particular, it is estimated that around 30% of species could face extinction risk under this extreme scenario. In contrast, with just +1.5°C of warming, the figure would be much lower (~1.8%). The other options (2%, 10%, 80%) do not match current scientific results."
     },
     {
       "question_id": "q3_real_cases_extinction",
@@ -38,7 +38,7 @@
         "Only in polar climates."
       ],
       "correct_option_index": 1,
-      "justification": "There are real cases today. According to the IPCC, local extinctions (disappearance of populations in specific areas) have already been recorded in many plants and animals due to climate-related heatwaves and flooding. A prominent example is the Melomys rubicola, a small island rodent that disappeared in 2016 when sea levels rose; this was the first mammal declared extinct due to climate-related causes. Therefore, option (b) is correct: there are already documented examples. The other options are incorrect because science has observed real events (not just in the future, not just in laboratories, and not just at the poles)."
+      "justification": "There are real cases today. According to the IPCC, local extinctions (disappearance of populations in specific areas) have already been recorded in many plants and animals due to climate-related heatwaves and flooding. A prominent example is the Melomys rubicola, a small island rodent that disappeared in 2016 when sea levels rose; this was the first mammal declared extinct due to climate-related causes. There are already documented examples. The other options are incorrect because science has observed real events (not just in the future, not just in laboratories, and not just at the poles)."
     },
     {
       "question_id": "q4_biodiversity_loss",
@@ -50,7 +50,7 @@
         "Only desert areas."
       ],
       "correct_option_index": 2,
-      "justification": "Climate change affects virtually all ecosystems, not just those in polar or tropical regions. Experts indicate that both terrestrial habitats (forests, mountains, etc.) and marine habitats (oceans, reefs, mangroves) are severely impacted by global warming. For example, the IPCC report notes that global warming is leading to the collapse of coastal and marine habitats, with local extinctions of marine species. Likewise, the UN reports that thousands of terrestrial and marine species are threatened by the climate. Therefore, answer (c) is correct: biodiversity loss due to climate change is global. The other options are very limited (polar regions only, forests only, deserts only) and do not reflect the true scope of the problem."
+      "justification": "Climate change affects virtually all ecosystems, not just those in polar or tropical regions. Experts indicate that both terrestrial habitats (forests, mountains, etc.) and marine habitats (oceans, reefs, mangroves) are severely impacted by global warming. For example, the IPCC report notes that global warming is leading to the collapse of coastal and marine habitats, with local extinctions of marine species. Likewise, the UN reports that thousands of terrestrial and marine species are threatened by the climate.Biodiversity loss due to climate change is global. The other options are very limited (polar regions only, forests only, deserts only) and do not reflect the true scope of the problem."
     },
     {
       "question_id": "q5_mountain_species",
@@ -62,7 +62,7 @@
         "They climb to the summits until they no longer have any available habitat."
       ],
       "correct_option_index": 3,
-      "justification": "As temperatures rise, mountain species tend to move to higher altitudes in search of cooler climates. However, once they reach the summit, they run out of 'steps' to live on. This phenomenon has been described as a 'ladder to extinction.' In other words, the species can climb no higher and become locally extinct. That's why (b) is correct. The other options are unrealistic: they can't go down in altitude (they are adapted to the cold), they don't become aquatic, and they are affected because their habitat gradually disappears as warming progresses."
+      "justification": "As temperatures rise, mountain species tend to move to higher altitudes in search of cooler climates. However, once they reach the summit, they run out of 'steps' to live on. This phenomenon has been described as a 'ladder to extinction.' In other words, the species can climb no higher and become locally extinct. The other options are unrealistic: they can't go down in altitude (they are adapted to the cold), they don't become aquatic, and they are affected because their habitat gradually disappears as warming progresses."
     },
     {
       "question_id": "q6_coral_bleaching",
@@ -74,11 +74,11 @@
         "They become aquatic plants."
       ],
       "correct_option_index": 0,
-      "justification": "Corals are very sensitive to heat. When water temperatures rise more than 1–2°C above normal, corals expel the algae that give them their color in a process called bleaching, and many corals die en masse. The IPCC warns that with current warming, we are already seeing widespread coral die-offs due to this effect. Therefore, answer (a) is correct: rising temperatures cause coral bleaching and death. The other options are false: extreme heat damages corals, not strengthens them."
+      "justification": "Corals are very sensitive to heat. When water temperatures rise more than 1–2°C above normal, corals expel the algae that give them their color in a process called bleaching, and many corals die en masse. The IPCC warns that with current warming, we are already seeing widespread coral die-offs due to this effect. Rising temperatures cause coral bleaching and death. The other options are false: extreme heat damages corals, not strengthens them."
     },
     {
       "question_id": "q7_first_mammal_extinction",
-      "text": "What species was the first mammal extinction attributed to climate change?",
+      "text": "What species was the first mammal extinction attributed to climate change? (Hard one!)",
       "options": [
         "The Dodo.",
         "The Bramble Cay melomid.",
@@ -86,7 +86,7 @@
         "The polar bear."
       ],
       "correct_option_index": 1,
-      "justification": "The first confirmed extinction of a mammal due to climate-related causes was that of Melomys rubicola, a small island rat from Bramble Cay (Australia). This species disappeared in 2016 after rising sea levels (a product of climate change) destroyed its only habitat. The case is documented by the UN and scientific circles: it was the first mammal to become extinct due to global warming. Therefore, option (b) is correct. The other animals mentioned did not die due to climate-related causes (the dodo became extinct due to hunting in past centuries, the Javan rhinoceros due to hunting, and the polar bear still exists although it is threatened)."
+      "justification": "The first confirmed extinction of a mammal due to climate-related causes was that of Melomys rubicola, a small island rat from Bramble Cay (Australia). This species disappeared in 2016 after rising sea levels (a product of climate change) destroyed its only habitat. The case is documented by the UN and scientific circles: it was the first mammal to become extinct due to global warming.  The other animals mentioned did not die due to climate-related causes (the dodo became extinct due to hunting in past centuries, the Javan rhinoceros due to hunting, and the polar bear still exists although it is threatened)."
     },
     {
       "question_id": "q8_coral_reefs_disappearance",
@@ -98,7 +98,7 @@
         "99%"
       ],
       "correct_option_index": 3,
-      "justification": "An IPCC special report projects that a 2°C increase above pre-industrial levels would destroy nearly 99% of the world's coral reefs. Even with just 1.5°C, we would lose 70–90% of the corals. Therefore, answer (d) is correct: almost all reefs would be in ruins. The options (25%, 50%, 75%) dramatically underestimate this documented massive impact."
+      "justification": "An IPCC special report projects that a 2°C increase above pre-industrial levels would destroy nearly 99% of the world's coral reefs. Even with just 1.5°C, we would lose 70-90% of the corals. Almost all reefs would be in ruins. The options (25%, 50%, 75%) dramatically underestimate this documented massive impact."
     },
     {
       "question_id": "q9",

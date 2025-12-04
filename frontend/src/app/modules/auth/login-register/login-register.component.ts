@@ -94,10 +94,14 @@ export class LoginRegisterComponent implements OnInit {
     
     @HostListener('input', ['$event.target'])
     @HostListener('keyup', ['$event.target'])
-    onInput(target: HTMLElement) {
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') return;
-        const label = target.previousElementSibling as HTMLElement;
+    onInput(target: EventTarget | null) {
+        if (!(target instanceof HTMLElement)) return;
+        
+        const label = target.previousElementSibling as HTMLElement | null;
+        if (!label) return;
+        
         const hasValue = (target as HTMLInputElement).value !== '';
+        
         if (hasValue) {
             this.renderer.addClass(label, 'active');
             this.renderer.addClass(label, 'highlight');
@@ -108,22 +112,26 @@ export class LoginRegisterComponent implements OnInit {
     }
     
     @HostListener('focusout', ['$event.target'])
-    onBlur(target: HTMLElement) {
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') return;
-        const label = target.previousElementSibling as HTMLElement;
+    onBlur(target: EventTarget | null) {
+        if (!(target instanceof HTMLElement)) return;
+        const label = target.previousElementSibling as HTMLElement | null;
+        if (!label) return;   
         this.renderer.removeClass(label, 'highlight');
     }
     
     @HostListener('focusin', ['$event.target'])
-    onFocus(target: HTMLElement) {
-        if (target.tagName !== 'INPUT' && target.tagName !== 'TEXTAREA') return;
-        const label = target.previousElementSibling as HTMLElement;
+    onFocus(target: EventTarget | null) {
+        if (!(target instanceof HTMLElement)) return;
+        
+        const label = target.previousElementSibling as HTMLElement | null;
+        if (!label) return;
+        
         const hasValue = (target as HTMLInputElement).value !== '';
         if (hasValue) {
             this.renderer.addClass(label, 'highlight');
         }
     }
-
+    
     usernameAvailabilityValidator(): AsyncValidatorFn {
         return (control: AbstractControl): Observable<ValidationErrors | null> => {
             return timer(500).pipe(
@@ -138,7 +146,7 @@ export class LoginRegisterComponent implements OnInit {
             );
         };
     }
-
+    
     emailAvailabilityValidator(): AsyncValidatorFn {
         return (control: AbstractControl): Observable<ValidationErrors | null> => {
             return timer(500).pipe(
@@ -153,31 +161,35 @@ export class LoginRegisterComponent implements OnInit {
             );
         };
     }
-
-  private passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
-    const password = control.get('password');
-    const confirmPassword = control.get('confirmPassword');
-
-    if (!password || !confirmPassword) {
-      return null;
-    }
-
-    if (confirmPassword.errors && confirmPassword.errors['passwordsMismatch']) {
-      if (password.value === confirmPassword.value) {
-        delete confirmPassword.errors['passwordsMismatch'];
-        if (Object.keys(confirmPassword.errors).length === 0) {
-          confirmPassword.setErrors(null);
-        } else {
-          confirmPassword.setErrors(confirmPassword.errors);
+    
+    private passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
+        const password = control.get('password');
+        const confirmPassword = control.get('confirmPassword');
+        
+        if (!password || !confirmPassword) {
+            return null;
         }
-      }
+        
+        if (confirmPassword.errors && confirmPassword.errors['passwordsMismatch']) {
+            if (password.value === confirmPassword.value) {
+                delete confirmPassword.errors['passwordsMismatch'];
+                if (Object.keys(confirmPassword.errors).length === 0) {
+                    confirmPassword.setErrors(null);
+                } else {
+                    confirmPassword.setErrors(confirmPassword.errors);
+                }
+            }
+        }
+        
+        if (password.value !== confirmPassword.value) {
+            confirmPassword.setErrors({ ...confirmPassword.errors, passwordsMismatch: true });
+        }
+        return null;
     }
-
-    if (password.value !== confirmPassword.value) {
-      confirmPassword.setErrors({ ...confirmPassword.errors, passwordsMismatch: true });
+    
+    loginWithGoogle() {
+        this.authService.startGoogleAuth();
     }
-    return null;
-  }
 
     get regUsername() { return this.registerForm.get('username'); }
     get regEmail() { return this.registerForm.get('email'); }

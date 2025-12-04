@@ -2,8 +2,8 @@
     "name": "arcticflower-fullstack",
     "version": "1.0.0",
     "scripts": {
-        "build": "cd frontend && npm install && npm run build --configuration production",
-        "start": "cd backend && npm install && node server.js"
+        "build": "cd frontend && npm install --include=dev && npm run build",
+        "start": "cd backend && npm install --production && node server.js"
     },
     "engines": {
         "node": "22.x"

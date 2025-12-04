@@ -33,6 +33,8 @@
     "fast-csv": "^5.0.2",
     "figlet": "^1.8.0",
     "fs": "^0.0.1-security",
+    "google-auth-library": "^10.5.0",
+    "googleapis": "^166.0.0",
     "i18n-iso-countries": "^7.14.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.6",
