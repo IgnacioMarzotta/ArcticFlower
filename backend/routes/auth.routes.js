@@ -7,7 +7,9 @@ const {
     refresh,
     logout,
     checkUsername,
-    checkEmail
+    checkEmail,
+    startGoogleAuth,
+    googleCallback
 } = require('../controllers/user.controller');
 const verifyToken = require('../middlewares/jwt');
 
@@ -18,5 +20,7 @@ router.get('/profile', verifyToken, getProfile);
 router.post('/refresh', refresh);
 router.get('/check-username/:username', checkUsername);
 router.get('/check-email/:email', checkEmail);
+router.get('/google', startGoogleAuth);
+router.get('/google/callback', googleCallback);
 
 module.exports = router;

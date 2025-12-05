@@ -205,6 +205,55 @@ textarea {
     }
 }
 
+.oauth-section {
+    margin-top: 2rem;
+    text-align: center;
+
+    .oauth-title {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 1rem;
+    }
+
+    .oauth-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+
+        .oauth-btn {
+            width: 50px;
+            height: 50px;
+            padding: 0;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            background-color: white;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            
+            img {
+                width: 60%;
+                height: 60%;
+                object-fit: contain;
+            }
+            
+            &:hover {
+                transform: scale(1.07);
+                box-shadow: 0 0 8px rgba(0,0,0,0.15);
+            }
+        }
+
+        .google-btn {
+            border-color: #dbdbdb;
+        }
+    }
+}
+
 .button-block {
     display:block;
     width:100%;
